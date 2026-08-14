@@ -106,6 +106,23 @@ Results are written to `~/vla/results/libero_spatial_pc_local_<UTC timestamp>/`.
 
 ### 3. PC simulation + Jetson remote inference
 
+**Connect to the Jetson over SSH:**
+
+```bash
+ssh msc26vla@10.42.0.2
+```
+
+On first connection, type `yes` to trust the host key. Prerequisites: the Jetson
+is powered on with SSH enabled (`sudo systemctl enable --now ssh`) and reachable
+at `10.42.0.2` on the same network (run `ip addr` on the Jetson if unsure).
+
+Optional passwordless login:
+
+```bash
+ssh-keygen -t ed25519           # on your PC/WSL, if you don't have a key yet
+ssh-copy-id msc26vla@10.42.0.2  # installs your public key on the Jetson
+```
+
 **Terminal 1 — Jetson (start the policy service):**
 
 ```bash
