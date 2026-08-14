@@ -18,6 +18,8 @@ From Windows PowerShell:
 ssh msc26vla@10.42.0.2
 ```
 
+On first connection, type `yes` when asked to trust the host key.
+
 On Jetson:
 
 ```bash

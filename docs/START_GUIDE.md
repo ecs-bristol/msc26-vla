@@ -121,6 +121,29 @@ bash scripts/wsl/run_official_pc_local_eval.sh
 
 需要 **两个终端**：
 
+**SSH 连接到 Jetson（前提）：**
+
+从笔记本/PC 通过 SSH 登录 Jetson（Windows 用 PowerShell，Linux/WSL 用终端）：
+
+```bash
+ssh msc26vla@10.42.0.2
+```
+
+- 首次连接会询问是否信任 host key，输入 `yes` 回车即可
+- 前提：Jetson 已开机、SSH 服务已启用（`sudo systemctl enable --now ssh`）、
+  与 PC 在同一网络且 IP 为 `10.42.0.2`（IP 不确定时在 Jetson 上运行 `ip addr` 查看）
+
+可选：配置免密登录（避免每次输入密码）：
+
+```bash
+# 在 PC/WSL 上生成密钥（如果还没有）
+ssh-keygen -t ed25519
+# 把公钥安装到 Jetson（会要求输入一次 Jetson 密码）
+ssh-copy-id msc26vla@10.42.0.2
+```
+
+配置后 `ssh msc26vla@10.42.0.2` 可直接登录。
+
 **终端 1 —— Jetson（启动策略服务）：**
 
 ```bash
