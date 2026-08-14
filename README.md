@@ -36,7 +36,7 @@ linked to your GitHub account):
 ```bash
 git clone git@github.com:ecs-bristol/msc26-vla.git
 cd msc26-vla
-git checkout LIBERO-SmolVLA
+git checkout smolvla-benchmark
 ```
 
 If you have not set up SSH keys yet, follow GitHub's official guide:
@@ -48,7 +48,7 @@ token instead of your password):
 ```bash
 git clone https://github.com/ecs-bristol/msc26-vla.git
 cd msc26-vla
-git checkout LIBERO-SmolVLA
+git checkout smolvla-benchmark
 ```
 
 ## Architecture

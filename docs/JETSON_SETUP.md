@@ -66,7 +66,7 @@ docker run --rm --runtime nvidia <基础镜像> nvidia-smi
 mkdir -p ~/vla/project
 
 # 方式 A：从 GitHub 克隆（推荐）
-git clone -b LIBERO-SmolVLA git@github.com:ecs-bristol/msc26-vla.git ~/vla/project
+git clone -b smolvla-benchmark git@github.com:ecs-bristol/msc26-vla.git ~/vla/project
 
 # 方式 B：从 PC 直接拷贝
 scp -r /path/to/this/repo msc26vla@10.42.0.2:~/vla/project/
@@ -105,7 +105,7 @@ bash scripts/wsl/run_jetson_remote_preflight.sh
   `Ctrl+C` 停止。不关闭会导致下一个人无法启动（端口 8081 被占用）。若提示
   `Address already in use`，在 Jetson 上执行 `docker ps` 查看残留容器。
 - **Jetson 端 `~/vla/project` 是共享代码**：所有人都用它启动服务镜像，请保持
-  与 GitHub `LIBERO-SmolVLA` 分支同步：
+  与 GitHub `smolvla-benchmark` 分支同步：
   ```bash
   cd ~/vla/project && git pull
   ```
