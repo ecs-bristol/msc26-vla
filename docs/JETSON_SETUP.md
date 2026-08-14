@@ -1,0 +1,97 @@
+# Jetson 环境配置指南
+
+本文档说明如何在 Jetson Orin Nano 上搭建 SmolVLA 推理服务所需的环境。
+仓库内的 `docker/jetson/Dockerfile` 和 `scripts/jetson/` 都假设以下环境已就绪。
+
+## 0. 系统要求
+
+- 设备：Jetson Orin Nano（或其他 Orin 系列）
+- JetPack / L4T：与 `docker/jetson/Dockerfile` 基础镜像兼容的版本
+  （基础镜像为 `nvcr.io/nvidia/pytorch:25.08-py3`，请按 NVIDIA 官方要求匹配）
+- 存储：至少 20 GB 可用（Docker 镜像 + 模型缓存）
+- 内存：建议 8 GB 以上
+
+## 1. 启用 SSH
+
+```bash
+sudo systemctl enable --now ssh
+ip addr   # 记下 Jetson 的 IP（本文档示例固定为 10.42.0.2）
+```
+
+从 PC 验证：`ssh msc26vla@10.42.0.2`
+
+## 2. 安装 Docker
+
+在 Jetson 上安装 Docker（`docker.io` 或 JetPack 自带版本均可），并让当前用户可用：
+
+```bash
+sudo apt-get update && sudo apt-get install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker "$USER"   # 重新登录后生效
+```
+
+验证：`docker run --rm hello-world`
+
+## 3. 安装 NVIDIA Container Toolkit（`--runtime nvidia`）
+
+`scripts/jetson/run_container.sh` 依赖 `--runtime nvidia`，需要安装 NVIDIA
+Container Toolkit（Jetson 使用 l4t 版本）。请按 NVIDIA 官方安装指南操作：
+
+<https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html>
+
+安装完成后配置 Docker 运行时并重启：
+
+```bash
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+
+验证 GPU 可用：
+
+```bash
+docker run --rm --runtime nvidia <基础镜像> nvidia-smi
+```
+
+> 如果验证失败，确认 JetPack 版本与基础镜像匹配，并重新按官方指南配置运行时。
+
+## 4. 获取项目代码
+
+```bash
+mkdir -p ~/vla/project
+
+# 方式 A：从 GitHub 克隆（推荐）
+git clone -b smolvla-benchmark git@github.com:ecs-bristol/msc26-vla.git ~/vla/project
+
+# 方式 B：从 PC 直接拷贝
+scp -r /path/to/this/repo msc26vla@10.42.0.2:~/vla/project/
+```
+
+## 5. 构建服务镜像并准备模型缓存
+
+```bash
+cd ~/vla/project
+docker build -f docker/jetson/Dockerfile -t libero-smolvla:jetson-0.1 .
+mkdir -p ~/vla/hf-cache ~/vla/outputs
+```
+
+首次运行使用 `bootstrap` 模式联网下载模型到 `~/vla/hf-cache`，之后可
+`offline` 模式离线运行（详见 `docs/START_GUIDE.md` 第 4.2 节）。
+
+## 6. 验证
+
+启动服务后，在 PC/WSL 上运行预检：
+
+```bash
+export JETSON_ENDPOINT=http://10.42.0.2:8081
+export MODEL_REVISION=6721902bc4d61e50a3bfdb11dfb4cb626f05d102
+bash scripts/wsl/run_jetson_remote_preflight.sh
+```
+
+输出 `remote preflight: ok` 即环境就绪。
+
+## 常见问题
+
+- **`--runtime nvidia` 报错**：NVIDIA Container Toolkit 未安装或未配置，回到第 3 步。
+- **Docker 拉取镜像失败**：确认网络可访问 NVIDIA 镜像仓库（`nvcr.io`）。
+- **模型下载失败**：`bootstrap` 模式需要网络；离线模式要求模型已存在于
+  `~/vla/hf-cache`（通过 `HF_HOME` 挂载进容器）。

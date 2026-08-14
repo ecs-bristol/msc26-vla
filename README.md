@@ -74,7 +74,9 @@ MUJOCO_GL      = egl
 ## Requirements
 
 - Workstation: WSL2 Ubuntu with Python 3.12, an NVIDIA GPU, and EGL-capable MuJoCo.
-- Jetson: Orin Nano with Docker and NVIDIA Container Toolkit (`--runtime nvidia`).
+- Jetson: Orin Nano with JetPack, Docker, and NVIDIA Container Toolkit
+  (`--runtime nvidia`). Full Jetson environment setup:
+  [`docs/JETSON_SETUP.md`](docs/JETSON_SETUP.md).
 - Network access to Hugging Face on first run (models and datasets are cached under `HF_HOME`).
 
 ## Quick start

@@ -78,6 +78,9 @@ python -c "import libero; print(libero.__file__)"                # 能 import �
 
 ### 3.2 Jetson（推理侧）
 
+> Jetson 系统级环境配置（JetPack、Docker、NVIDIA Container Toolkit、代码上板）
+> 详见 `docs/JETSON_SETUP.md`。
+
 ```bash
 # 1. 把项目代码放到 Jetson 家目录（与 WSL 使用同一份代码）
 mkdir -p ~/vla/project
