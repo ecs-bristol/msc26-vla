@@ -5,13 +5,17 @@ This folder is the only retained experiment evidence for the current project dir
 ## PC-Local Official Baseline
 
 - Runtime: WSL Ubuntu with the official `lerobot-eval` CLI.
-- Simulator: LIBERO Spatial, one episode for each of ten tasks.
+- Simulator: LIBERO, one episode for each of ten tasks per suite.
 - Checkpoint: `HuggingFaceVLA/smolvla_libero`.
 - Revision: `6721902bc4d61e50a3bfdb11dfb4cb626f05d102`.
 - Precision: FP16.
 - Episode length: 280 steps.
-- Result: 8 / 10 tasks successful (80%).
-- Primary record: `pc_local/eval_info.json`.
+
+| Suite | Success | Failed tasks | Primary record |
+|---|---|---|---|
+| libero_spatial | 8/10 (80%) | 2, 7 | `pc_local/libero_spatial_eval_info.json` |
+| libero_object | 9/10 (90%) | 7 | `pc_local/libero_object_eval_info.json` |
+| libero_goal | 8/10 (80%) | 3, 4 | `pc_local/libero_goal_eval_info.json` |
 
 ## PC Simulator With Jetson Remote Inference
 

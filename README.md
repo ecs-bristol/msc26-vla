@@ -10,12 +10,21 @@ on the LIBERO Spatial benchmark under two deployments:
 The benchmark uses the **official `lerobot-eval`** CLI. The custom YAML runner in this repository is
 retired and kept only for historical provenance.
 
-## Results (LIBERO Spatial, 1 episode per task, 280 steps, FP16)
+## Results (1 episode per task, 280 steps, FP16)
 
-| Deployment | Success |
-|---|---|
-| PC-Local | 8/10 (80%) |
-| PC simulation + Jetson remote inference | 9/10 (90%) |
+### PC-Local
+
+| Suite | Success | Failed tasks |
+|---|---|---|
+| libero_spatial | 8/10 (80%) | 2, 7 |
+| libero_object | 9/10 (90%) | 7 |
+| libero_goal | 8/10 (80%) | 3, 4 |
+
+### PC simulation + Jetson remote inference
+
+| Suite | Success | Failed tasks |
+|---|---|---|
+| libero_spatial | 9/10 (90%) | 7 |
 
 Detailed per-task records are in [`evidence/latest/`](evidence/latest/).
 
