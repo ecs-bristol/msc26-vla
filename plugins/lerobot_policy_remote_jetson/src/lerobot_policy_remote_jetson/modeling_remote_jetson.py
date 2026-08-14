@@ -105,6 +105,8 @@ class RemoteJetsonPolicy(PreTrainedPolicy):
             "episode_id": self._episode_id,
             "step_id": self._step_id,
             "round_trip_ms": (time.perf_counter() - started) * 1000.0,
+            "inference_ms": response.get("inference_ms"),
+            "service_latency_ms": response.get("service_latency_ms"),
             "checkpoint": self.config.checkpoint,
             "revision": self.config.revision,
             "instruction": request.get("instruction"),

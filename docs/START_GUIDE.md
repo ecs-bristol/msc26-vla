@@ -165,7 +165,7 @@ N_EPISODES=1 bash scripts/wsl/run_official_jetson_remote_eval.sh
 <output_dir>/
   eval_info.json                  # 汇总指标 + 每任务成功率
   videos/libero_spatial_<task_id>/eval_episode_0.mp4   # 每任务视频
-  remote_transport.jsonl          # 仅 Jetson 模式：每步 HTTP round-trip 延迟
+  remote_transport.jsonl          # 仅 Jetson 模式：每步网络与推理计时
 ```
 
 `eval_info.json` 关键字段：
@@ -173,6 +173,16 @@ N_EPISODES=1 bash scripts/wsl/run_official_jetson_remote_eval.sh
 - `overall.pc_success`：总成功率（如 80.0 = 8/10）
 - `per_task[].metrics.successes`：每个任务是否成功
 - `per_group.libero_spatial.n_episodes`：评估集数
+
+`remote_transport.jsonl`（仅 Jetson 远程模式）每行关键字段：
+
+- `round_trip_ms`：端到端往返时间（上行传输 + Jetson 处理 + 下行传输 + 解析）
+- `inference_ms`：板子上模型推理的纯用时（预处理 + 前向 + 后处理）
+- `service_latency_ms`：Jetson 服务端收到请求到发出响应的总处理时间
+- 网络开销估算：`round_trip_ms − service_latency_ms`
+
+> 报告延迟时建议同时给出 `round_trip_ms`（系统端到端）和 `inference_ms`（板子算力），
+> 两者含义不同，不要混为一谈。
 
 当前已确认基线（2026-08-13，证据在 `evidence/latest/`）：
 

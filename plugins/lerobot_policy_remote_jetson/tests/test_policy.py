@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import torch
 
@@ -27,7 +29,13 @@ class FakeSession:
         self.calls.append((url, json, timeout))
         if url.endswith("/reset"):
             return FakeResponse({"status": "ok"})
-        return FakeResponse({"action": [0.1, 0.0, -0.1, 0.0, 0.0, 0.0, 1.0]})
+        return FakeResponse(
+            {
+                "action": [0.1, 0.0, -0.1, 0.0, 0.0, 0.0, 1.0],
+                "inference_ms": 123.4,
+                "service_latency_ms": 130.0,
+            }
+        )
 
 
 def _observation():
@@ -69,3 +77,26 @@ def test_policy_processors_are_identity_pipelines():
         else:
             assert processed[key] == value
     assert restored is action
+
+
+def test_policy_telemetry_records_server_timing(tmp_path):
+    session = FakeSession()
+    telemetry = tmp_path / "transport.jsonl"
+    config = RemoteJetsonConfig(
+        endpoint="http://10.42.0.2:8081",
+        device="cpu",
+        telemetry_path=str(telemetry),
+    )
+    policy = RemoteJetsonPolicy(config, session=session)
+
+    policy.reset()
+    policy.select_action(_observation())
+
+    lines = telemetry.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 2
+    record = json.loads(lines[1])
+    assert record["event"] == "predict"
+    assert record["inference_ms"] == 123.4
+    assert record["service_latency_ms"] == 130.0
+    assert record["round_trip_ms"] > 0
+    assert record["server_metadata"] == {}
