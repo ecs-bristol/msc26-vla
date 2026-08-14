@@ -19,6 +19,29 @@ retired and kept only for historical provenance.
 
 Detailed per-task records are in [`evidence/latest/`](evidence/latest/).
 
+## Getting the code
+
+Clone the repository and switch to the benchmark branch (requires an SSH key
+linked to your GitHub account):
+
+```bash
+git clone git@github.com:ecs-bristol/msc26-vla.git
+cd msc26-vla
+git checkout smolvla-benchmark
+```
+
+If you have not set up SSH keys yet, follow GitHub's official guide:
+<https://docs.github.com/en/authentication/connecting-to-github-with-ssh>
+
+Alternative over HTTPS (prompts for your GitHub username and a personal access
+token instead of your password):
+
+```bash
+git clone https://github.com/ecs-bristol/msc26-vla.git
+cd msc26-vla
+git checkout smolvla-benchmark
+```
+
 ## Architecture
 
 - **WSL Ubuntu** owns the LIBERO simulator, MuJoCo, rollout execution, success detection, video
