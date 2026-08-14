@@ -3,6 +3,12 @@
 本文档说明如何在 Jetson Orin Nano 上搭建 SmolVLA 推理服务所需的环境。
 仓库内的 `docker/jetson/Dockerfile` 和 `scripts/jetson/` 都假设以下环境已就绪。
 
+> **如果这台 Jetson 已经由实验室/同学配置过**（Docker 镜像
+> `libero-smolvla:jetson-0.1` 已构建、`~/vla/hf-cache` 已有模型缓存），你
+> **不需要**重复执行第 0–5 节。直接用 SSH 登录（第 1 节）验证环境（第 6 节），
+> 然后按 `docs/START_GUIDE.md` 第 4.2 节运行即可。
+> 每台 PC 只需各自配置 WSL 环境（`docs/START_GUIDE.md` 第 3.1 节）。
+
 ## 0. 系统要求
 
 - 设备：Jetson Orin Nano（或其他 Orin 系列）
