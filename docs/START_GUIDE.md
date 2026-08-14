@@ -112,6 +112,11 @@ bash scripts/wsl/run_official_pc_local_eval.sh
 
 结果写入：`~/vla/results/libero_spatial_pc_local_<UTC时间戳>/`
 
+> 默认跑 `libero_spatial`。也可以跑其他套件（需已缓存对应数据集）：
+> `SUITE=libero_object bash scripts/wsl/run_official_pc_local_eval.sh`
+> `SUITE=libero_goal bash scripts/wsl/run_official_pc_local_eval.sh`
+> `SUITE=libero_10 EPISODE_LENGTH=520 bash scripts/wsl/run_official_pc_local_eval.sh`
+
 ### 4.2 实验 B：PC 模拟 + Jetson 远程推理
 
 需要 **两个终端**：
@@ -198,6 +203,8 @@ N_EPISODES=1 bash scripts/wsl/run_official_jetson_remote_eval.sh
 | `HF_HOME` | `~/vla/hf-cache` | 模型/数据集缓存 |
 | `JETSON_ENDPOINT` | （必须设置） | Jetson 服务地址 |
 | `N_EPISODES` | `1` | 每任务 episode 数 |
+| `SUITE` | `libero_spatial` | 套件：`libero_spatial` / `libero_object` / `libero_goal` / `libero_10` |
+| `EPISODE_LENGTH` | `280` | 每集最大步数（`libero_10` 建议 520） |
 | `OUTPUT_ROOT` | `~/vla/results` | 结果根目录 |
 | `MUJOCO_GL` | `egl` | MuJoCo 渲染后端 |
 | `JETSON_IMAGE` | `libero-smolvla:jetson-0.1` | Jetson Docker 镜像名 |
