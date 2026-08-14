@@ -89,6 +89,25 @@ bash scripts/wsl/run_jetson_remote_preflight.sh
 
 输出 `remote preflight: ok` 即环境就绪。
 
+## 7. 多人轮流使用同一台 Jetson
+
+本项目设计为「一台 Jetson + 各自 PC/WSL」的轮流使用模式，请遵守以下约定：
+
+- **同一时刻只允许一个人做 Jetson 远程推理**：SmolVLA 推理占用 GPU 显存和算力，
+  并发会互相拖慢甚至 OOM。PC-local 模式不占用 Jetson，可以多人同时跑。
+- **服务用完即关**：`start_smolvla_libero_service.sh` 在终端前台运行，按
+  `Ctrl+C` 停止。不关闭会导致下一个人无法启动（端口 8081 被占用）。若提示
+  `Address already in use`，在 Jetson 上执行 `docker ps` 查看残留容器。
+- **Jetson 端 `~/vla/project` 是共享代码**：所有人都用它启动服务镜像，请保持
+  与 GitHub `smolvla-benchmark` 分支同步：
+  ```bash
+  cd ~/vla/project && git pull
+  ```
+- **结果互不干扰**：每个人的评估结果写在各自 WSL 的 `~/vla/results/` 下，
+  不会覆盖他人。
+- **模型缓存共享**：`~/vla/hf-cache` 在 Jetson 上共享，首次 `bootstrap`
+  下载一次即可，之后大家都能 `offline` 使用。
+
 ## 常见问题
 
 - **`--runtime nvidia` 报错**：NVIDIA Container Toolkit 未安装或未配置，回到第 3 步。
