@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lerobot_policy_remote_jetson"
+version = "0.1.0"
+description = "Thin LeRobot policy plugin for HTTP inference on NVIDIA Jetson"
+requires-python = ">=3.12"
+dependencies = [
+  "lerobot>=0.6.1,<0.7",
+  "numpy>=2,<3",
+  "Pillow>=11,<13",
+  "requests>=2.32,<3",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
