@@ -135,6 +135,7 @@ ssh msc26vla@10.42.0.2
 - 首次连接会询问是否信任 host key，输入 `yes` 回车即可
 - 前提：Jetson 已开机、SSH 服务已启用（`sudo systemctl enable --now ssh`）、
   与 PC 在同一网络且 IP 为 `10.42.0.2`（IP 不确定时在 Jetson 上运行 `ip addr` 查看）
+  - Jetson ↔ PC 的接线与两端静态 IP 配置：`docs/JETSON_PC_NETWORK.md`
 
 可选：配置免密登录（避免每次输入密码）：
 

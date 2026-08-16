@@ -19,6 +19,9 @@
 
 ## 1. 启用 SSH
 
+> 先把 Jetson 和 PC 连好并配好 IP：接线与两端静态 IP 配置见
+> `docs/JETSON_PC_NETWORK.md`（默认 Jetson=`10.42.0.2`、PC=`10.42.0.1`，直连网段 `10.42.0.0/24`）。
+
 ```bash
 sudo systemctl enable --now ssh
 ip addr   # 记下 Jetson 的 IP（本文档示例固定为 10.42.0.2）
