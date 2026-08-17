@@ -1,0 +1,24 @@
+{
+  "command": [
+    "lerobot-eval",
+    "--output_dir=/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/3_responsive",
+    "--policy.path=HuggingFaceVLA/smolvla_libero",
+    "--env.type=libero",
+    "--env.task=libero_object",
+    "--eval.batch_size=1",
+    "--eval.n_episodes=3",
+    "--env.max_parallel_tasks=1",
+    "--env.control_mode=relative",
+    "--env.init_states=true",
+    "--env.hard_reset=true",
+    "--env.episode_length=500",
+    "--seed=878448593",
+    "--policy.num_steps=10",
+    "--policy.n_action_steps=1",
+    "--env.task_ids=[3]"
+  ],
+  "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/3_responsive",
+  "returncode": 0,
+  "duration_seconds": 569.577,
+  "executed": true
+}

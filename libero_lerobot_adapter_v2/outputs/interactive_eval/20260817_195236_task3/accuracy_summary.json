@@ -1,0 +1,149 @@
+{
+  "timestamp": "2026-08-17T19:53:04",
+  "target": "bbq sauce",
+  "task_id": 3,
+  "task_instruction": "pick up the bbq sauce and place it in the basket",
+  "recognition_method": "grounding_dino_rgb",
+  "detections": [
+    {
+      "label": "orange juice",
+      "score": 0.3082,
+      "box": [
+        211.4,
+        188.3,
+        233.5,
+        227.7
+      ]
+    },
+    {
+      "label": "chocolate pudding",
+      "score": 0.2812,
+      "box": [
+        149.2,
+        219.5,
+        183.9,
+        260.0
+      ]
+    },
+    {
+      "label": "bbq sauce",
+      "score": 0.2116,
+      "box": [
+        251.4,
+        191.9,
+        280.8,
+        241.8
+      ]
+    },
+    {
+      "label": "orange juice",
+      "score": 0.2297,
+      "box": [
+        146.0,
+        141.4,
+        171.0,
+        183.3
+      ]
+    },
+    {
+      "label": "soup bb",
+      "score": 0.2034,
+      "box": [
+        255.4,
+        160.2,
+        280.5,
+        186.2
+      ]
+    },
+    {
+      "label": "chocolate pudding",
+      "score": 0.2532,
+      "box": [
+        142.8,
+        214.1,
+        191.0,
+        265.7
+      ]
+    },
+    {
+      "label": "orange juice",
+      "score": 0.2449,
+      "box": [
+        146.9,
+        158.2,
+        170.1,
+        182.8
+      ]
+    },
+    {
+      "label": "orange juice",
+      "score": 0.2223,
+      "box": [
+        207.2,
+        184.9,
+        237.5,
+        232.0
+      ]
+    },
+    {
+      "label": "orange juice",
+      "score": 0.2062,
+      "box": [
+        200.4,
+        180.8,
+        244.3,
+        239.1
+      ]
+    }
+  ],
+  "selection_method": "automatic_random",
+  "mode": "accurate",
+  "seed": 878448593,
+  "stages": [
+    {
+      "name": "native",
+      "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/1_native",
+      "returncode": 0,
+      "successes": [
+        true,
+        true,
+        false
+      ],
+      "success_count": 2,
+      "attempts": 3,
+      "success_rate": 66.67
+    },
+    {
+      "name": "smooth",
+      "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth",
+      "returncode": 0,
+      "successes": [
+        true,
+        true,
+        false
+      ],
+      "success_count": 2,
+      "attempts": 3,
+      "success_rate": 66.67
+    },
+    {
+      "name": "responsive",
+      "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/3_responsive",
+      "returncode": 0,
+      "successes": [
+        true,
+        true,
+        false
+      ],
+      "success_count": 2,
+      "attempts": 3,
+      "success_rate": 66.67
+    }
+  ],
+  "success": true,
+  "best_strategy": "native",
+  "successes": 2,
+  "attempts": 3,
+  "success_rate": 66.67,
+  "run_directory": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3"
+}

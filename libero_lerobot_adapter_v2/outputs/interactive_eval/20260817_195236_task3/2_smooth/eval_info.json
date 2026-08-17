@@ -1,0 +1,59 @@
+{
+  "per_task": [
+    {
+      "task_group": "libero_object",
+      "task_id": 3,
+      "metrics": {
+        "sum_rewards": [
+          1.0,
+          1.0,
+          0.0
+        ],
+        "max_rewards": [
+          1.0,
+          1.0,
+          0.0
+        ],
+        "successes": [
+          true,
+          true,
+          false
+        ],
+        "video_paths": [
+          "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_0.mp4",
+          "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_1.mp4",
+          "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_2.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    }
+  ],
+  "per_group": {
+    "libero_object": {
+      "avg_sum_reward": 0.6666666666666666,
+      "avg_max_reward": 0.6666666666666666,
+      "pc_success": 66.66666666666666,
+      "n_episodes": 3,
+      "video_paths": [
+        "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_0.mp4",
+        "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_1.mp4",
+        "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_2.mp4"
+      ],
+      "predicted_video_paths": []
+    }
+  },
+  "overall": {
+    "avg_sum_reward": 0.6666666666666666,
+    "avg_max_reward": 0.6666666666666666,
+    "pc_success": 66.66666666666666,
+    "n_episodes": 3,
+    "eval_s": 123.74752187728882,
+    "eval_ep_s": 41.24917403856913,
+    "video_paths": [
+      "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_0.mp4",
+      "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_1.mp4",
+      "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3/2_smooth/videos/libero_object_3/eval_episode_2.mp4"
+    ],
+    "predicted_video_paths": []
+  }
+}
