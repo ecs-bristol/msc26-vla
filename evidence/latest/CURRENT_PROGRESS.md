@@ -37,10 +37,10 @@ This folder is the only retained experiment evidence for the current project dir
 
 - Harness: PC-local official `lerobot-eval` through the `smolvla_int4` LeRobot plugin.
 - Method: self-contained per-group weight quantization of the SmolVLA language transformer.
-- int8 language-only (5 ep/task): 10 steps 78.0%, 2 steps 80.0% vs fp16 72.0%.
+- int8 language-only (5 ep/task): 10 steps 78.0%, 2 steps 80.0%; int8 backbone: 10 steps 78.0%, 2 steps 78.0% (vs fp16 72.0%).
 - Negative result: uniform 4-bit PTQ degrades success (backbone 30%, language-only 10%, single-ep smoke).
-- Memory: weights 1217.9 -> 929.4 MB (-23.7%); peak VRAM 1280.8 -> 992.9 MB (-22.5%).
-- Latency: int8 is slightly faster than fp16 at every num_steps; ns2 mean 133ms.
+- Memory: language-only weights -23.7% / peak -22.5%; backbone weights -31.4% / peak -24.8%.
+- Latency: language-only is slightly faster than fp16; backbone is comparable at ns2 and slightly slower at ns10.
 - Records: `pc_local/int4/quant_summary.csv`, `quant_bench.csv`, and figures.
 
 ## Retained Operational Path
