@@ -25,6 +25,24 @@ This folder is the only retained experiment evidence for the current project dir
 - Result: 9 / 10 tasks successful (90%).
 - Primary records: `jetson_remote/eval_info.json` and `jetson_remote/remote_transport.jsonl`.
 
+## Software Optimization: Flow-Matching Step Sweep (Experiment A)
+
+- Harness: PC-local official `lerobot-eval`, `libero_spatial`, 5 episodes per task.
+- Method: sweep `--policy.num_steps` over 10, 8, 5, 3, 2 with the same fp16 checkpoint.
+- Success rate (5 ep/task, 50 episodes): 10 steps 72.0%, 5 steps 72.0%, 2 steps 72.0%.
+- Mean episode time: 90.8s (10) -> 63.1s (5) -> 46.8s (2), a 48% reduction at 2 steps.
+- Records: `pc_local/num_steps/num_steps_summary.csv`, `num_steps_per_task.csv`, and figures.
+
+## Software Optimization: VLM Weight Quantization (Experiment B)
+
+- Harness: PC-local official `lerobot-eval` through the `smolvla_int4` LeRobot plugin.
+- Method: self-contained per-group weight quantization of the SmolVLA language transformer.
+- int8 language-only (5 ep/task): 10 steps 78.0%, 2 steps 80.0% vs fp16 72.0%.
+- Negative result: uniform 4-bit PTQ degrades success (backbone 30%, language-only 10%, single-ep smoke).
+- Memory: weights 1217.9 -> 929.4 MB (-23.7%); peak VRAM 1280.8 -> 992.9 MB (-22.5%).
+- Latency: int8 is slightly faster than fp16 at every num_steps; ns2 mean 133ms.
+- Records: `pc_local/int4/quant_summary.csv`, `quant_bench.csv`, and figures.
+
 ## Retained Operational Path
 
 1. Start the Jetson policy service with `scripts/jetson/start_smolvla_libero_service.sh`.

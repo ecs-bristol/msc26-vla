@@ -1,0 +1,9 @@
+config_label,quant_method,num_steps,scope,n_episodes_per_task,overall_success_pct
+fp16_baseline,none,10,none,5,72.0
+fp16_baseline,none,5,none,5,72.0
+fp16_baseline,none,2,none,5,72.0
+int4_backbone_smoke,int4_groupwise,10,backbone,1,30.0
+int4_language_smoke,int4_groupwise,10,language,1,10.0
+int8_language_smoke,int8_groupwise,10,language,1,100.0
+int8_language,int8_groupwise,10,language,5,78.0
+int8_language,int8_groupwise,2,language,5,80.0
