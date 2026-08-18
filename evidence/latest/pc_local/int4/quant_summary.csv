@@ -10,3 +10,5 @@ int8_language,int8_groupwise,2,language,5,80.0
 int8_backbone_smoke,int8_groupwise,10,backbone,1,100.0
 int8_backbone,int8_groupwise,10,backbone,5,78.0
 int8_backbone,int8_groupwise,2,backbone,5,78.0
+mixed_smoke,mixed,2,mixed,1,80.0
+mixed,mixed,2,mixed,5,76.0

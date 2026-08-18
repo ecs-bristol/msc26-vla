@@ -41,6 +41,7 @@ This folder is the only retained experiment evidence for the current project dir
 - Negative result: uniform 4-bit PTQ degrades success (backbone 30%, language-only 10%, single-ep smoke).
 - Memory: language-only weights -23.7% / peak -22.5%; backbone weights -31.4% / peak -24.8%.
 - Latency: language-only is slightly faster than fp16; backbone is comparable at ns2 and slightly slower at ns10.
+- Mixed precision (vision 4-bit + connector 4-bit + text 8-bit): ns2 76.0%, weights -35.3%, latency 179ms (slower than int8 due to 4-bit dequant overhead).
 - Records: `pc_local/int4/quant_summary.csv`, `quant_bench.csv`, and figures.
 
 ## Retained Operational Path
