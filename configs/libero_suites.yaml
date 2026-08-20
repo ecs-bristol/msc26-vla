@@ -1,0 +1,13 @@
+suites:
+  - key: libero_spatial
+    backend_key: libero_spatial
+    task_count: 10
+    dataset_directory: datasets/libero_spatial
+  - key: libero_object
+    backend_key: libero_object
+    task_count: 10
+    dataset_directory: datasets/libero_object
+  - key: libero_goal
+    backend_key: libero_goal
+    task_count: 10
+    dataset_directory: datasets/libero_goal

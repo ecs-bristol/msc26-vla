@@ -1,0 +1,236 @@
+{
+  "per_task": [
+    {
+      "task_group": "libero_object",
+      "task_id": 0,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_0/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 1,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_1/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 2,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_2/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 3,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_3/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 4,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_4/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 5,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_5/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 6,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_6/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 7,
+      "metrics": {
+        "sum_rewards": [
+          0.0
+        ],
+        "max_rewards": [
+          0.0
+        ],
+        "successes": [
+          false
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_7/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 8,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_8/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    },
+    {
+      "task_group": "libero_object",
+      "task_id": 9,
+      "metrics": {
+        "sum_rewards": [
+          1.0
+        ],
+        "max_rewards": [
+          1.0
+        ],
+        "successes": [
+          true
+        ],
+        "video_paths": [
+          "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_9/eval_episode_0.mp4"
+        ],
+        "predicted_video_paths": []
+      }
+    }
+  ],
+  "per_group": {
+    "libero_object": {
+      "avg_sum_reward": 0.9,
+      "avg_max_reward": 0.9,
+      "pc_success": 90.0,
+      "n_episodes": 10,
+      "video_paths": [
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_0/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_1/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_2/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_3/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_4/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_5/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_6/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_7/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_8/eval_episode_0.mp4",
+        "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_9/eval_episode_0.mp4"
+      ],
+      "predicted_video_paths": []
+    }
+  },
+  "overall": {
+    "avg_sum_reward": 0.9,
+    "avg_max_reward": 0.9,
+    "pc_success": 90.0,
+    "n_episodes": 10,
+    "eval_s": 840.2654266357422,
+    "eval_ep_s": 84.02654268741608,
+    "video_paths": [
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_0/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_1/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_2/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_3/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_4/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_5/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_6/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_7/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_8/eval_episode_0.mp4",
+      "/home/huang_yuhang/vla/results/libero_object_pc_local_20260814T153211Z/videos/libero_object_9/eval_episode_0.mp4"
+    ],
+    "predicted_video_paths": []
+  }
+}

@@ -1,0 +1,34 @@
+schema_version: 1
+base_checkpoint: lerobot/smolvla_libero
+training_device: pc_or_gpu_host
+adapter_type: lora
+evaluation_protocol: engineering_demo_settle_0
+seed: 42
+selected_task_ids: [3, 0, 1, 2, 4]
+selection_run_ids:
+  screening_preliminary: run_20260810T132935137031Z_0001
+  selected_5rep_preliminary: run_20260810T133629892332Z_0001
+  selected_5rep_final: run_20260810T144233795702Z_0001
+action_control_ablation_run_ids:
+  identity_preliminary: run_20260810T133214754419Z_0001
+  scaled_075_preliminary: run_20260810T133325949465Z_0001
+  identity_final: run_20260810T143849778241Z_0001
+  scaled_075_final: run_20260810T144023814358Z_0001
+capability_gate:
+  artifact: outputs/capability_gate_selected_5rep_final_b40fadb.json
+  passed: false
+  successful_task_count: 1
+  mean_success_rate: 0.12
+training_status: not_started_gate_failed
+retained_action_control:
+  mode: identity
+  translation_scale: 1.0
+  rotation_scale: 1.0
+demonstration_hdf5_ids:
+  "3": pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate_demo.hdf5
+  "0": pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate_demo.hdf5
+  "1": pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate_demo.hdf5
+  "2": pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate_demo.hdf5
+  "4": pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate_demo.hdf5
+held_out_state_ids: [1, 2, 3, 4]
+adapter_output_path: outputs/adapters/smolvla_libero_spatial_selected_5rep_lora_20260810

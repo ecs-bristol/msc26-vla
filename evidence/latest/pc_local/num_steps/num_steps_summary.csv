@@ -1,0 +1,9 @@
+run_type,num_steps,n_episodes_per_task,overall_success_pct,eval_ep_s
+screening,10,1,80.0,80.7
+screening,8,1,80.0,74.8
+screening,5,1,100.0,45.6
+screening,3,1,100.0,38.5
+screening,2,1,100.0,36.5
+confirmation,10,5,72.0,90.8
+confirmation,5,5,72.0,63.1
+confirmation,2,5,72.0,46.8
