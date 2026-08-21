@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import importlib.metadata
 import json
 import platform
+import shutil
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -52,6 +54,58 @@ def _build_manifest(args: argparse.Namespace) -> dict[str, object]:
     }
 
 
+def _materialize_manifest(args: argparse.Namespace) -> tuple[Path, Path, str]:
+    """Create or verify the pre-evaluation paired trial manifest.
+
+    A caller may supply a stable path shared by Fixed-H and Adaptive runs.  We
+    always copy the verified bytes into the current output directory so each
+    result remains self-contained and auditable.
+    """
+    expected = _build_manifest(args)
+    manifest_path = args.manifest_path or args.output_dir / "paired_seed_manifest.json"
+    manifest_path = manifest_path.expanduser()
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if manifest_path.exists():
+        actual = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if actual != expected:
+            raise ValueError(
+                "existing paired manifest does not match suite, seed, or episodes-per-task"
+            )
+    else:
+        manifest_path.write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
+
+    output_manifest_path = args.output_dir / "paired_seed_manifest.json"
+    if manifest_path.resolve() != output_manifest_path.resolve():
+        shutil.copyfile(manifest_path, output_manifest_path)
+
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    return manifest_path, output_manifest_path, digest
+
+
+def _write_launcher_resolved_config(
+    args: argparse.Namespace, manifest_path: Path, manifest_sha256: str
+) -> None:
+    """Record launcher-resolved inputs when the evaluator process is exec'd."""
+    if not args.write_launcher_resolved_config:
+        return
+    payload = {
+        "source": "launcher-resolved inputs before lerobot-eval exec",
+        "suite": args.suite,
+        "episodes_per_task": args.episodes_per_task,
+        "seed": args.seed,
+        "checkpoint": args.checkpoint,
+        "checkpoint_revision": args.checkpoint_revision,
+        "num_steps": args.num_steps,
+        "episode_length": args.episode_length,
+        "paired_seed_manifest_path": str(manifest_path.resolve()),
+        "paired_seed_manifest_sha256": manifest_sha256,
+    }
+    (args.output_dir / "resolved_config.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
 def _write_summary_if_available(output_dir: Path) -> None:
     """Produce a derived CSV only from the evaluator's existing eval_info.json."""
     info_path = output_dir / "eval_info.json"
@@ -92,18 +146,21 @@ def main() -> None:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--checkpoint-revision", required=True)
-    parser.add_argument("--num-steps", type=int, required=True)
+    parser.add_argument("--num-steps", type=int)
     parser.add_argument("--episode-length", type=int, required=True)
     parser.add_argument("--exit-code", type=int)
+    parser.add_argument("--manifest-path", type=Path)
+    parser.add_argument("--write-launcher-resolved-config", action="store_true")
     args = parser.parse_args()
 
-    if args.episodes_per_task < 1 or args.seed < 0 or args.num_steps < 1:
-        raise ValueError("episodes, seed, and num_steps must be positive/non-negative")
+    if args.episodes_per_task < 1 or args.seed < 0:
+        raise ValueError("episodes and seed must be positive/non-negative")
+    if args.num_steps is not None and args.num_steps < 1:
+        raise ValueError("num_steps must be positive")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    (args.output_dir / "paired_seed_manifest.json").write_text(
-        json.dumps(_build_manifest(args), indent=2) + "\n", encoding="utf-8"
-    )
+    manifest_path, output_manifest_path, manifest_sha256 = _materialize_manifest(args)
+    _write_launcher_resolved_config(args, manifest_path, manifest_sha256)
     metadata = {
         "schema_version": 1,
         "captured_at_utc": datetime.now(UTC).isoformat(),
@@ -130,6 +187,9 @@ def main() -> None:
         "num_steps": args.num_steps,
         "episode_length": args.episode_length,
         "exit_code": args.exit_code,
+        "paired_seed_manifest_path": str(manifest_path.resolve()),
+        "paired_seed_manifest_output_path": str(output_manifest_path.resolve()),
+        "paired_seed_manifest_sha256": manifest_sha256,
     }
     (args.output_dir / "provenance.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"

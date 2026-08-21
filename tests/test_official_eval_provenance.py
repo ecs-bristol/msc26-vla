@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -86,3 +87,19 @@ def test_provenance_derives_summary_only_from_existing_eval_info(tmp_path: Path)
                 "success_rate": "0.5",
             }
         ]
+
+
+def test_provenance_reuses_verified_manifest_and_records_its_hash(tmp_path: Path) -> None:
+    shared_manifest = tmp_path / "paired-inputs" / "spatial-seed-1000.json"
+    fixed_output = tmp_path / "fixed"
+    adaptive_output = tmp_path / "adaptive"
+
+    subprocess.run(_command(fixed_output, "--manifest-path", str(shared_manifest)), check=True)
+    subprocess.run(_command(adaptive_output, "--manifest-path", str(shared_manifest)), check=True)
+
+    expected_hash = hashlib.sha256(shared_manifest.read_bytes()).hexdigest()
+    for output_dir in (fixed_output, adaptive_output):
+        provenance = json.loads((output_dir / "provenance.json").read_text())
+        assert provenance["paired_seed_manifest_path"] == str(shared_manifest.resolve())
+        assert provenance["paired_seed_manifest_sha256"] == expected_hash
+        assert (output_dir / "paired_seed_manifest.json").read_bytes() == shared_manifest.read_bytes()

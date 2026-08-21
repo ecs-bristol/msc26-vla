@@ -13,6 +13,7 @@ EVAL_SEED="${EVAL_SEED:-1000}"
 RUN_STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 OUTPUT_DIR="${OUTPUT_DIR:-$OUTPUT_ROOT/${SUITE}_pc_local_$RUN_STAMP}"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PAIRED_SEED_MANIFEST="${PAIRED_SEED_MANIFEST:-$OUTPUT_DIR/paired_seed_manifest.json}"
 
 export HF_HOME MUJOCO_GL="${MUJOCO_GL:-egl}"
 mkdir -p "$OUTPUT_DIR"
@@ -57,7 +58,8 @@ python3 "$PROJECT_ROOT/scripts/analysis/capture_official_eval_provenance.py" \
   --checkpoint "$CHECKPOINT" \
   --checkpoint-revision "$MODEL_REVISION" \
   --num-steps "$NUM_STEPS" \
-  --episode-length "$EPISODE_LENGTH"
+  --episode-length "$EPISODE_LENGTH" \
+  --manifest-path "$PAIRED_SEED_MANIFEST"
 
 set +e
 "${cmd[@]}" 2>&1 | tee "$OUTPUT_DIR/stdout_stderr.log"
@@ -78,6 +80,7 @@ python3 "$PROJECT_ROOT/scripts/analysis/capture_official_eval_provenance.py" \
   --checkpoint-revision "$MODEL_REVISION" \
   --num-steps "$NUM_STEPS" \
   --episode-length "$EPISODE_LENGTH" \
+  --manifest-path "$PAIRED_SEED_MANIFEST" \
   --exit-code "$status"
 
 exit "$status"
