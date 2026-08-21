@@ -53,16 +53,21 @@ def test_official_pc_local_launcher_uses_lerobot_eval() -> None:
     content = launcher.read_text(encoding="utf-8")
 
     for required in (
-        "exec lerobot-eval",
-        '--policy.path="$CHECKPOINT"',
-        '--policy.pretrained_revision="$MODEL_REVISION"',
+        "lerobot-eval",
+        '"--policy.path=$CHECKPOINT"',
+        '"--policy.pretrained_revision=$MODEL_REVISION"',
+        '"--policy.num_steps=$NUM_STEPS"',
         "--env.type=libero",
-        "--env.task=libero_spatial",
-        "--env.episode_length=280",
-        '--eval.n_episodes="$N_EPISODES"',
+        '"--env.task=$SUITE"',
+        '"--env.episode_length=$EPISODE_LENGTH"',
+        '"--eval.n_episodes=$N_EPISODES"',
         "--eval.batch_size=1",
         "--env.max_parallel_tasks=1",
-        '--output_dir="$OUTPUT_DIR"',
+        '"--seed=$EVAL_SEED"',
+        '"--output_dir=$OUTPUT_DIR"',
+        "capture_official_eval_provenance.py",
+        "paired_seed_manifest.json",
+        "resolved_config.log",
     ):
         assert required in content
 

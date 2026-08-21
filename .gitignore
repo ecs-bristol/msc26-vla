@@ -8,6 +8,7 @@ __pycache__/
 
 # Virtual environments
 .venv/
+.venv_wsl_lerobot_v061/
 venv/
 env/
 

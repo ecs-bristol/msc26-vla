@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "suite": "libero_spatial",
+  "task_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  "seed_strategy": "For each task, LeRobot v0.6.1 resets episode_index i with EVAL_SEED + i when eval.batch_size=1.",
+  "initial_state_id": null,
+  "initial_state_provenance": "LeRobot LIBERO v0.6.1 does not expose a benchmark initial-state ID in eval_info.json; paired reset seeds are the controlled provenance.",
+  "rendered_manifest": "Each run writes paired_seed_manifest.json into its output directory."
+}
