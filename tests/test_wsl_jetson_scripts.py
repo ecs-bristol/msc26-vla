@@ -55,9 +55,16 @@ def test_official_pc_local_launcher_uses_lerobot_eval() -> None:
 
     for required in (
         "lerobot-eval",
-        '"--policy.path=$CHECKPOINT"',
-        '"--policy.pretrained_revision=$MODEL_REVISION"',
+        'POLICY_MODE="${POLICY_MODE:?POLICY_MODE must be native_h1, native_h20, or adaptive_fixed_h20}"',
+        "native_h1|native_h20)",
+        "adaptive_fixed_h20)",
+        '"--policy.base_checkpoint=$CHECKPOINT"',
+        '"--policy.n_action_steps=$native_n_action_steps"',
+        '"--policy.base_snapshot_path=$BASE_SNAPSHOT_PATH"',
+        '"--policy.vlm_snapshot_path=$VLM_SNAPSHOT_PATH"',
+        '"--policy.fixed_h=$fixed_h"',
         '"--policy.num_steps=$NUM_STEPS"',
+        '"--policy.chunk_size=$CHUNK_SIZE"',
         "--env.type=libero",
         '"--env.task=$SUITE"',
         '"--env.episode_length=$EPISODE_LENGTH"',
@@ -74,6 +81,7 @@ def test_official_pc_local_launcher_uses_lerobot_eval() -> None:
         assert required in content
 
     assert "libero_platform run" not in content
+    assert "--trust_remote_code=false" not in content
 
 
 def test_plugin_install_launcher_uses_editable_no_dependency_install() -> None:

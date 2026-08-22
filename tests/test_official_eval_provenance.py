@@ -30,6 +30,17 @@ def _command(output_dir: Path, *extra: str) -> list[str]:
         "HuggingFaceVLA/smolvla_libero",
         "--checkpoint-revision",
         "revision",
+        "--policy-mode",
+        "adaptive_fixed_h20",
+        "--policy-type",
+        "smolvla_adaptive",
+        "--fixed-h",
+        "20",
+        "--chunk-size",
+        "50",
+        "--plugin-distribution",
+        "lerobot_policy_smolvla_adaptive",
+        "--write-launcher-resolved-config",
         "--num-steps",
         "2",
         "--episode-length",
@@ -57,6 +68,15 @@ def test_provenance_writes_paired_seed_manifest_and_metadata(tmp_path: Path) -> 
     assert provenance["num_steps"] == 2
     assert provenance["seed"] == 1000
     assert provenance["exit_code"] is None
+    assert provenance["policy_mode"] == "adaptive_fixed_h20"
+    assert provenance["policy_type"] == "smolvla_adaptive"
+    assert provenance["fixed_h"] == 20
+    assert provenance["native_n_action_steps"] is None
+    assert provenance["chunk_size"] == 50
+    resolved = json.loads((tmp_path / "resolved_config.json").read_text())
+    assert resolved["policy_mode"] == "adaptive_fixed_h20"
+    assert resolved["policy_type"] == "smolvla_adaptive"
+    assert resolved["fixed_h"] == 20
 
 
 def test_provenance_derives_summary_only_from_existing_eval_info(tmp_path: Path) -> None:

@@ -31,6 +31,13 @@ def _package_version(name: str) -> str | None:
         return None
 
 
+def _package_path(name: str) -> str | None:
+    try:
+        return str(importlib.metadata.distribution(name).locate_file(""))
+    except importlib.metadata.PackageNotFoundError:
+        return None
+
+
 def _build_manifest(args: argparse.Namespace) -> dict[str, object]:
     if args.suite != "libero_spatial":
         raise ValueError("paired manifest generation currently supports libero_spatial")
@@ -96,6 +103,18 @@ def _write_launcher_resolved_config(
         "seed": args.seed,
         "checkpoint": args.checkpoint,
         "checkpoint_revision": args.checkpoint_revision,
+        "policy_mode": args.policy_mode,
+        "policy_type": args.policy_type,
+        "native_n_action_steps": args.native_n_action_steps,
+        "fixed_h": args.fixed_h,
+        "chunk_size": args.chunk_size,
+        "plugin_distribution": args.plugin_distribution,
+        "plugin_distribution_version": _package_version(args.plugin_distribution)
+        if args.plugin_distribution
+        else None,
+        "plugin_distribution_path": _package_path(args.plugin_distribution)
+        if args.plugin_distribution
+        else None,
         "num_steps": args.num_steps,
         "episode_length": args.episode_length,
         "paired_seed_manifest_path": str(manifest_path.resolve()),
@@ -146,6 +165,12 @@ def main() -> None:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--checkpoint-revision", required=True)
+    parser.add_argument("--policy-mode", required=True)
+    parser.add_argument("--policy-type", required=True)
+    parser.add_argument("--native-n-action-steps", type=int)
+    parser.add_argument("--fixed-h", type=int)
+    parser.add_argument("--chunk-size", type=int, required=True)
+    parser.add_argument("--plugin-distribution")
     parser.add_argument("--num-steps", type=int)
     parser.add_argument("--episode-length", type=int, required=True)
     parser.add_argument("--exit-code", type=int)
@@ -157,6 +182,23 @@ def main() -> None:
         raise ValueError("episodes and seed must be positive/non-negative")
     if args.num_steps is not None and args.num_steps < 1:
         raise ValueError("num_steps must be positive")
+    if args.chunk_size != 50:
+        raise ValueError("the frozen protocol requires chunk_size=50")
+    if args.policy_mode in {"native_h1", "native_h20"}:
+        expected = 1 if args.policy_mode == "native_h1" else 20
+        if args.policy_type != "smolvla" or args.native_n_action_steps != expected:
+            raise ValueError("native policy mode and n_action_steps disagree")
+        if args.fixed_h is not None or args.plugin_distribution is not None:
+            raise ValueError("native policy provenance must not claim adaptive wrapper fields")
+    elif args.policy_mode == "adaptive_fixed_h20":
+        if args.policy_type != "smolvla_adaptive" or args.fixed_h != 20:
+            raise ValueError("adaptive policy mode requires smolvla_adaptive fixed_h=20")
+        if args.native_n_action_steps is not None:
+            raise ValueError("adaptive policy provenance must not claim native n_action_steps")
+        if args.plugin_distribution != "lerobot_policy_smolvla_adaptive":
+            raise ValueError("adaptive policy provenance requires its plugin distribution")
+    else:
+        raise ValueError(f"unsupported policy mode: {args.policy_mode}")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     manifest_path, output_manifest_path, manifest_sha256 = _materialize_manifest(args)
@@ -181,6 +223,18 @@ def main() -> None:
         "mujoco_gl": __import__("os").environ.get("MUJOCO_GL"),
         "checkpoint": args.checkpoint,
         "checkpoint_revision": args.checkpoint_revision,
+        "policy_mode": args.policy_mode,
+        "policy_type": args.policy_type,
+        "native_n_action_steps": args.native_n_action_steps,
+        "fixed_h": args.fixed_h,
+        "chunk_size": args.chunk_size,
+        "plugin_distribution": args.plugin_distribution,
+        "plugin_distribution_version": _package_version(args.plugin_distribution)
+        if args.plugin_distribution
+        else None,
+        "plugin_distribution_path": _package_path(args.plugin_distribution)
+        if args.plugin_distribution
+        else None,
         "suite": args.suite,
         "episodes_per_task": args.episodes_per_task,
         "seed": args.seed,

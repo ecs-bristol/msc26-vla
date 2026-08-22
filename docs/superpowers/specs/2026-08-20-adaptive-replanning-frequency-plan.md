@@ -1,124 +1,201 @@
-# SmolVLA 自适应重规划频率：实施与评测规划书
+# SmolVLA 自适应重规划频率：最终冻结实施与评测协议
 
-## 1. 目标与结论口径
+## 状态与边界
 
-在不改变 SmolVLA checkpoint、任务定义和 LIBERO 官方评测语义的前提下，按当前状态自适应地决定连续执行多少个动作后再调用模型重规划。
+本文件是实施 adaptive controller 前冻结的实验协议。除下文明确允许的开发/校准
+工作外，不得根据 pilot 或正式结果继续改变 controller、trigger 阈值、候选 horizon、
+deadline 或统计方法。
 
-项目的主要目标是降低端到端 rollout 时间；成功率采用非劣性目标，而不是预设会提升：相对固定 `n_action_steps=1` 基线，成功率下降不得超过 5 个百分点。只有达到该门槛，才将吞吐提升作为有效收益报告。
+不可变边界：
 
-本项目不把 `num_steps`（flow-matching 去噪步数）和 `n_action_steps`（动作重规划间隔）混为同一变量。正式对照固定 `num_steps=2`，因为已有 Spatial 50 集结果表明它与 `num_steps=10` 的成功率均为 72%，但每集时长由 90.8 s 降至 46.8 s。
+- checkpoint：`HuggingFaceVLA/smolvla_libero` 的冻结 immutable revision；
+- harness：官方 `lerobot-eval`；
+- 环境：`libero_spatial` 的 10 个任务、280 environment-step cap；
+- batch size=1、`max_parallel_tasks=1`、FP16、`num_steps=2`；
+- adaptive 不读取 reward、success 或 privileged state；
+- 不在 rollout 中修改 LeRobot 内部 `n_action_steps`；adaptive 使用项目自有
+  action buffer。
 
-## 2. 关键事实与实现原则
+`chunk_size=20` 是独立消融因素，不能直接并入主 adaptive 比较。主比较保持冻结
+checkpoint 的 `chunk_size=50`。
 
-SmolVLA 每次推理生成一个 action chunk；`n_action_steps` 决定内部队列一次允许消费的动作数量。`n_action_steps=1` 对应每步重新生成，值大于 1 对应短时开环执行。因此，运行时直接修改该配置字段不是可靠的自适应方案：已经生成的队列不会因此安全地更新。
+## 1. 研究问题、成功锚点与指标
 
-首版实现使用完整 action chunk 加项目自有的动作缓存：每次重规划生成一个 chunk，控制器只释放其中 `h_t` 个动作；当缓存耗尽或触发硬重规划时重新生成。令 `h_t in {1, 2, 3, 4, 5}`。这让重规划频率由明确、可记录的决策控制，而非依赖 LeRobot 私有队列状态。
+目标是在不降低控制质量到不可接受水平的前提下，减少端到端 simulation rollout
+中的模型调用与时间。
 
-## 3. 不可变实验条件
+主质量锚点为：
 
-- Checkpoint：`HuggingFaceVLA/smolvla_libero`，固定 immutable revision。
-- Harness：官方 `lerobot-eval`；不得用旧 custom YAML runner 产出可报告结果。
-- 环境：`libero_spatial`，10 个任务，280 steps 上限，batch size 1，max parallel tasks 1。
-- 推理：FP16，`num_steps=2`，相同 GPU、MuJoCo EGL、HF cache 和依赖版本。
-- 评测：固定 task × initial-state/seed 配对；每个策略条件执行同一对照集。
+```text
+Adaptive - Static H=1 >= -5 percentage points
+```
 
-所有运行命令必须显式传入并记录 `--policy.n_action_steps`。第一步先从 `eval_info.json` 和运行日志核验当前正式基线实际解析到的值，不能以已废弃 YAML 的默认值代替证据。
+该界限针对 `Success@280 steps`，它是主指标。`Static H=20` 是关键吞吐/Pareto
+对照，但不能替代 H=1 作为质量非劣性锚点。正式报告始终同时给出：
 
-## 4. 分阶段工作计划
+1. Adaptive vs Static H=1；
+2. Adaptive vs Static H=20；
+3. Static H=20 vs Static H=1。
 
-### 阶段 0：冻结可复现基线
+`Success@deadline` 是部署次指标，不替代 `Success@280`。它严格定义为
+simulation end-to-end deadline：从 `reset` 后初始 observation 已就绪开始，到成功、
+失败终止或 deadline 截止为止；必须记录 deadline 前实际执行的
+`executed_env_steps`。该指标不能在论文中直接表述为真实机械臂物理动作完成速度。
 
-**目的**：确定所有后续实验真正比较的对象。
+每个 episode 必须记录：
 
-1. 固定 checkpoint revision、LeRobot v0.6.1、驱动/CUDA、GPU 型号和评测脚本提交版本。
-2. 修改正式启动脚本，使 `POLICY_N_ACTION_STEPS` 为显式环境变量，并将其写入运行日志和结果元数据。
-3. 运行 `n=1, num_steps=2` 的 10 任务 × 5 episode 基线（50 集）；核验 action queue 的模型调用频率和成功率。
-4. 在同一套 seed 上补跑静态 `n=2,3,5` 筛选条件。
+- `success`、`termination_reason`、`executed_env_steps`、`success_step`；
+- `wall_time_to_terminal_s`、`wall_time_to_success_s`；
+- `model_invocations`、同步测得的 `model_inference_time_s`；
+- planned 与 actually executed 的 `effective_horizon`；
+- chunk/buffer provenance、refill、trigger reason、clip/NaN 行为。
 
-**验收标准**：每个输出目录可追溯完整命令、resolved config、revision 与结果；`n=1` 的表现与已有 72% / 46.8 s 结果在随机波动范围内一致。
+失败 episode 不得删除。成功 episode 的完成时间中位数可作为条件描述指标，但不能
+取代全样本时间或成功率比较。`eval_ep_s` 仅保留为官方 evaluator 的聚合吞吐审计，
+不是逐 episode 完成时间或主速度证据。
 
-**停止条件**：若 baseline 无法复现，先排查依赖、revision、seed 或环境差异；不进入控制器开发。
+deadline 必须在正式数据收集前、独立于本项目既有 sweep 的结果冻结。若没有外部
+SLA，不得从 pilot 或既有 `eval_ep_s` 结果中选择 30 s、45 s 或其他阈值。
 
-### 阶段 1：建立动作缓存与可观测性
+## 2. 配对与可复现性
 
-**目的**：在不改变环境 step 语义的前提下，让每个执行动作可追溯到其生成时刻。
+正式配对单位为：
 
-1. 为策略包装层增加 `predict_action_chunk` 调用和 episode-local action buffer。
-2. 每个 step 记录：`chunk_id`、`chunk_offset`、`model_invoked`、`chosen_horizon`、`replan_reason`、缓存剩余量、动作裁剪标志和推理耗时。
-3. 强制安全不变量：episode reset、模型错误、无效动作、硬重规划均清空缓存；动作仍须执行现有验证、缩放与 clip。
-4. 编写单元测试，覆盖缓存顺序、恰好消费 `h_t` 个动作、reset 清空、硬触发提前丢弃剩余 chunk、异常不会复用旧动作。
+```text
+(task_id, seed[, initial_state_id])
+```
 
-**验收标准**：固定 `h=1` 时与旧路径逐动作输出相同（给定相同 deterministic sampling noise）；所有 action 可由日志唯一定位到 chunk。
+只有官方环境实际暴露 `initial_state_id` 时才记录该字段。若未暴露，则记录 seed
+派生的初始状态 provenance（包括 reset 语义、seed、LeRobot/LIBERO 版本）；不得
+虚构 state ID 或将 seed 等同于未验证的 state ID。
 
-### 阶段 2：最小、可解释的自适应控制器
+每次正式条件运行前生成、验证并复制相同的 paired manifest。manifest 和
+provenance 至少包含 checkpoint/revision、Git SHA、完整命令、resolved config、
+Python/LeRobot/Torch/CUDA、硬件、视频策略、deadline、manifest 路径与 SHA-256。
+保留每个条件原始 `eval_info.json`、stdout/stderr 与逐 episode telemetry。条件顺序
+应随机化或 block-counterbalance，以限制时间漂移和 GPU 热状态影响。
 
-**目的**：用低成本、可验证的物理信号选择短期开环长度。
+## 3. 固定执行方式与对照组
 
-控制器只使用已观测量，不调用额外模型，不把未经校准的生成模型随机性当作置信度。初始规则如下：
+adaptive controller 的候选执行 horizon 为：
 
-| 状态/事件 | 决策 `h_t` | 原因 |
-| --- | ---: | --- |
-| 新 episode、缓存耗尽 | 重新规划 | 没有可用动作 |
-| gripper 指令发生翻转或 gripper state 突变 | 1 | 抓取/释放是高风险离散事件 |
-| 末端位置或姿态增量超过预设阈值 | 1 | 可能接触、偏差或快速运动 |
-| 图像变化分数超过阈值 | 1 | 场景状态发生未预期变化 |
-| 动作被裁剪、NaN/异常、环境早停 | 1 并丢弃缓存 | 安全恢复 |
-| 连续稳定、无上述事件 | 3–5 | 节省推理调用 |
+```text
+H in {1, 2, 5, 10, 20}
+```
 
-为避免频繁来回切换，使用 2-step hysteresis：只有连续两步稳定才从低 horizon 升高；任何硬触发立即降到 1。首版不应超过 `h_max=5`。
+主对照组为：
 
-**验收标准**：在录制的 observation trace 和模拟 smoke test 上，所有 hard trigger 的下一动作来自新 chunk；稳定段的模型调用数下降；没有越界 horizon 或跨 episode 缓存。
+1. Static H=1，`chunk_size=50`；
+2. Static H=20，`chunk_size=50`；
+3. Adaptive project-owned action buffer，候选集合如上。
 
-### 阶段 3：消融筛选
+Static H=50 只可作为单独的小规模上限诊断，用于检查长开环错误累积；它不进入
+adaptive 候选集合，也不占主要正式实验预算。
 
-**目的**：确认 adaptive 的收益来自频率策略，而不是 `num_steps`、seed 或代码路径变化。
+hard trigger 必须强制下一 horizon 为 H=1、丢弃剩余缓存并记录原因。它只能使用
+已观测的非特权输入、模型输出与 buffer 状态；不得读取 reward、success、任务完成
+标记或其他 privileged state。
 
-在完全相同的 seed/task 对上评测：
+## 4. 实施前 action-safety gate
 
-1. 固定 `n=1`（强反应基线）。
-2. 固定 `n=2`、`n=3`、`n=5`（速度–成功率前沿）。
-3. adaptive，无 hard trigger（验证触发器本身贡献）。
-4. adaptive，完整规则。
+在定义任何 gripper trigger、非法动作策略或项目级 clip 策略前，必须完成并保存
+版本绑定的 action-contract 证据。该 gate 至少确认：
 
-每个条件先 10 任务 × 5 episode（50 集）。报告每任务成功数、平均/分位 episode time、模型调用数、平均 horizon、horizon 分布、硬触发频率及失败发生的阶段。
+- 官方 `lerobot-eval` 到 `env.step()` 的逐层 action 映射；
+- 实际环境的 action shape、每维低/高值、分量顺序、gripper 编码与开闭极性；
+- checkpoint postprocessor 输出与环境动作 contract 的关系；
+- 哪一层负责 NaN/Inf、维度、范围检查与 clipping，或明确记录其不存在。
 
-**晋级条件**：完整 adaptive 相对 `n=1` 的成功率不低于 −5 pp，且 episode time 至少下降 25%；若静态 `n=2` 已占优，则 adaptive 必须相对它显示更好的成功率–速度前沿，否则不增加系统复杂度。
+不得从“7D action”、旧 custom YAML runner、`validate_action` 或历史结果推断这些
+事实。特别地，若正式 LeRobot 路径没有在进入环境前执行 finite/range validation 或
+clip，必须记录为“无官方保护”；下游 simulator/controller 的数值截断不能被表述为
+正式 evaluator 的安全验证。
 
-### 阶段 4：正式确认与统计
+只有该 contract 被源码证据或另行批准的最小 environment probe 实证后，才可冻结：
 
-**目的**：将筛选结果与可报告结论分开。
+- gripper 变化 trigger 的维度、阈值和极性；
+- NaN/Inf、shape/range 失败时的 episode-local buffer 清理与终止策略；
+- 是否允许、在哪一层允许 clip，以及 clip 是否构成独立实验条件。
 
-1. 固定阶段 3 选出的规则、阈值和代码 revision，不再调参。
-2. 对 `n=1` 与最终 adaptive 运行至少 10 任务 × 10 episode（每条件 100 集）；任务和 seed 一一配对。
-3. 主要检验：成功率差 `adaptive - n=1` 的 one-sided 95% confidence bound 大于 −5 pp；使用按 task/seed 配对的 bootstrap 或 McNemar 分析，并报告效应量与置信区间。
-4. 次要指标：episode-time median/P95、模型调用数、平均 horizon、tail latency、无效动作率及每任务成功率。
+若静态源码仍不能确认某项，不得猜测或执行 probe；应列出缺失项并等待单独授权。
 
-**报告规则**：仅在主要非劣性成立后才报告“成功率保持、速度提升”。若不成立，如实报告为“延迟收益伴随成功率损失”，保留完整负结果。
+## 5. 实施前 wrapper parity gate
 
-## 5. 预期效果与量化假设
+在实现或评测 adaptive 前，先验证 Fixed-H=20 的项目自有 action buffer 与原生
+LeRobot `n_action_steps=20` 路径的 parity。使用相同 checkpoint、task、seed、
+初始状态以及冻结的 observation trace，比对：
 
-当前证据是 `num_steps=2, n_action_steps=1` 时 Spatial 的 36/50 成功（72%）和 46.8 s/episode。policy-only microbenchmark 为约 145 ms/action。若平均有效 horizon 为 `H`，粗略时间模型为：
+- postprocessed action 序列；
+- 模型调用次数；
+- executed environment steps；
+- episode result 与 termination reason。
 
-`T(H) ≈ 6.3 s + 40.5 s / H + trigger_overhead`
+比较须预先规定浮点容差与随机性控制方式。若不一致，先解释并修复 processor、
+reset、action slicing、buffer 或环境时序差异；不得将差异直接归因于 adaptive
+horizon。该 gate 通过前，不进入 adaptive controller 实现或 rollout。
 
-其中 6.3 s 是由已有 46.8 s episode time 减去 `280 × 145 ms` 得到的近似非模型开销；它只用于设定实验预期，不作为结果结论。若 `H=3–4`，无额外开销的估计为 16–20 s；考虑触发、后处理和实际 step 数，正式目标应保守设为 19–30 s/episode，即较基线快 35–60%。
+## 6. 分阶段协议
 
-模型调用数的理论下降为约 `1 - 1/H`：平均 horizon 3–4 对应约 67–75% 更少的模型前向调用。成功率不能从现有 `num_steps` 实验外推；合理目标是保持在约 67–72% 以上，而非预设提升。
+### 阶段 A：开发/校准 pilot（不进入正式统计）
 
-## 6. 风险与缓解
+pilot 包含主条件 Static H=1、Static H=20、Adaptive 各 10 个独立且严格配对的
+单位，即相同的 10 个 `(task_id, seed[, initial_state_id])` 单位由三个条件复用。
+它可用于：
 
-| 风险 | 影响 | 缓解措施 |
-| --- | --- | --- |
-| 接触/抓取阶段开环过长 | 成功率下降 | hard trigger、`h_max=5`、失败阶段分析 |
-| 图像变化阈值对任务不稳健 | 误触发或漏触发 | 每任务报告触发率；阈值仅在筛选集调一次 |
-| 动态改配置导致 queue 混乱 | 动作来源不可追溯 | 自有 buffer；不在 rollout 期间修改 config |
-| 速度收益被环境或 I/O 掩盖 | 结论失真 | 分离模型、环境和端到端耗时；关闭视频录制 |
-| 50 集筛选过拟合 | 假阳性 | 100 集冻结确认，种子配对，保留负结果 |
+- telemetry 完整性、manifest replay、wrapper parity 和时钟边界验证；
+- 在开发/校准集内校准 trigger 阈值；
+- 检查禁用信息未被 controller 使用。
 
-## 7. 最终交付物
+pilot 数据绝不合入 50/100 episode 正式统计。pilot 完成后，冻结 controller 与
+trigger 阈值，并生成使用新的、独立 paired seeds/initial-state provenance 的正式
+manifest。Static H=50 若需运行，只能作为与此 pilot 分离的小规模诊断。
 
-- 实施代码及 unit/integration tests。
-- 可复现启动脚本，显式记录 `num_steps`、`n_action_steps` 和 adaptive 配置。
-- 50 集筛选数据、100 集冻结确认数据及原始 `eval_info.json`。
-- 一张 success–latency Pareto 图、一张 horizon/trigger 分布图、逐任务结果表和统计检验说明。
-- 一份结论：是否满足成功率非劣性、实际提速幅度、哪些任务/阶段从自适应中受益或受损。
+### 阶段 B：正式样本量决定与 50-episode confirmation
+
+pilot 后，依据 paired discordant-pair rate 对预注册的 `-5pp` 非劣性界限进行
+power analysis，决定正式样本量。100 个 paired episodes 不是自动充分的
+non-inferiority 证明；若所需样本数大于 100，100 集只能写为 confirmation，不能
+写为正式 non-inferiority claim。
+
+若运行 50-episode 阶段，则使用正式 manifest 中每任务 5 个独立配对单位，且不再
+调 controller 或阈值。报告配对效应、任务分层结果、discordant pairs 与置信区间；
+该阶段不把 pilot 数据并入。
+
+### 阶段 C：100-episode 冻结确认
+
+若 power analysis 支持，使用正式 manifest 中每任务 10 个独立配对单位完成冻结
+确认。主要统计针对 Adaptive vs Static H=1 的 `Success@280` 非劣性；同时报告
+Adaptive vs H=20 与 H=20 vs H=1。`Success@deadline`、全样本 terminal time、
+model invocations、inference time、effective-horizon 分布均为预注册次指标。
+
+如果统计功效不足，则如实将该阶段报告为 confirmation，并保留完整原始数据和不确定
+性；不得把“100”本身写成非劣性证明。
+
+## 7. Chunk-size 独立消融
+
+只有主 horizon 比较和 parity gate 完成后，才可进行 `chunk_size` 消融。它必须以
+同一正式 manifest、相同 timing 规则的配对设计分离 chunk 生成长度与执行 horizon，
+例如：
+
+```text
+chunk_size in {50, 20} x Static H in {1, 10, 20}
+```
+
+不得把同时改变 `chunk_size` 和 H 所得到的差异归因于任一单独因素。只有在该消融
+证明 processor/action 语义与结果均可接受后，才可考虑将 `chunk_size=20` 用于后续
+adaptive 实验。
+
+## 8. 停止条件与报告规则
+
+在以下任一情况，不继续 adaptive 方法：
+
+- paired manifest、状态 provenance 或 telemetry 不能证明严格可配对比较；
+- action-safety gate 未通过，或 gripper/非法动作/clip 语义未被实证；
+- wrapper parity gate 未通过；
+- controller 使用禁用信息，或运行中修改 LeRobot 内部 `n_action_steps`；
+- Adaptive 相对 Static H=1 无法满足预注册质量界限；
+- Adaptive 相对 Static H=20 没有预注册的全样本吞吐、deadline、调用数或推理时间收益；
+- 所谓优势只出现在成功样本的条件时间，而全样本指标不支持。
+
+仅当所需统计功效成立、质量非劣性成立且预注册次指标显示预期收益时，才可报告
+“成功率保持且获得端到端效率收益”。否则报告完整负结果与不确定性。
