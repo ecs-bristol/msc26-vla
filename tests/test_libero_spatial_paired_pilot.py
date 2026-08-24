@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import csv
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
 import sys
+
+import numpy as np
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +33,15 @@ SUMMARY_FIELDS = {
     "git_sha",
     "resolved_config_path",
 }
+
+
+def _pilot_module():
+    spec = importlib.util.spec_from_file_location("paired_pilot_under_test", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def _snapshot(tmp_path: Path, revision: str) -> Path:
@@ -117,13 +129,14 @@ def test_dry_run_materializes_six_strictly_paired_conditions(tmp_path: Path) -> 
     }
 
 
-def test_pilot_tool_refuses_a_non_dry_run_invocation(tmp_path: Path) -> None:
+def test_execute_requires_an_existing_paired_manifest_before_any_rollout(tmp_path: Path) -> None:
     base_snapshot = _snapshot(tmp_path, SMOLVLA_REVISION)
     vlm_snapshot = _snapshot(tmp_path, SMOLVLM2_REVISION)
     completed = subprocess.run(
         [
             sys.executable,
             str(SCRIPT),
+            "--execute",
             "--output-dir",
             str(tmp_path / "pilot"),
             "--base-snapshot-path",
@@ -136,4 +149,145 @@ def test_pilot_tool_refuses_a_non_dry_run_invocation(tmp_path: Path) -> None:
     )
 
     assert completed.returncode != 0
-    assert "currently supports --dry-run only" in completed.stderr
+    assert "paired_manifest.json" in completed.stderr
+
+
+class _FakeObservation:
+    images = {
+        "agentview": np.zeros((2, 2, 3), dtype=np.uint8),
+        "wrist": np.zeros((2, 2, 3), dtype=np.uint8),
+    }
+    proprioception = np.zeros(8, dtype=np.float32)
+    instruction = "fake task"
+
+
+class _FakeStep:
+    def __init__(self, *, success: bool) -> None:
+        self.observation = _FakeObservation()
+        self.done = success
+        self.success = success
+
+
+class _FakeEpisode:
+    def __init__(self, counter: dict[str, int]) -> None:
+        self._counter = counter
+        self.reset_evidence = None
+
+    def reset(self):
+        return _FakeObservation()
+
+    def step(self, action):
+        assert np.asarray(action).shape == (7,)
+        self._counter["steps"] += 1
+        return _FakeStep(success=True)
+
+    def close(self) -> None:
+        self._counter["closes"] += 1
+
+
+class _FakeBackend:
+    def __init__(self, counter: dict[str, int]) -> None:
+        self._counter = counter
+
+    def open_episode(self, suite, task_id, initial_state_id, max_steps, seed):
+        assert suite == "libero_spatial"
+        assert (task_id, initial_state_id, max_steps, seed) == (0, 0, 280, 1000)
+        self._counter["opens"] += 1
+        return _FakeEpisode(self._counter)
+
+
+class _FakePolicy:
+    def __init__(self) -> None:
+        self.telemetry: list[dict[str, object]] = []
+
+    def reset(self) -> None:
+        self.telemetry = []
+
+    def select_action(self, observation):
+        assert observation.instruction == "fake task"
+        self.telemetry.extend(
+            [
+                {"event": "refill", "planned_horizon": 20},
+                {
+                    "event": "action_release",
+                    "model_invoked": True,
+                    "actual_horizon": 20,
+                    "range_violation": True,
+                    "range_clipped": True,
+                    "buffer_discarded": True,
+                },
+            ]
+        )
+        return np.zeros(7, dtype=np.float32)
+
+    def close(self) -> None:
+        return None
+
+
+def test_executor_reads_manifest_and_resume_does_not_repeat_completed_episodes(tmp_path: Path) -> None:
+    module = _pilot_module()
+    output_dir = tmp_path / "pilot"
+    base_snapshot = _snapshot(tmp_path, SMOLVLA_REVISION)
+    vlm_snapshot = _snapshot(tmp_path, SMOLVLM2_REVISION)
+    module.materialize_dry_run(
+        config_path=PROJECT_ROOT / "configs" / "evaluation" / "libero_spatial_paired_pilot.yaml",
+        output_dir=output_dir,
+        base_snapshot_path=str(base_snapshot),
+        vlm_snapshot_path=str(vlm_snapshot),
+    )
+    counter = {"opens": 0, "steps": 0, "closes": 0}
+
+    first = module.execute_pilot(
+        output_dir=output_dir,
+        backend_factory=lambda: _FakeBackend(counter),
+        policy_factory=lambda _condition, _config: _FakePolicy(),
+        task_ids={0},
+        episodes_per_task=1,
+    )
+    second = module.execute_pilot(
+        output_dir=output_dir,
+        backend_factory=lambda: _FakeBackend(counter),
+        policy_factory=lambda _condition, _config: _FakePolicy(),
+        task_ids={0},
+        episodes_per_task=1,
+    )
+
+    assert first == {"executed_episodes": 6, "skipped_episodes": 0}
+    assert second == {"executed_episodes": 0, "skipped_episodes": 6}
+    assert counter == {"opens": 6, "steps": 6, "closes": 6}
+
+
+def test_executor_persists_every_required_episode_metric(tmp_path: Path) -> None:
+    module = _pilot_module()
+    output_dir = tmp_path / "pilot"
+    base_snapshot = _snapshot(tmp_path, SMOLVLA_REVISION)
+    vlm_snapshot = _snapshot(tmp_path, SMOLVLM2_REVISION)
+    module.materialize_dry_run(
+        config_path=PROJECT_ROOT / "configs" / "evaluation" / "libero_spatial_paired_pilot.yaml",
+        output_dir=output_dir,
+        base_snapshot_path=str(base_snapshot),
+        vlm_snapshot_path=str(vlm_snapshot),
+    )
+    counter = {"opens": 0, "steps": 0, "closes": 0}
+    module.execute_pilot(
+        output_dir=output_dir,
+        backend_factory=lambda: _FakeBackend(counter),
+        policy_factory=lambda _condition, _config: _FakePolicy(),
+        task_ids={0},
+        episodes_per_task=1,
+    )
+
+    result = json.loads(
+        (output_dir / "episodes" / "static-h1" / "task_00_seed_1000_state_0.json").read_text()
+    )
+    assert result["status"] == "completed"
+    assert {field for field in SUMMARY_FIELDS} <= result.keys()
+    assert result["success_at_280"] is True
+    assert result["success_step"] == 1
+    assert result["executed_env_steps"] == 1
+    assert result["model_invocations"] == 1
+    assert result["range_violations"] == 1
+    assert result["range_clips"] == 1
+    assert result["buffer_discards"] == 1
+    assert result["mean_actual_horizon"] == 20.0
+    assert result["termination_reason"] == "success"

@@ -11,12 +11,16 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 import shlex
 import subprocess
 import sys
+import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Protocol
+
+import numpy as np
 
 import yaml
 
@@ -44,6 +48,18 @@ SUMMARY_FIELDS = (
     "git_sha",
     "resolved_config_path",
 )
+_TERMINAL_EPISODE_STATUSES = frozenset({"completed", "failed"})
+
+
+class PilotPolicy(Protocol):
+    @property
+    def telemetry(self) -> tuple[dict[str, object], ...]: ...
+
+    def reset(self) -> None: ...
+
+    def select_action(self, observation: object) -> np.ndarray: ...
+
+    def close(self) -> None: ...
 
 
 def _git_sha(project_root: Path) -> str | None:
@@ -134,8 +150,35 @@ def _condition_slug(name: str) -> str:
 
 
 def _write_json(path: Path, payload: object) -> None:
+    _atomic_write_text(path, json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(text, encoding="utf-8")
+    os.replace(temporary, path)
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid JSON artifact: {path}") from exc
+    if not isinstance(value, dict):
+        raise ValueError(f"JSON artifact must be an object: {path}")
+    return value
+
+
+def _episode_path(output_dir: Path, condition_name: str, trial: dict[str, int]) -> Path:
+    return (
+        output_dir
+        / "episodes"
+        / _condition_slug(condition_name)
+        / f"task_{trial['task_id']:02d}_seed_{trial['seed']}_state_{trial['initial_state_id']}.json"
+    )
 
 
 def materialize_dry_run(
@@ -155,7 +198,10 @@ def materialize_dry_run(
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     resolved_path = output_dir / "resolved_config.json"
-    _write_json(resolved_path, config)
+    if resolved_path.exists() and _read_json(resolved_path) != config:
+        raise ValueError("existing resolved_config.json does not match the requested dry run")
+    if not resolved_path.exists():
+        _write_json(resolved_path, config)
     sha = _git_sha(PROJECT_ROOT)
     trials = _trials(config)
     manifest = {
@@ -167,7 +213,10 @@ def materialize_dry_run(
         "trials": trials,
     }
     manifest_path = output_dir / "paired_manifest.json"
-    _write_json(manifest_path, manifest)
+    if manifest_path.exists() and _read_json(manifest_path) != manifest:
+        raise ValueError("existing paired_manifest.json does not match the requested dry run")
+    if not manifest_path.exists():
+        _write_json(manifest_path, manifest)
     manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     provenance = {
         "schema_version": 1,
@@ -193,12 +242,7 @@ def materialize_dry_run(
     rows: list[dict[str, object]] = []
     for condition in config["conditions"]:
         for trial in trials:
-            episode_path = (
-                output_dir
-                / "episodes"
-                / _condition_slug(condition["name"])
-                / f"task_{trial['task_id']:02d}_seed_{trial['seed']}_state_{trial['initial_state_id']}.json"
-            )
+            episode_path = _episode_path(output_dir, condition["name"], trial)
             result = {
                 "schema_version": 1,
                 "status": "planned_dry_run",
@@ -219,12 +263,11 @@ def materialize_dry_run(
                 "git_sha": sha,
                 "resolved_config_path": str(resolved_path.resolve()),
             }
-            _write_json(episode_path, result)
-            rows.append({field: result[field] for field in SUMMARY_FIELDS})
-    with (output_dir / "summary.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=SUMMARY_FIELDS)
-        writer.writeheader()
-        writer.writerows(rows)
+            if not episode_path.exists():
+                _write_json(episode_path, result)
+            persisted = _read_json(episode_path)
+            rows.append({field: persisted.get(field) for field in SUMMARY_FIELDS})
+    _write_summary(output_dir / "summary.csv", rows)
     command = shlex.join(
         [
             sys.executable,
@@ -240,13 +283,368 @@ def materialize_dry_run(
             config["model"]["vlm_snapshot_path"],
         ]
     )
-    (output_dir / "dry_run_command.txt").write_text(command + "\n", encoding="utf-8")
+    _atomic_write_text(output_dir / "dry_run_command.txt", command + "\n")
     return {"output_dir": str(output_dir), "planned_episodes": len(rows), "command": command}
 
 
+def _write_summary(path: Path, rows: list[dict[str, object]]) -> None:
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.parent.mkdir(parents=True, exist_ok=True)
+    with temporary.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SUMMARY_FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
+    os.replace(temporary, path)
+
+
+def _read_execution_inputs(output_dir: Path) -> tuple[dict[str, Any], list[dict[str, int]]]:
+    """Read, rather than regenerate, the immutable dry-run configuration and pairs."""
+
+    resolved_path = output_dir / "resolved_config.json"
+    manifest_path = output_dir / "paired_manifest.json"
+    if not manifest_path.is_file():
+        raise FileNotFoundError(
+            f"paired_manifest.json is required before --execute: {manifest_path}"
+        )
+    if not resolved_path.is_file():
+        raise FileNotFoundError(
+            f"resolved_config.json is required before --execute: {resolved_path}"
+        )
+    config = _read_json(resolved_path)
+    _validate_config(config)
+    model = config["model"]
+    _snapshot_path(model["base_snapshot_path"], SMOLVLA_REVISION, "base_snapshot_path")
+    _snapshot_path(model["vlm_snapshot_path"], SMOLVLM2_REVISION, "vlm_snapshot_path")
+    manifest = _read_json(manifest_path)
+    if manifest.get("suite") != config["suite"]:
+        raise ValueError("paired manifest suite does not match resolved config")
+    if manifest.get("pairing_key") != ["task_id", "seed", "initial_state_id"]:
+        raise ValueError("paired manifest must use task_id, seed, initial_state_id pairing")
+    trials = manifest.get("trials")
+    if not isinstance(trials, list) or any(not isinstance(trial, dict) for trial in trials):
+        raise ValueError("paired manifest trials must be a list of objects")
+    required = {"task_id", "seed", "initial_state_id", "episode_index"}
+    if any(set(trial) != required for trial in trials):
+        raise ValueError("paired manifest trials have an invalid schema")
+    typed_trials: list[dict[str, int]] = []
+    for trial in trials:
+        if any(type(trial[field]) is not int for field in required):
+            raise ValueError("paired manifest trial fields must be integers")
+        typed_trials.append({field: trial[field] for field in required})
+    if typed_trials != _trials(config):
+        raise ValueError("paired manifest does not match the existing dry-run trial plan")
+    return config, typed_trials
+
+
+def _selected_trials(
+    trials: list[dict[str, int]],
+    task_ids: set[int] | None,
+    episodes_per_task: int | None,
+) -> list[dict[str, int]]:
+    selected_tasks = task_ids if task_ids is not None else {trial["task_id"] for trial in trials}
+    if not selected_tasks or any(type(task_id) is not int or task_id < 0 for task_id in selected_tasks):
+        raise ValueError("task_ids must be non-empty non-negative integers")
+    if episodes_per_task is not None and episodes_per_task < 1:
+        raise ValueError("episodes_per_task must be positive")
+    selected: list[dict[str, int]] = []
+    for task_id in sorted(selected_tasks):
+        task_trials = [trial for trial in trials if trial["task_id"] == task_id]
+        if not task_trials:
+            raise ValueError(f"task_id {task_id} is absent from paired_manifest.json")
+        task_trials.sort(key=lambda trial: trial["episode_index"])
+        if episodes_per_task is not None:
+            task_trials = task_trials[:episodes_per_task]
+        selected.extend(task_trials)
+    return selected
+
+
+def _episode_summary_row(result: dict[str, object]) -> dict[str, object]:
+    missing = [field for field in SUMMARY_FIELDS if field not in result]
+    if missing:
+        raise ValueError(f"episode result is missing summary fields: {missing}")
+    return {field: result[field] for field in SUMMARY_FIELDS}
+
+
+def _refresh_summary(
+    output_dir: Path, config: dict[str, Any], trials: list[dict[str, int]]
+) -> None:
+    rows = [
+        _episode_summary_row(_read_json(_episode_path(output_dir, condition["name"], trial)))
+        for condition in config["conditions"]
+        for trial in trials
+    ]
+    _write_summary(output_dir / "summary.csv", rows)
+
+
+def _telemetry_metrics(records: tuple[dict[str, object], ...]) -> dict[str, object]:
+    releases = [record for record in records if record.get("event") == "action_release"]
+    horizons = [float(record["actual_horizon"]) for record in releases]
+    return {
+        "model_invocations": sum(bool(record.get("model_invoked")) for record in releases),
+        "range_violations": sum(bool(record.get("range_violation")) for record in releases),
+        "range_clips": sum(bool(record.get("range_clipped")) for record in releases),
+        "buffer_discards": sum(bool(record.get("buffer_discarded")) for record in releases),
+        "mean_actual_horizon": sum(horizons) / len(horizons) if horizons else None,
+    }
+
+
+def _run_episode(
+    *,
+    output_dir: Path,
+    config: dict[str, Any],
+    condition: dict[str, Any],
+    trial: dict[str, int],
+    backend: object,
+    policy: PilotPolicy,
+) -> dict[str, object]:
+    """Run one manifest-selected environment episode and return a terminal record."""
+
+    episode = backend.open_episode(
+        config["suite"],
+        trial["task_id"],
+        trial["initial_state_id"],
+        config["episode_cap"],
+        trial["seed"],
+    )
+    started_at = time.perf_counter()
+    steps = 0
+    success = False
+    success_step: int | None = None
+    inference_seconds = 0.0
+    termination_reason = "max_steps"
+    status = "completed"
+    try:
+        observation = episode.reset()
+        policy.reset()
+        telemetry_cursor = 0
+        for step_id in range(1, config["episode_cap"] + 1):
+            inference_started_at = time.perf_counter()
+            action = np.asarray(policy.select_action(observation), dtype=np.float32)
+            inference_elapsed = time.perf_counter() - inference_started_at
+            if action.shape != (7,):
+                raise ValueError(f"policy action must have shape (7,), got {action.shape}")
+            telemetry = policy.telemetry
+            latest = telemetry[telemetry_cursor:]
+            telemetry_cursor = len(telemetry)
+            if any(record.get("model_invoked") is True for record in latest):
+                inference_seconds += inference_elapsed
+            step = episode.step(action)
+            steps = step_id
+            observation = step.observation
+            if step.success:
+                success = True
+                success_step = step_id
+                termination_reason = "success"
+                break
+            if step.done:
+                termination_reason = "done"
+                break
+    except KeyboardInterrupt:
+        raise
+    except Exception as exc:
+        status = "failed"
+        termination_reason = f"error:{type(exc).__name__}"
+    finally:
+        episode.close()
+
+    metrics = _telemetry_metrics(policy.telemetry)
+    return {
+        "schema_version": 1,
+        "status": status,
+        "condition": condition["name"],
+        "condition_config": condition,
+        **trial,
+        "success_at_280": success,
+        "success_step": success_step,
+        "executed_env_steps": steps,
+        "wall_time_to_terminal_s": time.perf_counter() - started_at,
+        "model_inference_time_s": inference_seconds,
+        **metrics,
+        "termination_reason": termination_reason,
+        "git_sha": _git_sha(PROJECT_ROOT),
+        "resolved_config_path": str((output_dir / "resolved_config.json").resolve()),
+    }
+
+
+def execute_pilot(
+    *,
+    output_dir: Path,
+    backend_factory: Callable[[], object],
+    policy_factory: Callable[[dict[str, Any], dict[str, Any]], PilotPolicy],
+    task_ids: set[int] | None = None,
+    episodes_per_task: int | None = None,
+) -> dict[str, int]:
+    """Execute only planned pairs, atomically persisting each terminal result.
+
+    Existing terminal episode files are never overwritten, so a resumed process
+    only opens missing or non-terminal planned episodes.
+    """
+
+    output_dir = output_dir.resolve()
+    config, trials = _read_execution_inputs(output_dir)
+    selected_trials = _selected_trials(trials, task_ids, episodes_per_task)
+    manifest_path = output_dir / "paired_manifest.json"
+    _write_json(
+        output_dir / "execution_provenance.json",
+        {
+            "schema_version": 1,
+            "mode": "execute",
+            "started_at_utc": datetime.now(UTC).isoformat(),
+            "git_sha": _git_sha(PROJECT_ROOT),
+            "resolved_config_path": str((output_dir / "resolved_config.json").resolve()),
+            "paired_manifest_path": str(manifest_path.resolve()),
+            "paired_manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+            "selected_task_ids": sorted({trial["task_id"] for trial in selected_trials}),
+            "selected_episodes_per_task": episodes_per_task,
+            "local_files_only": config["model"]["local_files_only"],
+            "base_snapshot_path": config["model"]["base_snapshot_path"],
+            "vlm_snapshot_path": config["model"]["vlm_snapshot_path"],
+        },
+    )
+    backend = backend_factory()
+    executed = 0
+    skipped = 0
+    try:
+        for condition in config["conditions"]:
+            pending = [
+                trial
+                for trial in selected_trials
+                if _read_json(_episode_path(output_dir, condition["name"], trial)).get("status")
+                not in _TERMINAL_EPISODE_STATUSES
+            ]
+            if not pending:
+                skipped += len(selected_trials)
+                continue
+            policy = policy_factory(condition, config)
+            try:
+                for trial in selected_trials:
+                    path = _episode_path(output_dir, condition["name"], trial)
+                    if _read_json(path).get("status") in _TERMINAL_EPISODE_STATUSES:
+                        skipped += 1
+                        continue
+                    result = _run_episode(
+                        output_dir=output_dir,
+                        config=config,
+                        condition=condition,
+                        trial=trial,
+                        backend=backend,
+                        policy=policy,
+                    )
+                    # Re-read just before atomic replacement: completed results
+                    # from a prior resume are an immutable boundary.
+                    if _read_json(path).get("status") in _TERMINAL_EPISODE_STATUSES:
+                        skipped += 1
+                        continue
+                    _write_json(path, result)
+                    _refresh_summary(output_dir, config, trials)
+                    executed += 1
+            finally:
+                policy.close()
+    finally:
+        close = getattr(backend, "close", None)
+        if callable(close):
+            close()
+    return {"executed_episodes": executed, "skipped_episodes": skipped}
+
+
+class _LocalSmolVLAPilotPolicy:
+    """Minimal direct adapter from a LIBERO Observation to the frozen plugin."""
+
+    def __init__(self, policy: object, torch: object) -> None:
+        self._policy = policy
+        self._torch = torch
+
+    @property
+    def telemetry(self) -> tuple[dict[str, object], ...]:
+        return tuple(dict(record) for record in self._policy.action_telemetry)
+
+    def reset(self) -> None:
+        self._policy.reset()
+
+    def select_action(self, observation: object) -> np.ndarray:
+        images = observation.images
+        agentview = np.asarray(images["agentview"], dtype=np.uint8)
+        wrist = np.asarray(images["wrist"], dtype=np.uint8)
+        if agentview.ndim != 3 or wrist.ndim != 3:
+            raise ValueError("LIBERO images must be HWC RGB arrays")
+        torch = self._torch
+        batch = {
+            "observation.images.image": torch.from_numpy(
+                np.ascontiguousarray(agentview.transpose(2, 0, 1))
+            ).unsqueeze(0).to(dtype=torch.float32).div(255.0),
+            "observation.images.image2": torch.from_numpy(
+                np.ascontiguousarray(wrist.transpose(2, 0, 1))
+            ).unsqueeze(0).to(dtype=torch.float32).div(255.0),
+            "observation.state": torch.from_numpy(
+                np.ascontiguousarray(np.asarray(observation.proprioception, dtype=np.float32))
+            ).unsqueeze(0),
+            "task": [observation.instruction],
+        }
+        action = self._policy.select_action(batch)
+        return np.asarray(action.detach().cpu().numpy()[0], dtype=np.float32)
+
+    def close(self) -> None:
+        del self._policy
+
+
+def _local_policy_factory(
+    *, device: str
+) -> Callable[[dict[str, Any], dict[str, Any]], PilotPolicy]:
+    """Build policies lazily, only after the user has explicitly chosen --execute."""
+
+    def factory(condition: dict[str, Any], config: dict[str, Any]) -> PilotPolicy:
+        import torch
+
+        from lerobot_policy_smolvla_adaptive.configuration_smolvla_adaptive import (
+            SmolVLAAdaptiveConfig,
+        )
+        from lerobot_policy_smolvla_adaptive.modeling_smolvla_adaptive import (
+            SmolVLAAdaptivePolicy,
+        )
+
+        model = config["model"]
+        policy_config = SmolVLAAdaptiveConfig(
+            base_checkpoint=model["checkpoint"],
+            base_revision=model["base_revision"],
+            base_snapshot_path=model["base_snapshot_path"],
+            vlm_checkpoint=model["vlm_checkpoint"],
+            vlm_revision=model["vlm_revision"],
+            vlm_snapshot_path=model["vlm_snapshot_path"],
+            local_files_only=True,
+            fixed_h=condition["fixed_h"],
+            safety_enabled=True,
+            replan_after_safety_violation=condition["replan_after_safety_violation"],
+            num_steps=2,
+            chunk_size=50,
+            precision="fp16",
+            device=device,
+        )
+        policy = SmolVLAAdaptivePolicy(policy_config)
+        policy.to(device)
+        policy.eval()
+        return _LocalSmolVLAPilotPolicy(policy, torch)
+
+    return factory
+
+
+def _local_backend_factory(
+    *, dataset_directory: Path, initial_state_source: str
+) -> Callable[[], object]:
+    def factory() -> object:
+        from libero_platform.backends.libero_backend import LiberoBackend
+
+        return LiberoBackend(
+            dataset_directory=dataset_directory,
+            initial_state_source=initial_state_source,
+        )
+
+    return factory
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Materialize a paired LIBERO Spatial pilot dry run")
-    parser.add_argument("--dry-run", action="store_true", help="required: rollout execution is not implemented")
+    parser = argparse.ArgumentParser(description="Run or materialize a paired LIBERO Spatial pilot")
+    parser.add_argument("--dry-run", action="store_true", help="explicitly materialize only; this is the default")
+    parser.add_argument("--execute", action="store_true", help="required before the executor may call LIBERO env.step")
     parser.add_argument(
         "--config",
         type=Path,
@@ -255,15 +653,45 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--base-snapshot-path", required=True)
     parser.add_argument("--vlm-snapshot-path", required=True)
+    parser.add_argument("--dataset-directory", type=Path, default=Path("."))
+    parser.add_argument("--initial-state-source", choices=("benchmark", "demonstration"), default="benchmark")
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--task-id", type=int, action="append")
+    parser.add_argument("--episodes-per-task", type=int)
     args = parser.parse_args()
-    if not args.dry_run:
-        raise SystemExit("Refusing rollout: this pilot tool currently supports --dry-run only")
-    result = materialize_dry_run(
-        config_path=args.config,
-        output_dir=args.output_dir,
-        base_snapshot_path=args.base_snapshot_path,
-        vlm_snapshot_path=args.vlm_snapshot_path,
-    )
+    if args.dry_run and args.execute:
+        raise SystemExit("--dry-run and --execute are mutually exclusive")
+    if not args.execute:
+        result = materialize_dry_run(
+            config_path=args.config,
+            output_dir=args.output_dir,
+            base_snapshot_path=args.base_snapshot_path,
+            vlm_snapshot_path=args.vlm_snapshot_path,
+        )
+    else:
+        # Validate the immutable plan before checking execution-only settings:
+        # a missing manifest must never progress as far as LIBERO construction.
+        resolved, _ = _read_execution_inputs(args.output_dir.resolve())
+        if _snapshot_path(
+            args.base_snapshot_path, SMOLVLA_REVISION, "base_snapshot_path"
+        ) != resolved["model"]["base_snapshot_path"]:
+            raise SystemExit("--base-snapshot-path must match resolved_config.json")
+        if _snapshot_path(
+            args.vlm_snapshot_path, SMOLVLM2_REVISION, "vlm_snapshot_path"
+        ) != resolved["model"]["vlm_snapshot_path"]:
+            raise SystemExit("--vlm-snapshot-path must match resolved_config.json")
+        # Do not re-materialize here. --execute has one permitted source of
+        # trial identity: the manifest already present in output_dir.
+        result = execute_pilot(
+            output_dir=args.output_dir,
+            backend_factory=_local_backend_factory(
+                dataset_directory=args.dataset_directory,
+                initial_state_source=args.initial_state_source,
+            ),
+            policy_factory=_local_policy_factory(device=args.device),
+            task_ids=set(args.task_id) if args.task_id else None,
+            episodes_per_task=args.episodes_per_task,
+        )
     print(json.dumps(result, sort_keys=True))
 
 

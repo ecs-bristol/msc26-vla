@@ -1,0 +1,19 @@
+{
+  "base_revision": "6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+  "base_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceVLA--smolvla_libero/snapshots/6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+  "batch_size": 1,
+  "chunk_size": 50,
+  "config_source_path": "/mnt/d/VLA/msc26-vla/configs/evaluation/libero_spatial_paired_pilot.yaml",
+  "created_at_utc": "2026-08-24T04:19:58.752350+00:00",
+  "episode_cap": 280,
+  "git_sha": "fd2db7315cd7b62d049ad78a8a7aa4b7d84f4500",
+  "local_files_only": true,
+  "mode": "dry_run",
+  "num_steps": 2,
+  "paired_manifest_path": "/mnt/d/VLA/msc26-vla/runs/pilot-dry-run/paired_manifest.json",
+  "paired_manifest_sha256": "934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2",
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-dry-run/resolved_config.json",
+  "schema_version": 1,
+  "vlm_revision": "7b375e1b73b11138ff12fe22c8f2822d8fe03467",
+  "vlm_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceTB--SmolVLM2-500M-Instruct/snapshots/7b375e1b73b11138ff12fe22c8f2822d8fe03467"
+}

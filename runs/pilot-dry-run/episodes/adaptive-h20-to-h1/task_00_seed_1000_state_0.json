@@ -1,0 +1,28 @@
+{
+  "buffer_discards": 26,
+  "condition": "Adaptive-H20\u2192H1",
+  "condition_config": {
+    "fixed_h": 20,
+    "name": "Adaptive-H20\u2192H1",
+    "replan_after_safety_violation": true,
+    "safety_enabled": true
+  },
+  "episode_index": 0,
+  "executed_env_steps": 280,
+  "git_sha": "fd2db7315cd7b62d049ad78a8a7aa4b7d84f4500",
+  "initial_state_id": 0,
+  "mean_actual_horizon": 18.235714285714284,
+  "model_inference_time_s": 19.299638337999568,
+  "model_invocations": 54,
+  "range_clips": 26,
+  "range_violations": 26,
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-dry-run/resolved_config.json",
+  "schema_version": 1,
+  "seed": 1000,
+  "status": "completed",
+  "success_at_280": false,
+  "success_step": null,
+  "task_id": 0,
+  "termination_reason": "max_steps",
+  "wall_time_to_terminal_s": 76.66867166999964
+}

@@ -1,0 +1,28 @@
+{
+  "buffer_discards": 0,
+  "condition": "Static-H5",
+  "condition_config": {
+    "fixed_h": 5,
+    "name": "Static-H5",
+    "replan_after_safety_violation": false,
+    "safety_enabled": true
+  },
+  "episode_index": 0,
+  "executed_env_steps": 280,
+  "git_sha": "fd2db7315cd7b62d049ad78a8a7aa4b7d84f4500",
+  "initial_state_id": 0,
+  "mean_actual_horizon": 5.0,
+  "model_inference_time_s": 18.912612608000927,
+  "model_invocations": 56,
+  "range_clips": 19,
+  "range_violations": 19,
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-dry-run/resolved_config.json",
+  "schema_version": 1,
+  "seed": 1000,
+  "status": "completed",
+  "success_at_280": false,
+  "success_step": null,
+  "task_id": 0,
+  "termination_reason": "max_steps",
+  "wall_time_to_terminal_s": 76.989823979
+}
