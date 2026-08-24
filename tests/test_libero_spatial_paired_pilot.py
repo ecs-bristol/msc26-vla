@@ -191,7 +191,10 @@ class _FakeBackend:
 
     def open_episode(self, suite, task_id, initial_state_id, max_steps, seed):
         assert suite == "libero_spatial"
-        assert (task_id, initial_state_id, max_steps, seed) == (0, 0, 280, 1000)
+        assert task_id == 0
+        assert initial_state_id in {0, 1}
+        assert max_steps == 280
+        assert seed == 1000 + initial_state_id
         self._counter["opens"] += 1
         return _FakeEpisode(self._counter)
 
@@ -199,9 +202,12 @@ class _FakeBackend:
 class _FakePolicy:
     def __init__(self) -> None:
         self.telemetry: list[dict[str, object]] = []
+        self.model_inference_time_s = 0.0
 
     def reset(self) -> None:
-        self.telemetry = []
+        # Match the real wrapper: reset clears the action buffer but retains
+        # auditable episode history, so the executor must slice its telemetry.
+        return None
 
     def select_action(self, observation):
         assert observation.instruction == "fake task"
@@ -218,6 +224,7 @@ class _FakePolicy:
                 },
             ]
         )
+        self.model_inference_time_s += 0.25
         return np.zeros(7, dtype=np.float32)
 
     def close(self) -> None:
@@ -291,3 +298,49 @@ def test_executor_persists_every_required_episode_metric(tmp_path: Path) -> None
     assert result["buffer_discards"] == 1
     assert result["mean_actual_horizon"] == 20.0
     assert result["termination_reason"] == "success"
+
+
+def test_second_episode_uses_only_its_telemetry_and_inference_deltas(tmp_path: Path) -> None:
+    module = _pilot_module()
+    output_dir = tmp_path / "pilot"
+    base_snapshot = _snapshot(tmp_path, SMOLVLA_REVISION)
+    vlm_snapshot = _snapshot(tmp_path, SMOLVLM2_REVISION)
+    module.materialize_dry_run(
+        config_path=PROJECT_ROOT / "configs" / "evaluation" / "libero_spatial_paired_pilot.yaml",
+        output_dir=output_dir,
+        base_snapshot_path=str(base_snapshot),
+        vlm_snapshot_path=str(vlm_snapshot),
+    )
+    counter = {"opens": 0, "steps": 0, "closes": 0}
+    shared_policy = _FakePolicy()
+
+    module.execute_pilot(
+        output_dir=output_dir,
+        backend_factory=lambda: _FakeBackend(counter),
+        policy_factory=lambda _condition, _config: shared_policy,
+        task_ids={0},
+        episodes_per_task=2,
+    )
+
+    first = json.loads(
+        (output_dir / "episodes" / "static-h20" / "task_00_seed_1000_state_0.json").read_text()
+    )
+    second = json.loads(
+        (output_dir / "episodes" / "static-h20" / "task_00_seed_1001_state_1.json").read_text()
+    )
+    assert first["model_invocations"] == second["model_invocations"] == 1
+    assert first["range_violations"] == second["range_violations"] == 1
+    assert first["range_clips"] == second["range_clips"] == 1
+    assert first["buffer_discards"] == second["buffer_discards"] == 1
+    assert first["mean_actual_horizon"] == second["mean_actual_horizon"] == 20.0
+    assert first["model_inference_time_s"] == second["model_inference_time_s"] == 0.25
+    with (output_dir / "summary.csv").open(newline="", encoding="utf-8") as handle:
+        summary = [
+            row
+            for row in csv.DictReader(handle)
+            if row["condition"] == "Static-H20" and row["task_id"] == "0"
+        ]
+    assert [
+        (row["initial_state_id"], row["model_invocations"], row["model_inference_time_s"])
+        for row in summary[:2]
+    ] == [("0", "1", "0.25"), ("1", "1", "0.25")]

@@ -16,6 +16,7 @@ import shlex
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable, Protocol
@@ -55,11 +56,21 @@ class PilotPolicy(Protocol):
     @property
     def telemetry(self) -> tuple[dict[str, object], ...]: ...
 
+    @property
+    def model_inference_time_s(self) -> float: ...
+
     def reset(self) -> None: ...
 
     def select_action(self, observation: object) -> np.ndarray: ...
 
     def close(self) -> None: ...
+
+
+@dataclass(frozen=True)
+class EpisodeTelemetrySnapshot:
+    telemetry_start: int
+    model_invocations_start: int
+    model_inference_time_s_start: float
 
 
 def _git_sha(project_root: Path) -> str | None:
@@ -388,6 +399,25 @@ def _telemetry_metrics(records: tuple[dict[str, object], ...]) -> dict[str, obje
     }
 
 
+def _model_invocation_count(records: tuple[dict[str, object], ...]) -> int:
+    return sum(
+        record.get("event") == "action_release" and record.get("model_invoked") is True
+        for record in records
+    )
+
+
+def _episode_telemetry_snapshot(policy: PilotPolicy) -> EpisodeTelemetrySnapshot:
+    records = tuple(policy.telemetry)
+    inference_time = float(policy.model_inference_time_s)
+    if inference_time < 0.0:
+        raise ValueError("policy model_inference_time_s must be non-negative")
+    return EpisodeTelemetrySnapshot(
+        telemetry_start=len(records),
+        model_invocations_start=_model_invocation_count(records),
+        model_inference_time_s_start=inference_time,
+    )
+
+
 def _run_episode(
     *,
     output_dir: Path,
@@ -410,24 +440,17 @@ def _run_episode(
     steps = 0
     success = False
     success_step: int | None = None
-    inference_seconds = 0.0
+    telemetry_snapshot: EpisodeTelemetrySnapshot | None = None
     termination_reason = "max_steps"
     status = "completed"
     try:
         observation = episode.reset()
         policy.reset()
-        telemetry_cursor = 0
+        telemetry_snapshot = _episode_telemetry_snapshot(policy)
         for step_id in range(1, config["episode_cap"] + 1):
-            inference_started_at = time.perf_counter()
             action = np.asarray(policy.select_action(observation), dtype=np.float32)
-            inference_elapsed = time.perf_counter() - inference_started_at
             if action.shape != (7,):
                 raise ValueError(f"policy action must have shape (7,), got {action.shape}")
-            telemetry = policy.telemetry
-            latest = telemetry[telemetry_cursor:]
-            telemetry_cursor = len(telemetry)
-            if any(record.get("model_invoked") is True for record in latest):
-                inference_seconds += inference_elapsed
             step = episode.step(action)
             steps = step_id
             observation = step.observation
@@ -447,7 +470,27 @@ def _run_episode(
     finally:
         episode.close()
 
-    metrics = _telemetry_metrics(policy.telemetry)
+    if telemetry_snapshot is None:
+        # reset failed before a policy snapshot could be taken; report no
+        # synthetic historical telemetry from an earlier episode.
+        episode_records: tuple[dict[str, object], ...] = ()
+        model_invocations = 0
+        inference_seconds = 0.0
+    else:
+        all_records = tuple(policy.telemetry)
+        episode_records = all_records[telemetry_snapshot.telemetry_start :]
+        model_invocations = (
+            _model_invocation_count(all_records)
+            - telemetry_snapshot.model_invocations_start
+        )
+        inference_seconds = (
+            float(policy.model_inference_time_s)
+            - telemetry_snapshot.model_inference_time_s_start
+        )
+        if model_invocations < 0 or inference_seconds < 0.0:
+            raise RuntimeError("policy telemetry counters must be monotonic within a condition")
+    metrics = _telemetry_metrics(episode_records)
+    metrics["model_invocations"] = model_invocations
     return {
         "schema_version": 1,
         "status": status,
@@ -553,10 +596,17 @@ class _LocalSmolVLAPilotPolicy:
     def __init__(self, policy: object, torch: object) -> None:
         self._policy = policy
         self._torch = torch
+        self._model_inference_time_s = 0.0
 
     @property
     def telemetry(self) -> tuple[dict[str, object], ...]:
         return tuple(dict(record) for record in self._policy.action_telemetry)
+
+    @property
+    def model_inference_time_s(self) -> float:
+        """Cumulative time spent in calls that actually invoked the model."""
+
+        return self._model_inference_time_s
 
     def reset(self) -> None:
         self._policy.reset()
@@ -580,7 +630,13 @@ class _LocalSmolVLAPilotPolicy:
             ).unsqueeze(0),
             "task": [observation.instruction],
         }
+        telemetry_start = len(self._policy.action_telemetry)
+        started_at = time.perf_counter()
         action = self._policy.select_action(batch)
+        elapsed = time.perf_counter() - started_at
+        releases = self._policy.action_telemetry[telemetry_start:]
+        if any(record.get("model_invoked") is True for record in releases):
+            self._model_inference_time_s += elapsed
         return np.asarray(action.detach().cpu().numpy()[0], dtype=np.float32)
 
     def close(self) -> None:
