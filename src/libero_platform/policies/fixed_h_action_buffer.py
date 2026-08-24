@@ -22,7 +22,8 @@ TelemetryRecord: TypeAlias = dict[str, TelemetryValue]
 
 _ACTION_DIM = 7
 _CHUNK_SIZE = 50
-_FIXED_HORIZON = 20
+_DEFAULT_HORIZON = 20
+_ALLOWED_HORIZONS = frozenset({1, 5, 10, 20, 50})
 _GRIPPER_INDEX = 6
 
 
@@ -46,7 +47,7 @@ class ActionRelease:
 
 
 class FixedHActionBuffer:
-    """Own and release postprocessed SmolVLA actions at Fixed-H=20.
+    """Own and release postprocessed SmolVLA actions at a permitted horizon.
 
     The wrapper intentionally calls only ``predict_action_chunk``.  It does
     not call or rely on a base policy's ``select_action`` implementation, and
@@ -57,11 +58,15 @@ class FixedHActionBuffer:
         self,
         predictor: ActionChunkPredictor,
         *,
-        horizon: int = _FIXED_HORIZON,
+        horizon: int = _DEFAULT_HORIZON,
         safety_enabled: bool = True,
+        replan_after_safety_violation: bool = False,
     ) -> None:
-        if horizon != _FIXED_HORIZON:
-            raise ValueError("the initial parity wrapper supports only Fixed-H=20")
+        if type(horizon) is not int or horizon not in _ALLOWED_HORIZONS:
+            allowed = ", ".join(str(value) for value in sorted(_ALLOWED_HORIZONS))
+            raise ValueError(f"horizon must be one of {{{allowed}}}")
+        if replan_after_safety_violation and not safety_enabled:
+            raise ValueError("replan_after_safety_violation requires safety_enabled=True")
         self._predictor = predictor
         self._horizon = horizon
         self._buffer: list[Action] = []
@@ -69,7 +74,9 @@ class FixedHActionBuffer:
         self._buffer_action_index = 0
         self._model_invocations = 0
         self._safety_enabled = bool(safety_enabled)
+        self._replan_after_safety_violation = bool(replan_after_safety_violation)
         self._force_next_horizon_one = False
+        self._active_horizon = horizon
         self._telemetry: list[TelemetryRecord] = []
 
     @property
@@ -127,8 +134,6 @@ class FixedHActionBuffer:
                 "action_dim": _ACTION_DIM,
             }
         )
-        # This first implementation supports only the static H=20 parity path.
-        # A forced H=1 is a safety recovery action after a clipped release.
         self._active_horizon = planned_horizon
 
     def _release_action(self) -> ActionRelease:
@@ -144,14 +149,16 @@ class FixedHActionBuffer:
         range_violation = bool((action < -1.0).any() or (action > 1.0).any())
         range_clipped = self._safety_enabled and range_violation
 
+        buffer_discarded = range_clipped and self._replan_after_safety_violation
         if range_clipped:
             released_action = np.clip(action, -1.0, 1.0).astype(np.float32, copy=False)
-            self._clear_buffer()
-            self._force_next_horizon_one = True
-            actual_horizon = 1
         else:
             released_action = action
-            actual_horizon = active_horizon
+
+        if buffer_discarded:
+            self._clear_buffer()
+            self._force_next_horizon_one = True
+        else:
             if self._buffer_action_index >= active_horizon:
                 # The next action must be planned from its new observation;
                 # no unused tail of a 50-step model chunk may leak through.
@@ -162,7 +169,7 @@ class FixedHActionBuffer:
             "chunk_origin": f"model_invocation:{chunk_origin}",
             "chunk_action_index": chunk_action_index,
             "planned_horizon": active_horizon,
-            "actual_horizon": actual_horizon,
+            "actual_horizon": active_horizon,
             "buffer_size_before": buffer_size_before,
             "buffer_size_after": len(self._buffer),
             "model_invocation": chunk_origin,
@@ -170,7 +177,8 @@ class FixedHActionBuffer:
             "safety_enabled": self._safety_enabled,
             "range_violation": range_violation,
             "range_clipped": range_clipped,
-            "forced_horizon_next": 1 if range_clipped else None,
+            "buffer_discarded": buffer_discarded,
+            "forced_horizon_next": 1 if buffer_discarded else None,
             "gripper_index": _GRIPPER_INDEX,
             "gripper_negative_is_open": True,
             "gripper_positive_is_closed": True,

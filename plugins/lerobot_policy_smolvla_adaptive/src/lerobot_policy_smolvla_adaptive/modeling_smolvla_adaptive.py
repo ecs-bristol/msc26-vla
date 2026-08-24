@@ -1,4 +1,4 @@
-"""LeRobot policy wrapper using the project-owned Fixed-H action buffer.
+"""LeRobot policy wrapper using the project-owned horizon action buffer.
 
 The external evaluator sees an ordinary ``select_action`` policy. Internally,
 the only action-generation call is SmolVLA's ``predict_action_chunk``; the
@@ -91,7 +91,7 @@ class _PostprocessedChunkPredictor:
 
 
 class SmolVLAAdaptivePolicy(PreTrainedPolicy):
-    """Independent Fixed-H=20 wrapper around a frozen SmolVLA checkpoint."""
+    """Independent static or safety-triggered horizon wrapper for SmolVLA."""
 
     config_class = SmolVLAAdaptiveConfig
     name = "smolvla_adaptive"
@@ -124,6 +124,7 @@ class SmolVLAAdaptivePolicy(PreTrainedPolicy):
             self._chunk_predictor,
             horizon=config.fixed_h,
             safety_enabled=config.safety_enabled,
+            replan_after_safety_violation=config.replan_after_safety_violation,
         )
 
     def get_optim_params(self) -> dict:
@@ -192,6 +193,8 @@ def _load_frozen_base(
     }
     base_config = SmolVLAConfig.from_pretrained(config.base_load_path, **load_kwargs)
     base_config.device = config.device or "cpu"
+    if int(base_config.chunk_size) != config.chunk_size:
+        raise ValueError("frozen SmolVLA checkpoint chunk_size must equal 50")
     # The installed SmolVLA VLM loader accepts a model path but no revision
     # argument. Point it at the immutable local snapshot so it cannot follow
     # an unpinned Hub cache ref.

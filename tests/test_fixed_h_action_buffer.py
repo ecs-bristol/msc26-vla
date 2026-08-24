@@ -54,6 +54,25 @@ def test_fixed_h_twenty_refills_once_and_releases_twenty_actions() -> None:
     assert twenty_first.telemetry["model_invocation"] == 2
 
 
+@pytest.mark.parametrize("horizon", [1, 5, 10, 20, 50])
+def test_permitted_static_horizons_refill_at_the_configured_boundary(horizon: int) -> None:
+    predictor = FakeChunkPredictor([chunk(fill=0.25), chunk(fill=-0.25)])
+    buffer = FixedHActionBuffer(predictor, horizon=horizon)
+
+    releases = [buffer.next_action({"step": index}) for index in range(horizon + 1)]
+
+    assert len(predictor.observations) == 2
+    assert releases[0].telemetry["planned_horizon"] == horizon
+    assert releases[horizon - 1].telemetry["buffer_size_after"] == 0
+    assert releases[-1].telemetry["model_invocation"] == 2
+
+
+@pytest.mark.parametrize("horizon", [0, 2, 6, 19, 21, 51, True])
+def test_invalid_horizons_are_rejected(horizon: int) -> None:
+    with pytest.raises(ValueError, match="horizon must be one of"):
+        FixedHActionBuffer(FakeChunkPredictor([chunk()]), horizon=horizon)
+
+
 def test_reset_discards_episode_local_actions() -> None:
     predictor = FakeChunkPredictor([chunk(fill=0.1), chunk(fill=0.2)])
     buffer = FixedHActionBuffer(predictor)
@@ -101,12 +120,12 @@ def test_invalid_chunk_shape_clears_buffer_and_raises_explicit_error() -> None:
     assert buffer.buffered_actions == 0
 
 
-def test_out_of_range_action_is_clipped_drops_chunk_and_forces_one_step_replan() -> None:
+def test_adaptive_h20_clips_discards_and_forces_one_step_replan() -> None:
     too_large = np.array([2.0, 0, 0, 0, 0, 0, -2.0], dtype=np.float32)
     predictor = FakeChunkPredictor(
         [chunk(first=too_large, fill=0.4), chunk(fill=-0.4), chunk(fill=0.6)]
     )
-    buffer = FixedHActionBuffer(predictor)
+    buffer = FixedHActionBuffer(predictor, replan_after_safety_violation=True)
 
     clipped = buffer.next_action("observation-a")
     recovery = buffer.next_action("observation-b")
@@ -114,8 +133,10 @@ def test_out_of_range_action_is_clipped_drops_chunk_and_forces_one_step_replan()
 
     assert clipped.action.tolist() == pytest.approx([1, 0, 0, 0, 0, 0, -1])
     assert clipped.telemetry["range_clipped"] is True
+    assert clipped.telemetry["buffer_discarded"] is True
     assert clipped.telemetry["buffer_size_after"] == 0
     assert clipped.telemetry["forced_horizon_next"] == 1
+    assert clipped.telemetry["actual_horizon"] == 20
     assert recovery.telemetry["planned_horizon"] == 1
     assert recovery.telemetry["actual_horizon"] == 1
     assert buffer.buffered_actions == 49
@@ -138,7 +159,10 @@ def test_release_telemetry_is_complete_and_json_serializable() -> None:
         "buffer_size_after",
         "model_invocation",
         "model_invoked",
+        "range_violation",
         "range_clipped",
+        "buffer_discarded",
+        "forced_horizon_next",
         "gripper_index",
         "gripper_negative_is_open",
         "gripper_positive_is_closed",

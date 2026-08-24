@@ -91,13 +91,31 @@ def test_plugin_registers_config_and_policy_with_lerobot_factory() -> None:
 
 def test_factory_parses_frozen_native_and_adaptive_policy_arguments() -> None:
     native = make_policy_config("smolvla", n_action_steps=20, num_steps=2, chunk_size=50)
-    adaptive = make_policy_config("smolvla_adaptive", fixed_h=20, num_steps=2)
+    adaptive = make_policy_config(
+        "smolvla_adaptive",
+        fixed_h=20,
+        num_steps=2,
+        replan_after_safety_violation=True,
+    )
 
     assert native.n_action_steps == 20
     assert native.num_steps == 2
     assert native.chunk_size == 50
     assert adaptive.fixed_h == 20
     assert adaptive.num_steps == 2
+    assert adaptive.replan_after_safety_violation is True
+
+
+@pytest.mark.parametrize("horizon", [1, 5, 10, 20, 50])
+def test_plugin_config_accepts_the_pilot_static_horizons(horizon: int) -> None:
+    assert SmolVLAAdaptiveConfig(fixed_h=horizon).fixed_h == horizon
+
+
+def test_plugin_config_rejects_adaptive_replan_without_safety() -> None:
+    with pytest.raises(ValueError, match="requires safety_enabled"):
+        SmolVLAAdaptiveConfig(
+            safety_enabled=False, replan_after_safety_violation=True
+        )
 
 
 def test_plugin_fixes_remote_code_to_false_without_a_cli_config_field() -> None:
@@ -226,10 +244,14 @@ def test_plugin_rejects_invalid_actions_and_clears_buffer(invalid: object, messa
     assert base.select_calls == 0
 
 
-def test_plugin_clips_then_forces_one_step_refill_and_reset_clears_both_layers() -> None:
+def test_plugin_adaptive_clips_then_forces_one_step_refill_and_reset_clears_both_layers() -> None:
     too_large = np.array([2.0, 0, 0, 0, 0, 0, -2.0], dtype=np.float32)
-    policy, base, _, _ = _policy(
-        [_chunk(first=too_large, fill=0.4), _chunk(fill=-0.4), _chunk(fill=0.6)]
+    base = FakeBasePolicy([_chunk(first=too_large, fill=0.4), _chunk(fill=-0.4), _chunk(fill=0.6)])
+    policy = SmolVLAAdaptivePolicy(
+        SmolVLAAdaptiveConfig(replan_after_safety_violation=True),
+        base_policy=base,
+        base_preprocessor=RecordingProcessor(),
+        base_postprocessor=RecordingProcessor(),
     )
 
     clipped = policy.select_action({"step": 0})
