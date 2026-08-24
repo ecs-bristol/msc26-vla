@@ -21,6 +21,7 @@ class SmolVLAAdaptiveConfig(PreTrainedConfig):
     base_checkpoint: str = "HuggingFaceVLA/smolvla_libero"
     base_revision: str = _FROZEN_SMOLVLA_REVISION
     fixed_h: int = 20
+    safety_enabled: bool = True
     num_steps: int = 2
     precision: str = "fp16"
     base_cache_dir: str | None = None

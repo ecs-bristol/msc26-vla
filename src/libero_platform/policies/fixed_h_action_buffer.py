@@ -53,7 +53,13 @@ class FixedHActionBuffer:
     it never changes a native LeRobot ``n_action_steps`` configuration.
     """
 
-    def __init__(self, predictor: ActionChunkPredictor, *, horizon: int = _FIXED_HORIZON) -> None:
+    def __init__(
+        self,
+        predictor: ActionChunkPredictor,
+        *,
+        horizon: int = _FIXED_HORIZON,
+        safety_enabled: bool = True,
+    ) -> None:
         if horizon != _FIXED_HORIZON:
             raise ValueError("the initial parity wrapper supports only Fixed-H=20")
         self._predictor = predictor
@@ -62,6 +68,7 @@ class FixedHActionBuffer:
         self._buffer_origin: int | None = None
         self._buffer_action_index = 0
         self._model_invocations = 0
+        self._safety_enabled = bool(safety_enabled)
         self._force_next_horizon_one = False
         self._telemetry: list[TelemetryRecord] = []
 
@@ -134,7 +141,8 @@ class FixedHActionBuffer:
         active_horizon = self._active_horizon
         chunk_action_index = self._buffer_action_index
         self._buffer_action_index += 1
-        range_clipped = bool((action < -1.0).any() or (action > 1.0).any())
+        range_violation = bool((action < -1.0).any() or (action > 1.0).any())
+        range_clipped = self._safety_enabled and range_violation
 
         if range_clipped:
             released_action = np.clip(action, -1.0, 1.0).astype(np.float32, copy=False)
@@ -159,6 +167,8 @@ class FixedHActionBuffer:
             "buffer_size_after": len(self._buffer),
             "model_invocation": chunk_origin,
             "model_invoked": chunk_action_index == 0,
+            "safety_enabled": self._safety_enabled,
+            "range_violation": range_violation,
             "range_clipped": range_clipped,
             "forced_horizon_next": 1 if range_clipped else None,
             "gripper_index": _GRIPPER_INDEX,

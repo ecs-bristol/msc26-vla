@@ -120,7 +120,11 @@ class SmolVLAAdaptivePolicy(PreTrainedPolicy):
         self._chunk_predictor = _PostprocessedChunkPredictor(
             self._base_policy, self._base_preprocessor, self._base_postprocessor
         )
-        self._buffer = FixedHActionBuffer(self._chunk_predictor, horizon=config.fixed_h)
+        self._buffer = FixedHActionBuffer(
+            self._chunk_predictor,
+            horizon=config.fixed_h,
+            safety_enabled=config.safety_enabled,
+        )
 
     def get_optim_params(self) -> dict:
         raise RuntimeError("smolvla_adaptive is an inference-only policy")
