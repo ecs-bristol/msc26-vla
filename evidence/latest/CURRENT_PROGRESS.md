@@ -1,53 +1,61 @@
-# Current Experiment Baseline
+# Current Experiment Progress
 
-This folder is the only retained experiment evidence for the current project direction.
+> 最后更新：2026-08-25
+> 模型：`HuggingFaceVLA/smolvla_libero`
+> revision：`6721902bc4d61e50a3bfdb11dfb4cb626f05d102`
+> 套件：`libero_spatial`，正式配置每任务 5 集（共 50 集）
 
-## PC-Local Official Baseline
+## PC-Local Software and Quantisation
 
-- Runtime: WSL Ubuntu with the official `lerobot-eval` CLI.
-- Simulator: LIBERO, one episode for each of ten tasks per suite.
-- Checkpoint: `HuggingFaceVLA/smolvla_libero`.
-- Revision: `6721902bc4d61e50a3bfdb11dfb4cb626f05d102`.
-- Precision: FP16.
-- Episode length: 280 steps.
+已完成：
 
-| Suite | Success | Failed tasks | Primary record |
-|---|---|---|---|
-| libero_spatial | 8/10 (80%) | 2, 7 | `pc_local/libero_spatial_eval_info.json` |
-| libero_object | 9/10 (90%) | 7 | `pc_local/libero_object_eval_info.json` |
-| libero_goal | 8/10 (80%) | 3, 4 | `pc_local/libero_goal_eval_info.json` |
+- `num_steps` 扫描：10 / 5 / 2，成功率均为 72.0%。
+- `n_action_steps` 扫描：1 / 5 / 10 / 20 / 50，最优 `n_action_steps=20`。
+- `chunk_size` 配对：`cs20_na20` 为时间-成功率折中候选。
+- 量化：FP16、language INT8、backbone INT8、mixed 4/8。
 
-## PC Simulator With Jetson Remote Inference
+关键结果：
 
-- Simulator: the same WSL Ubuntu official `lerobot-eval` LIBERO Spatial protocol.
-- Policy execution: Jetson Orin Nano over HTTP at `http://10.42.0.2:8081`.
-- Checkpoint, revision, precision, and episode length: identical to the PC-local baseline.
-- Result: 9 / 10 tasks successful (90%).
-- Primary records: `jetson_remote/eval_info.json` and `jetson_remote/remote_transport.jsonl`.
+- 默认 `(10,1,50)`：72.0%，90.8s/集。
+- 软件候选 `(2,20,20)`：78.0%，28.5s/集。
+- language INT8 `(2,1,50)`：80.0%，延迟 133.3ms。
+- backbone INT8 `(2,1,50)`：78.0%，延迟 142.9ms。
 
-## Software Optimization: Flow-Matching Step Sweep (Experiment A)
+详细数据：`pc_local/num_steps/`、`pc_local/int4/`、`pc_local/action_chunk/`。
 
-- Harness: PC-local official `lerobot-eval`, `libero_spatial`, 5 episodes per task.
-- Method: sweep `--policy.num_steps` over 10, 8, 5, 3, 2 with the same fp16 checkpoint.
-- Success rate (5 ep/task, 50 episodes): 10 steps 72.0%, 5 steps 72.0%, 2 steps 72.0%.
-- Mean episode time: 90.8s (10) -> 63.1s (5) -> 46.8s (2), a 48% reduction at 2 steps.
-- Records: `pc_local/num_steps/num_steps_summary.csv`, `num_steps_per_task.csv`, and figures.
+## Jetson Remote Multi-Step and Quantisation
 
-## Software Optimization: VLM Weight Quantization (Experiment B)
+板卡：Jetson Orin Nano（L4T R36.4.4）
 
-- Harness: PC-local official `lerobot-eval` through the `smolvla_int4` LeRobot plugin.
-- Method: self-contained per-group weight quantization of the SmolVLA language transformer.
-- int8 language-only (5 ep/task): 10 steps 78.0%, 2 steps 80.0%; int8 backbone: 10 steps 78.0%, 2 steps 78.0% (vs fp16 72.0%).
-- Negative result: uniform 4-bit PTQ degrades success (backbone 30%, language-only 10%, single-ep smoke).
-- Memory: language-only weights -23.7% / peak -22.5%; backbone weights -31.4% / peak -24.8%.
-- Latency: language-only is slightly faster than fp16; backbone is comparable at ns2 and slightly slower at ns10.
-- Mixed precision (vision 4-bit + connector 4-bit + text 8-bit): ns2 76.0%, weights -35.3%, latency 179ms (slower than int8 due to 4-bit dequant overhead).
-- Records: `pc_local/int4/quant_summary.csv`, `quant_bench.csv`, and figures.
+正式结果（`(2,20,20)`，每任务 5 集）：
 
-## Retained Operational Path
+| 配置 | 成功率 | 每集时间 | 平均推理 | 平均 round-trip |
+| --- | --- | --- | --- | --- |
+| FP16 | 72.0% | 36.2s | 825.1ms | 858.6ms |
+| language INT8 | 80.0% | 33.3s | 881.8ms | 915.7ms |
+| backbone INT8 | 82.0% | 33.5s | 938.1ms | 972.2ms |
 
-1. Start the Jetson policy service with `scripts/jetson/start_smolvla_libero_service.sh`.
-2. Run PC-local evaluation with `scripts/wsl/run_official_pc_local_eval.sh`.
-3. Run PC simulation plus Jetson inference with `scripts/wsl/run_official_jetson_remote_eval.sh`.
+多步动作返回已在服务端和客户端实现；客户端动作队列按 `n_action_steps`
+逐条弹出，服务端 `predict_action_chunk` 返回完整动作块。
 
-The legacy YAML experiment runner and its historical outputs are intentionally retired. New results should be stored outside the retired `outputs/` directory and copied into this evidence folder only when they are selected as a baseline.
+详细数据：`jetson_remote_multi/`。
+
+## Jetson Hardware Acceleration
+
+TensorRT：
+
+- 可用版本：TensorRT 10.11.0，ONNX 1.17.0。
+- Torch-TensorRT 当前镜像不可用，采用 ONNX + `trtexec`。
+- connector 子模块已成功导出并构建 FP16 engine：
+  - GPU latency mean 0.443 ms，p95 0.598 ms。
+  - Throughput 3031 qps。
+- vision transformer 的 TorchScript tracing 尚被动态 attention mask 阻断。
+
+详细数据：`jetson_hardware/`。
+
+## 待完成
+
+- vision/text 子模块 TensorRT 导出（`dynamo=True` 或记录限制）。
+- CUDA Graphs eager vs replay。
+- `nvpmodel` 功耗档位扫描。
+- 最终端到端消融：baseline → software → software+quant → full hardware stack。

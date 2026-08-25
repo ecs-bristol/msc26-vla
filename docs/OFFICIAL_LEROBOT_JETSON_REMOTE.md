@@ -25,7 +25,8 @@ On Jetson:
 ```bash
 cd ~/vla/project
 export MODEL_REVISION=6721902bc4d61e50a3bfdb11dfb4cb626f05d102
-./scripts/jetson/start_smolvla_libero_service.sh offline
+NUM_STEPS=2 N_ACTION_STEPS=20 CHUNK_SIZE=20 \
+  bash scripts/jetson/start_smolvla_libero_service.sh offline
 ```
 
 Keep that terminal open. The ready line is:
@@ -50,15 +51,16 @@ Set the immutable experiment identity and verify the service:
 ```bash
 export JETSON_ENDPOINT=http://10.42.0.2:8081
 export MODEL_REVISION=6721902bc4d61e50a3bfdb11dfb4cb626f05d102
+export N_ACTION_STEPS=20
 bash scripts/wsl/run_jetson_remote_preflight.sh
 ```
 
 ## 3. Run the official evaluation
 
-One episode for each of the ten LIBERO Spatial tasks:
+One episode for each of the ten LIBERO Spatial tasks (formal 5 episodes per task):
 
 ```bash
-N_EPISODES=1 bash scripts/wsl/run_official_jetson_remote_eval.sh
+N_ACTION_STEPS=20 N_EPISODES=5 bash scripts/wsl/run_official_jetson_remote_eval.sh
 ```
 
 The script invokes official `lerobot-eval` with one environment at a time. LIBERO's official 280-step limit and early success termination remain under the official evaluator.
@@ -70,6 +72,31 @@ Results are written under:
 ```
 
 The official LeRobot output and videos are the primary benchmark evidence. `remote_transport.jsonl` records endpoint latency and server metadata as supplementary deployment evidence.
+
+## 4. Multi-step action chunk and quantisation
+
+The service supports `NUM_STEPS`, `N_ACTION_STEPS`, `CHUNK_SIZE`,
+`QUANT_METHOD`, `QUANT_SCOPE`, and the mixed-precision bit widths. The WSL
+client must use the same `N_ACTION_STEPS` as the service.
+
+Example for language-only INT8:
+
+```bash
+# Jetson
+NUM_STEPS=2 N_ACTION_STEPS=20 CHUNK_SIZE=20 \
+QUANT_METHOD=int8_groupwise QUANT_SCOPE=language \
+  bash scripts/jetson/start_smolvla_libero_service.sh offline
+```
+
+```bash
+# WSL
+export N_ACTION_STEPS=20
+N_ACTION_STEPS=20 N_EPISODES=5 bash scripts/wsl/run_official_jetson_remote_eval.sh
+```
+
+The remote policy plugin caches the returned action chunk and pops actions
+one step at a time, so the official `lerobot-eval` loop can execute multi-step
+chunks through the single-action `select_action` interface.
 
 ## Retired path
 

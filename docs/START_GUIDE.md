@@ -12,8 +12,8 @@
 
 | 部署方式 | 模拟器位置 | 策略推理位置 | 当前基线 |
 |---|---|---|---|
-| PC-Local | WSL Ubuntu | WSL 本地 GPU | 8/10 (80%) |
-| PC 模拟 + Jetson 推理 | WSL Ubuntu | Jetson Orin Nano（HTTP） | 9/10 (90%) |
+| PC-Local | WSL Ubuntu | WSL 本地 GPU | 72.0%（5 集/任务） |
+| PC 模拟 + Jetson 推理 | WSL Ubuntu | Jetson Orin Nano（HTTP） | 72.0–82.0%（5 集/任务） |
 
 架构分工：
 
@@ -216,10 +216,14 @@ N_EPISODES=1 bash scripts/wsl/run_official_jetson_remote_eval.sh
 > 报告延迟时建议同时给出 `round_trip_ms`（系统端到端）和 `inference_ms`（板子算力），
 > 两者含义不同，不要混为一谈。
 
-当前已确认基线（2026-08-13，证据在 `evidence/latest/`）：
+当前实验进度（2026-08-25，正式配置为每任务 5 集）：
 
-- PC-Local：**8/10**，失败任务 task 2、7
-- Jetson 远程：**9/10**，失败任务 task 7
+- PC-Local 软件候选 `(num_steps=2, n_action_steps=20, chunk_size=20)`：78.0%。
+- Jetson FP16 `(2,20,20)`：72.0%，36.2s/集。
+- Jetson language INT8：80.0%，33.3s/集。
+- Jetson backbone INT8：82.0%，33.5s/集。
+
+完整进度与待办见 `evidence/latest/CURRENT_PROGRESS.md`。
 
 ## 6. 环境变量速查
 
@@ -235,6 +239,11 @@ N_EPISODES=1 bash scripts/wsl/run_official_jetson_remote_eval.sh
 | `OUTPUT_ROOT` | `~/vla/results` | 结果根目录 |
 | `MUJOCO_GL` | `egl` | MuJoCo 渲染后端 |
 | `JETSON_IMAGE` | `libero-smolvla:jetson-0.1` | Jetson Docker 镜像名 |
+| `NUM_STEPS` | `10` | flow-matching 去噪步数 |
+| `N_ACTION_STEPS` | `1` | 每次推理执行的动作步数 |
+| `CHUNK_SIZE` | `50` | 模型每次预测的动作块长度 |
+| `QUANT_METHOD` | `none` | Jetson 量化：`none` / `int8_groupwise` / `int4_groupwise` / `mixed` |
+| `QUANT_SCOPE` | `language` | 量化范围：`language` / `backbone` |
 
 ## 7. 常见问题
 
