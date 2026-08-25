@@ -11,6 +11,18 @@
 - GPU latency：mean 0.443 ms，p95 0.598 ms
 - Throughput：3031 qps
 
+## Jetson policy-only quantisation benchmark
+
+> 固定 `num_steps=2`、`n_action_steps=1`，5 次迭代。
+
+| 配置 | mean ms | p95 ms | peak GPU MB | param MB |
+| --- | --- | --- | --- | --- |
+| FP16 | 640.6 | 642.9 | 1279.7 | 1217.9 |
+| language INT8 | 704.7 | 710.0 | 991.8 | 929.4 |
+| backbone INT8 | 883.5 | 893.3 | 961.8 | 835.9 |
+
+原始数据：`jetson_quant_bench.csv`。
+
 该结果证明 SmolVLA 的 connector 子模块可以完成
 `PyTorch -> ONNX -> TensorRT -> engine` 的板端加速链路。
 
