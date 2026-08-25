@@ -122,6 +122,9 @@ def test_smolvla_adapter_identity_tracks_configured_model_and_loaded_runtime() -
         "revision": "0123456789abcdef",
         "precision": "fp16",
         "device": "cuda:0",
+        "num_steps": 10,
+        "n_action_steps": 1,
+        "chunk_size": None,
         "ready": False,
     }
 

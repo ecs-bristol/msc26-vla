@@ -1,0 +1,2 @@
+component,onnx_path,engine_path,precision,engine_size_mib,gpu_latency_mean_ms,gpu_latency_p95_ms,throughput_qps
+connector,smolvla_connector.onnx,smolvla_connector_fp16.engine,fp16,22.5,0.443,0.598,3031.32

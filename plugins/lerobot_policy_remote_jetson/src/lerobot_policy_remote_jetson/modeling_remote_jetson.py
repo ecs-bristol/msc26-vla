@@ -13,7 +13,7 @@ import torch
 from lerobot.policies.pretrained import PreTrainedPolicy
 
 from .configuration_remote_jetson import RemoteJetsonConfig
-from .transport import decode_action_response, observation_to_request
+from .transport import decode_action_chunk_response, observation_to_request
 
 
 class RemoteJetsonPolicy(PreTrainedPolicy):
@@ -34,6 +34,7 @@ class RemoteJetsonPolicy(PreTrainedPolicy):
         self._episode_id = -1
         self._step_id = 0
         self._previous_action = np.zeros(7, dtype=np.float32)
+        self._action_queue: list[np.ndarray] = []
 
     def get_optim_params(self):
         raise RuntimeError("remote_jetson is an inference-only policy")
@@ -42,6 +43,7 @@ class RemoteJetsonPolicy(PreTrainedPolicy):
         self._episode_id += 1
         self._step_id = 0
         self._previous_action.fill(0.0)
+        self._action_queue.clear()
         payload = {
             "suite": self.config.suite,
             "task_id": 0,
@@ -60,6 +62,20 @@ class RemoteJetsonPolicy(PreTrainedPolicy):
 
     @torch.inference_mode()
     def select_action(self, batch: dict[str, torch.Tensor]) -> torch.Tensor:
+        if not self._action_queue:
+            action_chunk = self._predict_action_chunk(batch)
+            self._action_queue = [step.copy() for step in action_chunk]
+        action = self._action_queue.pop(0)
+        return torch.from_numpy(action).unsqueeze(0)
+
+    @torch.inference_mode()
+    def predict_action_chunk(self, batch: dict[str, torch.Tensor]) -> torch.Tensor:
+        action_chunk = self._predict_action_chunk(batch)
+        return torch.from_numpy(action_chunk).unsqueeze(0)
+
+    def _predict_action_chunk(
+        self, batch: dict[str, torch.Tensor]
+    ) -> np.ndarray:
         request = observation_to_request(
             batch,
             run_id=self._run_id,
@@ -75,15 +91,11 @@ class RemoteJetsonPolicy(PreTrainedPolicy):
         )
         response.raise_for_status()
         payload = response.json()
-        action = decode_action_response(payload)
-        self._previous_action = action.copy()
-        self._step_id += 1
+        action_chunk = decode_action_chunk_response(payload)
+        self._previous_action = action_chunk[-1].copy()
+        self._step_id += self.config.n_action_steps
         self._write_telemetry("predict", started, request, payload)
-        return torch.from_numpy(action).unsqueeze(0)
-
-    @torch.inference_mode()
-    def predict_action_chunk(self, batch: dict[str, torch.Tensor]) -> torch.Tensor:
-        return self.select_action(batch).unsqueeze(1)
+        return action_chunk
 
     def forward(self, batch: dict[str, torch.Tensor]) -> tuple[torch.Tensor, dict[str, Any]]:
         raise RuntimeError("remote_jetson is an inference-only policy")

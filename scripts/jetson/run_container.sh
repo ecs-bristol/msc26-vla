@@ -39,7 +39,7 @@ exec docker run --rm --init \
   -e HF_HOME=/root/.cache/huggingface \
   -e "HF_HUB_OFFLINE=$HF_HUB_OFFLINE" \
   -e "MODEL_REVISION=${MODEL_REVISION:-}" \
-  -e PYTHONPATH=/workspace/project/src \
+  -e "PYTHONPATH=/workspace/project/src:/workspace/project/plugins/lerobot_policy_smolvla_int4/src" \
   -e "TRANSFORMERS_OFFLINE=$TRANSFORMERS_OFFLINE" \
   -v "$PROJECT_DIR:/workspace/project:ro" \
   -v "$HF_CACHE_DIR:/root/.cache/huggingface" \

@@ -143,11 +143,14 @@ def test_health_and_metadata_expose_loaded_smolvla_identity() -> None:
     expected_policy = {
         "model_key": "smolvla_libero",
         "checkpoint": "HuggingFaceVLA/smolvla_libero",
-        "revision": "0123456789abcdef",
-        "precision": "fp16",
-        "device": "cuda",
-        "ready": True,
-    }
+            "revision": "0123456789abcdef",
+            "precision": "fp16",
+            "device": "cuda",
+            "num_steps": 10,
+            "n_action_steps": 1,
+            "chunk_size": None,
+            "ready": True,
+        }
     try:
         health = requests.get(f"http://{host}:{port}/health", timeout=2).json()
         metadata = requests.get(f"http://{host}:{port}/metadata", timeout=2).json()

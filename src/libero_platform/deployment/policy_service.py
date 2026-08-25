@@ -21,6 +21,7 @@ from libero_platform.policies.base import (
     PolicyRequest,
     PolicyResponse,
     validate_action,
+    validate_action_chunk,
 )
 
 _MAX_REQUEST_BYTES = 8 * 1024 * 1024
@@ -201,7 +202,7 @@ def _predict_response_payload(
     service_latency_ms = (perf_counter() - started_at) * 1000.0
     if not isfinite(inference_ms) or not isfinite(service_latency_ms):
         raise ValueError("policy response latency must be finite")
-    return {
+    payload = {
         "action": action.tolist(),
         "inference_ms": inference_ms,
         "model_key": response.model_key,
@@ -211,6 +212,11 @@ def _predict_response_payload(
         "metadata": response.metadata,
         "service_latency_ms": service_latency_ms,
     }
+    if response.action_chunk is not None:
+        action_chunk = validate_action_chunk(response.action_chunk)
+        payload["action_chunk"] = action_chunk.tolist()
+        payload["n_action_steps"] = int(action_chunk.shape[0])
+    return payload
 
 
 def _decode_request(payload: Mapping[str, Any]) -> PolicyRequest:

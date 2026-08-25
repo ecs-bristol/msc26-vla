@@ -12,6 +12,7 @@ from libero_platform.policies.base import (
     PolicyRequest,
     PolicyResponse,
     validate_action,
+    validate_action_chunk,
 )
 from libero_platform.spec import ActionControlSpec, SmolVLAInferenceSpec
 
@@ -26,6 +27,9 @@ def _apply_smolvla_inference_settings(
     config: object, settings: SmolVLAInferenceSpec
 ) -> None:
     chunk_size = int(getattr(config, "chunk_size"))
+    if settings.chunk_size is not None:
+        chunk_size = int(settings.chunk_size)
+        config.chunk_size = chunk_size
     if settings.n_action_steps > chunk_size:
         raise ValueError(
             "SmolVLA n_action_steps must not exceed checkpoint chunk_size"
@@ -60,17 +64,28 @@ class SmolVLAPolicyAdapter(PolicyAdapter):
         action_control: ActionControlSpec | None = None,
         smolvla_inference: SmolVLAInferenceSpec | None = None,
         runtime: SmolVLARuntime | None = None,
+        quant_method: str = "none",
+        quant_scope: str = "language",
+        vision_bits: int = 4,
+        connector_bits: int = 8,
+        text_bits: int = 8,
     ) -> None:
         self._model_key = model_key
         self._checkpoint = checkpoint
         self._revision = revision
         self._precision = precision
         self._action_control = action_control or ActionControlSpec()
+        self._smolvla_inference = smolvla_inference or SmolVLAInferenceSpec()
         self._runtime = runtime or LeRobotSmolVLARuntime(
             checkpoint,
             precision,
             smolvla_inference=smolvla_inference,
             revision=revision,
+            quant_method=quant_method,
+            quant_scope=quant_scope,
+            vision_bits=vision_bits,
+            connector_bits=connector_bits,
+            text_bits=text_bits,
         )
         self._loaded = False
 
@@ -81,6 +96,9 @@ class SmolVLAPolicyAdapter(PolicyAdapter):
             "revision": self._revision,
             "precision": self._precision,
             "device": self._runtime.device,
+            "num_steps": self._smolvla_inference.num_steps,
+            "n_action_steps": self._smolvla_inference.n_action_steps,
+            "chunk_size": self._smolvla_inference.chunk_size,
             "ready": self._loaded,
         }
 
@@ -102,7 +120,8 @@ class SmolVLAPolicyAdapter(PolicyAdapter):
             return self._failure("model_load_error", "SmolVLA policy is not loaded", started_at)
 
         action_values: np.ndarray | None = None
-        scaled_action: np.ndarray | None = None
+        scaled_chunk: np.ndarray | None = None
+        transformed_chunk: np.ndarray | None = None
         transformed_action: np.ndarray | None = None
         try:
             postprocessed = self._runtime.predict(
@@ -112,12 +131,19 @@ class SmolVLAPolicyAdapter(PolicyAdapter):
                     "proprioception": np.asarray(request.proprioception, dtype=np.float32),
                 }
             )
-            action_values = _first_action_values(postprocessed)
-            scaled_action = _scale_control_action(action_values, self._action_control)
-            transformed_action = _transform_control_action(
-                action_values, self._action_control
+            action_chunk_values = _action_chunk_values(
+                postprocessed, self._smolvla_inference.n_action_steps
             )
+            action_values = action_chunk_values[0]
+            scaled_chunk = _scale_control_action(
+                action_chunk_values, self._action_control
+            )
+            transformed_chunk = _transform_control_action(
+                action_chunk_values, self._action_control
+            )
+            transformed_action = transformed_chunk[0]
             action = validate_action(transformed_action)
+            action_chunk = validate_action_chunk(transformed_chunk)
         except SmolVLAPolicyRuntimeError as exc:
             return self._failure(exc.failure_type, str(exc), started_at)
         except (TypeError, ValueError, OverflowError) as exc:
@@ -133,8 +159,9 @@ class SmolVLAPolicyAdapter(PolicyAdapter):
             model_key=self._model_key,
             device=self._runtime.device,
             raw_action=action_values.copy(),
+            action_chunk=action_chunk,
             action_transform=_action_transform_metadata(self._action_control),
-            action_clipped=_action_clipped(scaled_action, transformed_action),
+            action_clipped=_action_clipped(scaled_chunk, transformed_chunk),
         )
 
     def _failure(
@@ -157,11 +184,21 @@ class LeRobotSmolVLARuntime:
         precision: str,
         smolvla_inference: SmolVLAInferenceSpec | None = None,
         revision: str | None = None,
+        quant_method: str = "none",
+        quant_scope: str = "language",
+        vision_bits: int = 4,
+        connector_bits: int = 8,
+        text_bits: int = 8,
     ) -> None:
         self._checkpoint = checkpoint
         self._precision = precision
         self._revision = revision
         self._smolvla_inference = smolvla_inference or SmolVLAInferenceSpec()
+        self._quant_method = quant_method
+        self._quant_scope = quant_scope
+        self._vision_bits = vision_bits
+        self._connector_bits = connector_bits
+        self._text_bits = text_bits
         self.device = "unavailable"
         self._torch = None
         self._policy = None
@@ -183,27 +220,63 @@ class LeRobotSmolVLARuntime:
 
             del SmolVLAConfig  # Import registers the config before deserialization.
             _load_status("loading checkpoint configuration")
-            config = PreTrainedConfig.from_pretrained(
-                self._checkpoint, revision=self._revision
-            )
-            _apply_smolvla_inference_settings(config, self._smolvla_inference)
+            if self._quant_method == "none":
+                config = PreTrainedConfig.from_pretrained(
+                    self._checkpoint, revision=self._revision
+                )
+                _apply_smolvla_inference_settings(config, self._smolvla_inference)
+            else:
+                from lerobot_policy_smolvla_int4.configuration_smolvla_int4 import (
+                    SmolVLAInt4Config,
+                )
+
+                config = SmolVLAInt4Config(
+                    checkpoint=self._checkpoint,
+                    revision=self._revision,
+                    quant_method=self._quant_method,
+                    quant_scope=self._quant_scope,
+                    vision_bits=self._vision_bits,
+                    connector_bits=self._connector_bits,
+                    text_bits=self._text_bits,
+                    num_steps=self._smolvla_inference.num_steps,
+                    n_action_steps=self._smolvla_inference.n_action_steps,
+                    device="cpu",
+                )
             _load_status(
                 "simulation inference: "
                 f"action_steps={config.n_action_steps}, flow_steps={config.num_steps}"
             )
-            # SmolVLA's nested VLM loader must materialize cached safetensors on CPU first.
-            config.device = "cpu"
-            policy_class = get_policy_class(config.type)
-            _load_status("loading policy weights")
-            policy = policy_class.from_pretrained(
-                self._checkpoint, config=config, revision=self._revision
-            )
+            if self._quant_method == "none":
+                # SmolVLA's nested VLM loader must materialize cached safetensors on CPU first.
+                config.device = "cpu"
+                policy_class = get_policy_class(config.type)
+                _load_status("loading policy weights")
+                policy = policy_class.from_pretrained(
+                    self._checkpoint, config=config, revision=self._revision
+                )
+            else:
+                from lerobot_policy_smolvla_int4.modeling_smolvla_int4 import (
+                    SmolVLAInt4Policy,
+                )
+
+                config.device = "cpu"
+                _load_status("loading quantized policy weights")
+                policy = SmolVLAInt4Policy(config)
             _load_status("loading preprocessors")
-            preprocessor, postprocessor = make_pre_post_processors(
-                policy_cfg=config,
-                pretrained_path=self._checkpoint,
-                revision=self._revision,
-            )
+            if self._quant_method == "none":
+                preprocessor, postprocessor = make_pre_post_processors(
+                    policy_cfg=config,
+                    pretrained_path=self._checkpoint,
+                    revision=self._revision,
+                )
+            else:
+                from lerobot_policy_smolvla_int4.processor_smolvla_int4 import (
+                    make_smolvla_int4_pre_post_processors,
+                )
+
+                preprocessor, postprocessor = (
+                    make_smolvla_int4_pre_post_processors(config)
+                )
             _validate_smolvla_preprocessor_state(preprocessor)
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
             _load_status(f"moving policy to {self.device}")
@@ -261,9 +334,9 @@ class LeRobotSmolVLARuntime:
                 ):
                     noise = self._sampling_noise(normalized)
                     if noise is None:
-                        action = self._policy.select_action(batch=normalized)
+                        action = self._policy.predict_action_chunk(batch=normalized)
                     else:
-                        action = self._policy.select_action(
+                        action = self._policy.predict_action_chunk(
                             batch=normalized,
                             noise=noise,
                         )
@@ -286,6 +359,9 @@ class LeRobotSmolVLARuntime:
             )
         batch_size = 1 if len(shape) == 1 else int(shape[0])
         config = self._policy.config
+        inner_policy = getattr(self._policy, "inner", None)
+        if inner_policy is not None and getattr(inner_policy, "config", None) is not None:
+            config = inner_policy.config
         noise_shape = (
             batch_size,
             int(config.chunk_size),
@@ -356,12 +432,15 @@ def _image_tensor(image: object, torch):
     return tensor.permute(2, 0, 1).contiguous().to(dtype=torch.float32).div(255.0)
 
 
-def _first_action_values(action: object) -> np.ndarray:
+def _action_chunk_values(action: object, n_action_steps: int) -> np.ndarray:
     value = action.detach().cpu().numpy() if hasattr(action, "detach") else action
     flattened = np.asarray(value, dtype=np.float32).reshape(-1)
-    if flattened.size < 7:
-        raise ValueError("postprocessed action must contain at least 7 values")
-    return flattened[:7]
+    if flattened.size < n_action_steps * 7:
+        raise ValueError(
+            "postprocessed action must contain at least "
+            f"{n_action_steps * 7} values, got {flattened.size}"
+        )
+    return flattened[: n_action_steps * 7].reshape(n_action_steps, 7)
 
 
 def _action_validation_error(action: np.ndarray | None, error: Exception) -> str:
@@ -376,8 +455,12 @@ def _action_validation_error(action: np.ndarray | None, error: Exception) -> str
 def _scale_control_action(raw: np.ndarray, control: ActionControlSpec) -> np.ndarray:
     action = raw.copy()
     if control.mode == "scaled":
-        action[:3] *= control.translation_scale
-        action[3:6] *= control.rotation_scale
+        if action.ndim == 2:
+            action[:, :3] *= control.translation_scale
+            action[:, 3:6] *= control.rotation_scale
+        else:
+            action[:3] *= control.translation_scale
+            action[3:6] *= control.rotation_scale
     return action
 
 

@@ -89,3 +89,21 @@ def decode_action_response(payload: Mapping[str, Any]) -> np.ndarray:
             f"observed min={float(action.min()):.6g}, max={float(action.max()):.6g}"
         )
     return action
+
+
+def decode_action_chunk_response(payload: Mapping[str, Any]) -> np.ndarray:
+    if "action_chunk" not in payload:
+        return decode_action_response(payload).reshape(1, -1)
+    action_chunk = np.asarray(payload["action_chunk"], dtype=np.float32)
+    if action_chunk.ndim != 2 or action_chunk.shape[1] != 7:
+        raise ValueError(
+            "remote action_chunk must have shape (n_action_steps, 7), "
+            f"got {action_chunk.shape}"
+        )
+    if action_chunk.shape[0] < 1:
+        raise ValueError("remote action_chunk must contain at least one action")
+    if not np.isfinite(action_chunk).all():
+        raise ValueError("remote action_chunk must contain only finite values")
+    if np.any(action_chunk < -1.0) or np.any(action_chunk > 1.0):
+        raise ValueError("remote action_chunk must stay in [-1, 1]")
+    return action_chunk

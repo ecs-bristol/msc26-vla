@@ -48,6 +48,20 @@ def build_parser() -> argparse.ArgumentParser:
     serve_policy.add_argument(
         "--precision", choices=("fp32", "fp16", "bf16"), default="fp16"
     )
+    serve_policy.add_argument("--num-steps", type=int, default=10)
+    serve_policy.add_argument("--n-action-steps", type=int, default=1)
+    serve_policy.add_argument("--chunk-size", type=int, default=None)
+    serve_policy.add_argument(
+        "--quant-method",
+        choices=("none", "int4_groupwise", "int8_groupwise", "bnb_nf4", "mixed"),
+        default="none",
+    )
+    serve_policy.add_argument(
+        "--quant-scope", choices=("language", "backbone"), default="language"
+    )
+    serve_policy.add_argument("--vision-bits", type=int, choices=(4, 8, 16), default=4)
+    serve_policy.add_argument("--connector-bits", type=int, choices=(4, 8, 16), default=8)
+    serve_policy.add_argument("--text-bits", type=int, choices=(4, 8, 16), default=8)
     serve_policy.add_argument("--host", default="127.0.0.1")
     serve_policy.add_argument("--port", default=8081, type=int)
 
@@ -123,6 +137,20 @@ def main(
         return _list_catalog(args, active_config_root)
 
     if args.command == "serve-policy":
+        from .spec import SmolVLAInferenceSpec
+
+        smolvla_inference = SmolVLAInferenceSpec(
+            n_action_steps=args.n_action_steps,
+            num_steps=args.num_steps,
+            chunk_size=args.chunk_size,
+        )
+        quant_config = {
+            "quant_method": args.quant_method,
+            "quant_scope": args.quant_scope,
+            "vision_bits": args.vision_bits,
+            "connector_bits": args.connector_bits,
+            "text_bits": args.text_bits,
+        }
         return _serve_policy(
             args.policy,
             args.checkpoint,
@@ -130,6 +158,8 @@ def main(
             args.revision,
             args.host,
             args.port,
+            smolvla_inference,
+            quant_config,
             serve_callable,
         )
 
@@ -328,9 +358,13 @@ def _serve_policy(
     revision: str | None,
     host: str,
     port: int,
+    smolvla_inference: object,
+    quant_config: dict[str, object],
     serve_callable: Callable[[PolicyAdapter, str, int], object] | None,
 ) -> int:
-    adapter = _build_service_policy(policy_key, checkpoint, precision, revision)
+    adapter = _build_service_policy(
+        policy_key, checkpoint, precision, revision, smolvla_inference, quant_config
+    )
     server = None
     try:
         adapter.load()
@@ -362,7 +396,12 @@ def _serve_policy(
 
 
 def _build_service_policy(
-    policy_key: str, checkpoint: str, precision: str, revision: str | None = None
+    policy_key: str,
+    checkpoint: str,
+    precision: str,
+    revision: str | None = None,
+    smolvla_inference: object | None = None,
+    quant_config: dict[str, object] | None = None,
 ) -> PolicyAdapter:
     if policy_key == "zero_policy":
         from .policies.zero_policy import ZeroPolicyAdapter
@@ -376,6 +415,8 @@ def _build_service_policy(
             checkpoint=checkpoint,
             precision=precision,
             revision=revision,
+            smolvla_inference=smolvla_inference,
+            **({} if quant_config is None else quant_config),
         )
     raise ValueError(f"unsupported service policy: {policy_key}")
 

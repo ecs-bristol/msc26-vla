@@ -50,6 +50,7 @@ class ActionControlSpec(StrictModel):
 class SmolVLAInferenceSpec(StrictModel):
     n_action_steps: StrictInt = Field(default=1, ge=1, le=50)
     num_steps: StrictInt = Field(default=10, ge=1, le=100)
+    chunk_size: StrictInt | None = Field(default=None, ge=1, le=200)
 
 
 class PolicySpec(StrictModel):

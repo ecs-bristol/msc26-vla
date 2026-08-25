@@ -38,6 +38,7 @@ class PolicyResponse:
     model_key: str
     device: str
     raw_action: FloatArray | None = None
+    action_chunk: FloatArray | None = None
     action_transform: str = ""
     action_clipped: bool = False
     failure_type: str = ""
@@ -85,4 +86,20 @@ def validate_action(action: npt.ArrayLike) -> FloatArray:
         raise ValueError("action must contain finite values")
     if (value < -1.0).any() or (value > 1.0).any():
         raise ValueError("action values must stay in [-1, 1]")
+    return value
+
+
+def validate_action_chunk(action_chunk: npt.ArrayLike) -> FloatArray:
+    try:
+        value = np.asarray(action_chunk, dtype=np.float32)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("action_chunk must contain numeric float32 values") from exc
+    if value.ndim != 2 or value.shape[1] != 7 or value.shape[0] < 1:
+        raise ValueError(
+            f"action_chunk must have shape (n_action_steps, 7), got {value.shape}"
+        )
+    if not np.isfinite(value).all():
+        raise ValueError("action_chunk must contain finite values")
+    if (value < -1.0).any() or (value > 1.0).any():
+        raise ValueError("action_chunk values must stay in [-1, 1]")
     return value

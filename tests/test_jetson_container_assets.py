@@ -13,8 +13,13 @@ def test_jetson_container_assets_encode_the_reproducible_runtime_contract() -> N
     )
 
     for required in (
-        "FROM nvcr.io/nvidia/pytorch:25.08-py3",
-        "lerobot[smolvla]>=0.6.1,<0.7.0",
+        "FROM nvcr.io/nvidia/pytorch:25.06-py3-igpu",
+        '"transformers>=5.4,<5.6"',
+        '"accelerate>=1.14,<2"',
+        '"num2words>=0.5.14,<0.6"',
+        'python3 -m pip install --no-cache-dir --no-deps "lerobot==0.6.1"',
+        'assert ".nv25." in torch.__version__',
+        'assert torchvision.__version__.startswith("0.22.0a0+")',
         "numpy>=2.0,<2.3",
         "--force-reinstall",
         "numpy>=1.26,<2",
@@ -22,6 +27,9 @@ def test_jetson_container_assets_encode_the_reproducible_runtime_contract() -> N
         "pytest>=8.3,<9",
     ):
         assert required in dockerfile
+
+    assert '"lerobot[smolvla]>=0.6.1,<0.7.0"' not in dockerfile
+    assert 'assert ".nv25.6" in torch.__version__' not in dockerfile
 
     for required in (
         "--runtime nvidia",

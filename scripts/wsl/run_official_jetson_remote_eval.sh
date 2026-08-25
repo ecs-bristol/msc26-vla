@@ -9,14 +9,15 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-$HOME/vla/results}"
 N_EPISODES="${N_EPISODES:-1}"
 SUITE="${SUITE:-libero_spatial}"
 EPISODE_LENGTH="${EPISODE_LENGTH:-280}"
+N_ACTION_STEPS="${N_ACTION_STEPS:-1}"
 RUN_STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUTPUT_DIR="${OUTPUT_DIR:-$OUTPUT_ROOT/${SUITE}_jetson_remote_$RUN_STAMP}"
+OUTPUT_DIR="${OUTPUT_DIR:-$OUTPUT_ROOT/${SUITE}_jetson_remote_na${N_ACTION_STEPS}_$RUN_STAMP}"
 
 export HF_HOME MUJOCO_GL="${MUJOCO_GL:-egl}"
 mkdir -p "$OUTPUT_DIR"
 
-printf 'Official LeRobot evaluation: suite=%s episodes_per_task=%s endpoint=%s output=%s\n' \
-  "$SUITE" "$N_EPISODES" "$JETSON_ENDPOINT" "$OUTPUT_DIR"
+printf 'Official LeRobot evaluation: suite=%s episodes_per_task=%s n_action_steps=%s endpoint=%s output=%s\n' \
+  "$SUITE" "$N_EPISODES" "$N_ACTION_STEPS" "$JETSON_ENDPOINT" "$OUTPUT_DIR"
 
 exec lerobot-eval \
   --policy.type=remote_jetson \
@@ -24,6 +25,7 @@ exec lerobot-eval \
   --policy.checkpoint="$CHECKPOINT" \
   --policy.revision="$MODEL_REVISION" \
   --policy.precision=fp16 \
+  --policy.n_action_steps="$N_ACTION_STEPS" \
   --policy.device=cpu \
   --policy.suite="$SUITE" \
   --policy.telemetry_path="$OUTPUT_DIR/remote_transport.jsonl" \
