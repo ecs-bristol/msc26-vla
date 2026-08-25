@@ -12,6 +12,7 @@ import csv
 import hashlib
 import json
 import os
+import random
 import shlex
 import subprocess
 import sys
@@ -35,6 +36,8 @@ SUMMARY_FIELDS = (
     "task_id",
     "seed",
     "initial_state_id",
+    "environment_seed",
+    "inference_seed",
     "success_at_280",
     "success_step",
     "executed_env_steps",
@@ -45,11 +48,13 @@ SUMMARY_FIELDS = (
     "range_clips",
     "buffer_discards",
     "mean_actual_horizon",
+    "action_trace_sha256",
     "termination_reason",
     "git_sha",
     "resolved_config_path",
 )
 _TERMINAL_EPISODE_STATUSES = frozenset({"completed", "failed"})
+_INFERENCE_SEED_DERIVATION = "sha256(libero_spatial|task_id|seed|initial_state_id)[:8] & ((1<<63)-1)"
 
 
 class PilotPolicy(Protocol):
@@ -156,6 +161,57 @@ def _trials(config: dict[str, Any]) -> list[dict[str, int]]:
     return trials
 
 
+def _inference_seed(trial: dict[str, int]) -> int:
+    """Derive a condition-independent reproducible inference RNG seed."""
+
+    pairing_key = "|".join(
+        str(value)
+        for value in (
+            "libero_spatial",
+            trial["task_id"],
+            trial["seed"],
+            trial["initial_state_id"],
+        )
+    )
+    digest = hashlib.sha256(pairing_key.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], byteorder="big") & ((1 << 63) - 1)
+
+
+def _set_inference_seed(seed: int) -> None:
+    """Set all RNGs used by the frozen policy before one episode begins."""
+
+    random.seed(seed)
+    np.random.seed(seed % (2**32))
+    import torch
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
+def _seed_provenance(trials: list[dict[str, int]]) -> list[dict[str, int]]:
+    return [
+        {
+            "task_id": trial["task_id"],
+            "initial_state_id": trial["initial_state_id"],
+            "environment_seed": trial["seed"],
+            "inference_seed": _inference_seed(trial),
+        }
+        for trial in trials
+    ]
+
+
+def _action_trace_sha256(actions: list[np.ndarray]) -> str:
+    digest = hashlib.sha256()
+    digest.update(b"libero-paired-pilot-action-trace-v1\0")
+    digest.update(len(actions).to_bytes(8, byteorder="big"))
+    for action in actions:
+        value = np.ascontiguousarray(np.asarray(action, dtype=np.float32))
+        if value.shape != (7,):
+            raise ValueError("action trace accepts only LIBERO (7,) actions")
+        digest.update(value.tobytes())
+    return digest.hexdigest()
+
+
 def _condition_slug(name: str) -> str:
     return name.replace("→", "-to-").lower()
 
@@ -247,6 +303,9 @@ def materialize_dry_run(
         "chunk_size": 50,
         "batch_size": 1,
         "episode_cap": 280,
+        "environment_seed_source": "paired_manifest.trials[].seed",
+        "inference_seed_derivation": _INFERENCE_SEED_DERIVATION,
+        "pairing_seeds": _seed_provenance(trials),
     }
     _write_json(output_dir / "provenance.json", provenance)
 
@@ -260,6 +319,8 @@ def materialize_dry_run(
                 "condition": condition["name"],
                 "condition_config": condition,
                 **trial,
+                "environment_seed": trial["seed"],
+                "inference_seed": _inference_seed(trial),
                 "success_at_280": None,
                 "success_step": None,
                 "executed_env_steps": None,
@@ -270,6 +331,7 @@ def materialize_dry_run(
                 "range_clips": None,
                 "buffer_discards": None,
                 "mean_actual_horizon": None,
+                "action_trace_sha256": None,
                 "termination_reason": "not_started_dry_run",
                 "git_sha": sha,
                 "resolved_config_path": str(resolved_path.resolve()),
@@ -426,9 +488,12 @@ def _run_episode(
     trial: dict[str, int],
     backend: object,
     policy: PilotPolicy,
+    inference_seed_setter: Callable[[int], None] = _set_inference_seed,
 ) -> dict[str, object]:
     """Run one manifest-selected environment episode and return a terminal record."""
 
+    inference_seed = _inference_seed(trial)
+    inference_seed_setter(inference_seed)
     episode = backend.open_episode(
         config["suite"],
         trial["task_id"],
@@ -441,6 +506,7 @@ def _run_episode(
     success = False
     success_step: int | None = None
     telemetry_snapshot: EpisodeTelemetrySnapshot | None = None
+    action_trace: list[np.ndarray] = []
     termination_reason = "max_steps"
     status = "completed"
     try:
@@ -451,6 +517,7 @@ def _run_episode(
             action = np.asarray(policy.select_action(observation), dtype=np.float32)
             if action.shape != (7,):
                 raise ValueError(f"policy action must have shape (7,), got {action.shape}")
+            action_trace.append(action.copy())
             step = episode.step(action)
             steps = step_id
             observation = step.observation
@@ -497,12 +564,15 @@ def _run_episode(
         "condition": condition["name"],
         "condition_config": condition,
         **trial,
+        "environment_seed": trial["seed"],
+        "inference_seed": inference_seed,
         "success_at_280": success,
         "success_step": success_step,
         "executed_env_steps": steps,
         "wall_time_to_terminal_s": time.perf_counter() - started_at,
         "model_inference_time_s": inference_seconds,
         **metrics,
+        "action_trace_sha256": _action_trace_sha256(action_trace),
         "termination_reason": termination_reason,
         "git_sha": _git_sha(PROJECT_ROOT),
         "resolved_config_path": str((output_dir / "resolved_config.json").resolve()),
@@ -516,6 +586,7 @@ def execute_pilot(
     policy_factory: Callable[[dict[str, Any], dict[str, Any]], PilotPolicy],
     task_ids: set[int] | None = None,
     episodes_per_task: int | None = None,
+    inference_seed_setter: Callable[[int], None] = _set_inference_seed,
 ) -> dict[str, int]:
     """Execute only planned pairs, atomically persisting each terminal result.
 
@@ -542,6 +613,9 @@ def execute_pilot(
             "local_files_only": config["model"]["local_files_only"],
             "base_snapshot_path": config["model"]["base_snapshot_path"],
             "vlm_snapshot_path": config["model"]["vlm_snapshot_path"],
+            "environment_seed_source": "paired_manifest.trials[].seed",
+            "inference_seed_derivation": _INFERENCE_SEED_DERIVATION,
+            "pairing_seeds": _seed_provenance(selected_trials),
         },
     )
     backend = backend_factory()
@@ -572,6 +646,7 @@ def execute_pilot(
                         trial=trial,
                         backend=backend,
                         policy=policy,
+                        inference_seed_setter=inference_seed_setter,
                     )
                     # Re-read just before atomic replacement: completed results
                     # from a prior resume are an immutable boundary.

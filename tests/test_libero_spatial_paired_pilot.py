@@ -4,6 +4,7 @@ import csv
 import importlib.util
 import json
 from pathlib import Path
+import random
 import subprocess
 import sys
 
@@ -19,6 +20,8 @@ SUMMARY_FIELDS = {
     "task_id",
     "seed",
     "initial_state_id",
+    "environment_seed",
+    "inference_seed",
     "success_at_280",
     "success_step",
     "executed_env_steps",
@@ -29,6 +32,7 @@ SUMMARY_FIELDS = {
     "range_clips",
     "buffer_discards",
     "mean_actual_horizon",
+    "action_trace_sha256",
     "termination_reason",
     "git_sha",
     "resolved_config_path",
@@ -114,6 +118,29 @@ def test_dry_run_materializes_six_strictly_paired_conditions(tmp_path: Path) -> 
     assert adaptive["condition_config"]["replan_after_safety_violation"] is True
     assert adaptive["termination_reason"] == "not_started_dry_run"
     assert adaptive["resolved_config_path"] == str((output_dir / "resolved_config.json").resolve())
+    assert adaptive["environment_seed"] == 1000
+    assert isinstance(adaptive["inference_seed"], int)
+    assert adaptive["action_trace_sha256"] is None
+    for condition in (
+        "static-h1",
+        "static-h5",
+        "static-h10",
+        "static-h20",
+        "static-h50",
+        "adaptive-h20-to-h1",
+    ):
+        paired = json.loads(
+            (output_dir / "episodes" / condition / "task_00_seed_1000_state_0.json").read_text()
+        )
+        assert paired["inference_seed"] == adaptive["inference_seed"]
+    provenance = json.loads((output_dir / "provenance.json").read_text())
+    assert provenance["environment_seed_source"] == "paired_manifest.trials[].seed"
+    assert provenance["pairing_seeds"][0] == {
+        "task_id": 0,
+        "initial_state_id": 0,
+        "environment_seed": 1000,
+        "inference_seed": adaptive["inference_seed"],
+    }
 
     with (output_dir / "summary.csv").open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
@@ -225,10 +252,38 @@ class _FakePolicy:
             ]
         )
         self.model_inference_time_s += 0.25
-        return np.zeros(7, dtype=np.float32)
+        value = (random.random() + float(np.random.random())) / 4.0
+        return np.full(7, value, dtype=np.float32)
 
     def close(self) -> None:
         return None
+
+
+def _mock_inference_seed_setter(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed % (2**32))
+
+
+def test_inference_seed_sets_python_numpy_and_torch_rngs(monkeypatch) -> None:
+    module = _pilot_module()
+    calls: list[tuple[str, int]] = []
+
+    class _FakeCuda:
+        @staticmethod
+        def manual_seed_all(seed: int) -> None:
+            calls.append(("cuda", seed))
+
+    class _FakeTorch:
+        cuda = _FakeCuda()
+
+        @staticmethod
+        def manual_seed(seed: int) -> None:
+            calls.append(("cpu", seed))
+
+    monkeypatch.setitem(sys.modules, "torch", _FakeTorch())
+    module._set_inference_seed(12345)
+
+    assert calls == [("cpu", 12345), ("cuda", 12345)]
 
 
 def test_executor_reads_manifest_and_resume_does_not_repeat_completed_episodes(tmp_path: Path) -> None:
@@ -250,6 +305,7 @@ def test_executor_reads_manifest_and_resume_does_not_repeat_completed_episodes(t
         policy_factory=lambda _condition, _config: _FakePolicy(),
         task_ids={0},
         episodes_per_task=1,
+        inference_seed_setter=_mock_inference_seed_setter,
     )
     second = module.execute_pilot(
         output_dir=output_dir,
@@ -257,6 +313,7 @@ def test_executor_reads_manifest_and_resume_does_not_repeat_completed_episodes(t
         policy_factory=lambda _condition, _config: _FakePolicy(),
         task_ids={0},
         episodes_per_task=1,
+        inference_seed_setter=_mock_inference_seed_setter,
     )
 
     assert first == {"executed_episodes": 6, "skipped_episodes": 0}
@@ -282,6 +339,7 @@ def test_executor_persists_every_required_episode_metric(tmp_path: Path) -> None
         policy_factory=lambda _condition, _config: _FakePolicy(),
         task_ids={0},
         episodes_per_task=1,
+        inference_seed_setter=_mock_inference_seed_setter,
     )
 
     result = json.loads(
@@ -298,6 +356,9 @@ def test_executor_persists_every_required_episode_metric(tmp_path: Path) -> None
     assert result["buffer_discards"] == 1
     assert result["mean_actual_horizon"] == 20.0
     assert result["termination_reason"] == "success"
+    assert result["environment_seed"] == 1000
+    assert isinstance(result["inference_seed"], int)
+    assert len(result["action_trace_sha256"]) == 64
 
 
 def test_second_episode_uses_only_its_telemetry_and_inference_deltas(tmp_path: Path) -> None:
@@ -320,6 +381,7 @@ def test_second_episode_uses_only_its_telemetry_and_inference_deltas(tmp_path: P
         policy_factory=lambda _condition, _config: shared_policy,
         task_ids={0},
         episodes_per_task=2,
+        inference_seed_setter=_mock_inference_seed_setter,
     )
 
     first = json.loads(
@@ -344,3 +406,58 @@ def test_second_episode_uses_only_its_telemetry_and_inference_deltas(tmp_path: P
         (row["initial_state_id"], row["model_invocations"], row["model_inference_time_s"])
         for row in summary[:2]
     ] == [("0", "1", "0.25"), ("1", "1", "0.25")]
+
+
+def test_same_pairing_key_repeats_deterministic_action_trace_and_metrics(tmp_path: Path) -> None:
+    module = _pilot_module()
+    output_dir = tmp_path / "pilot"
+    base_snapshot = _snapshot(tmp_path, SMOLVLA_REVISION)
+    vlm_snapshot = _snapshot(tmp_path, SMOLVLM2_REVISION)
+    module.materialize_dry_run(
+        config_path=PROJECT_ROOT / "configs" / "evaluation" / "libero_spatial_paired_pilot.yaml",
+        output_dir=output_dir,
+        base_snapshot_path=str(base_snapshot),
+        vlm_snapshot_path=str(vlm_snapshot),
+    )
+    config, trials = module._read_execution_inputs(output_dir)
+    counter = {"opens": 0, "steps": 0, "closes": 0}
+    policy = _FakePolicy()
+    condition = config["conditions"][3]
+    trial = trials[0]
+
+    first = module._run_episode(
+        output_dir=output_dir,
+        config=config,
+        condition=condition,
+        trial=trial,
+        backend=_FakeBackend(counter),
+        policy=policy,
+        inference_seed_setter=_mock_inference_seed_setter,
+    )
+    second = module._run_episode(
+        output_dir=output_dir,
+        config=config,
+        condition=condition,
+        trial=trial,
+        backend=_FakeBackend(counter),
+        policy=policy,
+        inference_seed_setter=_mock_inference_seed_setter,
+    )
+
+    fields = (
+        "inference_seed",
+        "action_trace_sha256",
+        "success_at_280",
+        "success_step",
+        "executed_env_steps",
+        "model_invocations",
+        "range_violations",
+        "range_clips",
+        "buffer_discards",
+        "mean_actual_horizon",
+        "model_inference_time_s",
+    )
+    assert {field: first[field] for field in fields} == {
+        field: second[field] for field in fields
+    }
+    assert first["environment_seed"] == second["environment_seed"] == trial["seed"]
