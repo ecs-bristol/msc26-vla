@@ -145,6 +145,26 @@ def test_adaptive_h20_clips_discards_and_forces_one_step_replan() -> None:
     assert predictor.select_action_calls == 0
 
 
+def test_static_h1_original_does_not_modify_out_of_range_native_action() -> None:
+    native = np.array([0.1, -0.2, 0.3, -0.4, 0.5, -0.6, -1.061], dtype=np.float32)
+    predictor = FakeChunkPredictor([chunk(first=native, fill=0.0)])
+    buffer = FixedHActionBuffer(
+        predictor,
+        horizon=1,
+        safety_enabled=False,
+        replan_after_safety_violation=False,
+    )
+
+    release = buffer.next_action("official-observation")
+
+    np.testing.assert_array_equal(release.action, native)
+    assert release.telemetry["range_violation"] is True
+    assert release.telemetry["range_clipped"] is False
+    assert release.telemetry["buffer_discarded"] is False
+    assert release.telemetry["planned_horizon"] == 1
+    assert release.telemetry["actual_horizon"] == 1
+
+
 def test_release_telemetry_is_complete_and_json_serializable() -> None:
     predictor = FakeChunkPredictor([chunk(fill=0.5)])
     buffer = FixedHActionBuffer(predictor)

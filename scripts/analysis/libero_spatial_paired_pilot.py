@@ -126,15 +126,24 @@ def _validate_config(config: dict[str, Any]) -> None:
     if not isinstance(conditions, list) or len(conditions) != 6:
         raise ValueError("pilot config must declare the six paired conditions")
     names = [condition.get("name") for condition in conditions if isinstance(condition, dict)]
-    if names != ["Static-H1", "Static-H5", "Static-H10", "Static-H20", "Static-H50", "Adaptive-H20→H1"]:
-        raise ValueError("pilot conditions must be the five static horizons and Adaptive-H20→H1")
+    if names != [
+        "Static-H1-original",
+        "Static-H5",
+        "Static-H10",
+        "Static-H20",
+        "Static-H50",
+        "Adaptive-H20→H1",
+    ]:
+        raise ValueError("pilot conditions must include native-equivalent Static-H1-original")
     for condition in conditions:
         if not isinstance(condition, dict):
             raise ValueError("each condition must be a mapping")
         if type(condition.get("fixed_h")) is not int or condition["fixed_h"] not in ALLOWED_HORIZONS:
             raise ValueError("condition fixed_h must be one of 1, 5, 10, 20, 50")
-        if condition.get("safety_enabled") is not True:
-            raise ValueError("all paired-pilot conditions require safety_enabled=True")
+    if conditions[0].get("safety_enabled") is not False:
+        raise ValueError("Static-H1-original must disable custom safety clipping")
+    if any(condition.get("safety_enabled") is not True for condition in conditions[1:]):
+        raise ValueError("non-baseline paired-pilot conditions require safety_enabled=True")
     adaptive = conditions[-1]
     if adaptive["fixed_h"] != 20 or adaptive.get("replan_after_safety_violation") is not True:
         raise ValueError("Adaptive-H20→H1 must replan after a safety violation")
@@ -586,6 +595,7 @@ def execute_pilot(
     policy_factory: Callable[[dict[str, Any], dict[str, Any]], PilotPolicy],
     task_ids: set[int] | None = None,
     episodes_per_task: int | None = None,
+    condition_names: set[str] | None = None,
     inference_seed_setter: Callable[[int], None] = _set_inference_seed,
 ) -> dict[str, int]:
     """Execute only planned pairs, atomically persisting each terminal result.
@@ -597,6 +607,17 @@ def execute_pilot(
     output_dir = output_dir.resolve()
     config, trials = _read_execution_inputs(output_dir)
     selected_trials = _selected_trials(trials, task_ids, episodes_per_task)
+    available_conditions = {condition["name"] for condition in config["conditions"]}
+    selected_condition_names = (
+        available_conditions if condition_names is None else condition_names
+    )
+    if not selected_condition_names or not selected_condition_names <= available_conditions:
+        unknown = sorted(selected_condition_names - available_conditions)
+        raise ValueError(f"unknown or empty condition selection: {unknown}")
+    selected_conditions = [
+        condition for condition in config["conditions"]
+        if condition["name"] in selected_condition_names
+    ]
     manifest_path = output_dir / "paired_manifest.json"
     _write_json(
         output_dir / "execution_provenance.json",
@@ -610,6 +631,7 @@ def execute_pilot(
             "paired_manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
             "selected_task_ids": sorted({trial["task_id"] for trial in selected_trials}),
             "selected_episodes_per_task": episodes_per_task,
+            "selected_conditions": [condition["name"] for condition in selected_conditions],
             "local_files_only": config["model"]["local_files_only"],
             "base_snapshot_path": config["model"]["base_snapshot_path"],
             "vlm_snapshot_path": config["model"]["vlm_snapshot_path"],
@@ -622,7 +644,7 @@ def execute_pilot(
     executed = 0
     skipped = 0
     try:
-        for condition in config["conditions"]:
+        for condition in selected_conditions:
             pending = [
                 trial
                 for trial in selected_trials
@@ -743,7 +765,7 @@ def _local_policy_factory(
             vlm_snapshot_path=model["vlm_snapshot_path"],
             local_files_only=True,
             fixed_h=condition["fixed_h"],
-            safety_enabled=True,
+            safety_enabled=condition["safety_enabled"],
             replan_after_safety_violation=condition["replan_after_safety_violation"],
             num_steps=2,
             chunk_size=50,
@@ -758,16 +780,11 @@ def _local_policy_factory(
     return factory
 
 
-def _local_backend_factory(
-    *, dataset_directory: Path, initial_state_source: str
-) -> Callable[[], object]:
+def _local_backend_factory() -> Callable[[], object]:
     def factory() -> object:
-        from libero_platform.backends.libero_backend import LiberoBackend
+        from libero_platform.backends.libero_backend import OfficialLeRobotLiberoBackend
 
-        return LiberoBackend(
-            dataset_directory=dataset_directory,
-            initial_state_source=initial_state_source,
-        )
+        return OfficialLeRobotLiberoBackend()
 
     return factory
 
@@ -789,6 +806,7 @@ def main() -> None:
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--task-id", type=int, action="append")
     parser.add_argument("--episodes-per-task", type=int)
+    parser.add_argument("--condition", action="append")
     args = parser.parse_args()
     if args.dry_run and args.execute:
         raise SystemExit("--dry-run and --execute are mutually exclusive")
@@ -811,17 +829,17 @@ def main() -> None:
             args.vlm_snapshot_path, SMOLVLM2_REVISION, "vlm_snapshot_path"
         ) != resolved["model"]["vlm_snapshot_path"]:
             raise SystemExit("--vlm-snapshot-path must match resolved_config.json")
+        if args.initial_state_source != "benchmark":
+            raise SystemExit("official paired-pilot backend requires benchmark initial states")
         # Do not re-materialize here. --execute has one permitted source of
         # trial identity: the manifest already present in output_dir.
         result = execute_pilot(
             output_dir=args.output_dir,
-            backend_factory=_local_backend_factory(
-                dataset_directory=args.dataset_directory,
-                initial_state_source=args.initial_state_source,
-            ),
+            backend_factory=_local_backend_factory(),
             policy_factory=_local_policy_factory(device=args.device),
             task_ids=set(args.task_id) if args.task_id else None,
             episodes_per_task=args.episodes_per_task,
+            condition_names=set(args.condition) if args.condition else None,
         )
     print(json.dumps(result, sort_keys=True))
 

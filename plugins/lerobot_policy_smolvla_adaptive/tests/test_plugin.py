@@ -62,6 +62,14 @@ class RecordingProcessor:
         return value
 
 
+class FixedNoiseBasePolicy(torch.nn.Module):
+    def predict_action_chunk(self, batch: dict[str, object]) -> torch.Tensor:
+        return batch["fixed_noise"]
+
+    def reset(self) -> None:
+        return None
+
+
 def _policy(chunks: list[object]):
     base = FakeBasePolicy(chunks)
     preprocessor = RecordingProcessor()
@@ -223,6 +231,29 @@ def test_plugin_uses_base_chunk_path_and_fixed_h_twenty() -> None:
     assert torch.allclose(releases[0], torch.full((1, 7), 0.2))
     assert torch.allclose(releases[-1], torch.full((1, 7), -0.2))
     assert policy.action_telemetry[-1]["model_invocation"] == 2
+
+
+def test_fixed_noise_first_chunk_matches_native_base_path_exactly() -> None:
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(1000)
+    fixed_noise = torch.randn((1, 50, 7), generator=generator)
+    batch = {"fixed_noise": fixed_noise.clone()}
+    preprocessor = RecordingProcessor()
+    postprocessor = RecordingProcessor()
+    base = FixedNoiseBasePolicy()
+    policy = SmolVLAAdaptivePolicy(
+        SmolVLAAdaptiveConfig(fixed_h=1, safety_enabled=False),
+        base_policy=base,
+        base_preprocessor=preprocessor,
+        base_postprocessor=postprocessor,
+    )
+
+    native = postprocessor(base.predict_action_chunk(preprocessor(batch)))
+    wrapped = policy._chunk_predictor.predict_action_chunk(batch)
+
+    torch.testing.assert_close(wrapped, native, rtol=0.0, atol=0.0)
+    assert len(preprocessor.calls) == 2
+    assert len(postprocessor.calls) == 2
 
 
 @pytest.mark.parametrize(

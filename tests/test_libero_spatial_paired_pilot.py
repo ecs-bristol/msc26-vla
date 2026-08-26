@@ -102,13 +102,15 @@ def test_dry_run_materializes_six_strictly_paired_conditions(tmp_path: Path) -> 
     assert resolved["model"]["base_revision"] == SMOLVLA_REVISION
     assert resolved["model"]["vlm_revision"] == SMOLVLM2_REVISION
     assert [condition["name"] for condition in resolved["conditions"]] == [
-        "Static-H1",
+        "Static-H1-original",
         "Static-H5",
         "Static-H10",
         "Static-H20",
         "Static-H50",
         "Adaptive-H20→H1",
     ]
+    assert resolved["conditions"][0]["safety_enabled"] is False
+    assert all(condition["safety_enabled"] for condition in resolved["conditions"][1:])
 
     episode_files = list((output_dir / "episodes").rglob("*.json"))
     assert len(episode_files) == 300
@@ -122,7 +124,7 @@ def test_dry_run_materializes_six_strictly_paired_conditions(tmp_path: Path) -> 
     assert isinstance(adaptive["inference_seed"], int)
     assert adaptive["action_trace_sha256"] is None
     for condition in (
-        "static-h1",
+        "static-h1-original",
         "static-h5",
         "static-h10",
         "static-h20",
@@ -147,7 +149,7 @@ def test_dry_run_materializes_six_strictly_paired_conditions(tmp_path: Path) -> 
         assert set(rows[0]) == SUMMARY_FIELDS
     assert len(rows) == 300
     assert {row["condition"] for row in rows} == {
-        "Static-H1",
+        "Static-H1-original",
         "Static-H5",
         "Static-H10",
         "Static-H20",
@@ -343,7 +345,7 @@ def test_executor_persists_every_required_episode_metric(tmp_path: Path) -> None
     )
 
     result = json.loads(
-        (output_dir / "episodes" / "static-h1" / "task_00_seed_1000_state_0.json").read_text()
+        (output_dir / "episodes" / "static-h1-original" / "task_00_seed_1000_state_0.json").read_text()
     )
     assert result["status"] == "completed"
     assert {field for field in SUMMARY_FIELDS} <= result.keys()
@@ -461,3 +463,38 @@ def test_same_pairing_key_repeats_deterministic_action_trace_and_metrics(tmp_pat
         field: second[field] for field in fields
     }
     assert first["environment_seed"] == second["environment_seed"] == trial["seed"]
+
+
+def test_executor_can_select_only_original_h1_without_touching_other_conditions(
+    tmp_path: Path,
+) -> None:
+    module = _pilot_module()
+    output_dir = tmp_path / "pilot"
+    base_snapshot = _snapshot(tmp_path, SMOLVLA_REVISION)
+    vlm_snapshot = _snapshot(tmp_path, SMOLVLM2_REVISION)
+    module.materialize_dry_run(
+        config_path=PROJECT_ROOT / "configs" / "evaluation" / "libero_spatial_paired_pilot.yaml",
+        output_dir=output_dir,
+        base_snapshot_path=str(base_snapshot),
+        vlm_snapshot_path=str(vlm_snapshot),
+    )
+    counter = {"opens": 0, "steps": 0, "closes": 0}
+
+    result = module.execute_pilot(
+        output_dir=output_dir,
+        backend_factory=lambda: _FakeBackend(counter),
+        policy_factory=lambda _condition, _config: _FakePolicy(),
+        task_ids={0},
+        episodes_per_task=1,
+        condition_names={"Static-H1-original"},
+        inference_seed_setter=_mock_inference_seed_setter,
+    )
+
+    assert result == {"executed_episodes": 1, "skipped_episodes": 0}
+    assert counter == {"opens": 1, "steps": 1, "closes": 1}
+    untouched = json.loads(
+        (output_dir / "episodes" / "adaptive-h20-to-h1" / "task_00_seed_1000_state_0.json").read_text()
+    )
+    assert untouched["status"] == "planned_dry_run"
+    provenance = json.loads((output_dir / "execution_provenance.json").read_text())
+    assert provenance["selected_conditions"] == ["Static-H1-original"]

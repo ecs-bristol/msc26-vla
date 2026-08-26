@@ -3,6 +3,8 @@ set -Eeuo pipefail
 
 MODEL_REVISION="${MODEL_REVISION:?MODEL_REVISION must be set to a concrete revision}"
 CHECKPOINT="${CHECKPOINT:-HuggingFaceVLA/smolvla_libero}"
+BASE_SNAPSHOT_PATH="${BASE_SNAPSHOT_PATH:?BASE_SNAPSHOT_PATH must name the frozen SmolVLA snapshot}"
+VLM_SNAPSHOT_PATH="${VLM_SNAPSHOT_PATH:?VLM_SNAPSHOT_PATH must name the frozen SmolVLM2 snapshot}"
 POLICY_MODE="${POLICY_MODE:?POLICY_MODE must be native_h1, native_h20, or adaptive_fixed_h20}"
 HF_HOME="${HF_HOME:-$HOME/vla/hf-cache}"
 HF_HUB_CACHE="${HF_HUB_CACHE:-$HF_HOME/hub}"
@@ -21,6 +23,15 @@ PAIRED_SEED_MANIFEST="${PAIRED_SEED_MANIFEST:-$OUTPUT_DIR/paired_seed_manifest.j
 export HF_HOME HF_HUB_CACHE MUJOCO_GL="${MUJOCO_GL:-egl}"
 export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}" TRANSFORMERS_OFFLINE="${TRANSFORMERS_OFFLINE:-1}"
 mkdir -p "$OUTPUT_DIR"
+
+if [[ ! -d "$BASE_SNAPSHOT_PATH" || ! -f "$BASE_SNAPSHOT_PATH/config.json" ]]; then
+  printf 'Frozen SmolVLA snapshot is unavailable: %s\n' "$BASE_SNAPSHOT_PATH" >&2
+  exit 2
+fi
+if [[ ! -d "$VLM_SNAPSHOT_PATH" || ! -f "$VLM_SNAPSHOT_PATH/config.json" ]]; then
+  printf 'Frozen SmolVLM2 snapshot is unavailable: %s\n' "$VLM_SNAPSHOT_PATH" >&2
+  exit 2
+fi
 
 if [[ ! -f "$PROJECT_ROOT/scripts/analysis/capture_official_eval_provenance.py" ]]; then
   printf 'Missing provenance helper under PROJECT_ROOT=%s\n' "$PROJECT_ROOT" >&2
@@ -46,8 +57,9 @@ case "$POLICY_MODE" in
     policy_type="smolvla"
     native_n_action_steps="${POLICY_MODE#native_h}"
     policy_args=(
-      "--policy.path=$CHECKPOINT"
+      "--policy.path=$BASE_SNAPSHOT_PATH"
       "--policy.pretrained_revision=$MODEL_REVISION"
+      "--policy.vlm_model_name=$VLM_SNAPSHOT_PATH"
       "--policy.n_action_steps=$native_n_action_steps"
       "--policy.num_steps=$NUM_STEPS"
       "--policy.chunk_size=$CHUNK_SIZE"
@@ -57,8 +69,6 @@ case "$POLICY_MODE" in
     policy_type="smolvla_adaptive"
     fixed_h="20"
     plugin_distribution="lerobot_policy_smolvla_adaptive"
-    BASE_SNAPSHOT_PATH="${BASE_SNAPSHOT_PATH:?BASE_SNAPSHOT_PATH must name the frozen SmolVLA snapshot}"
-    VLM_SNAPSHOT_PATH="${VLM_SNAPSHOT_PATH:?VLM_SNAPSHOT_PATH must name the frozen SmolVLM2 snapshot}"
     policy_args=(
       "--policy.type=$policy_type"
       "--policy.base_checkpoint=$CHECKPOINT"
@@ -113,6 +123,9 @@ python3 "$PROJECT_ROOT/scripts/analysis/capture_official_eval_provenance.py" \
   --seed "$EVAL_SEED" \
   --checkpoint "$CHECKPOINT" \
   --checkpoint-revision "$MODEL_REVISION" \
+  --checkpoint-load-path "$BASE_SNAPSHOT_PATH" \
+  --vlm-snapshot-path "$VLM_SNAPSHOT_PATH" \
+  --local-files-only \
   --policy-mode "$POLICY_MODE" \
   --policy-type "$policy_type" \
   --chunk-size "$CHUNK_SIZE" \
@@ -139,6 +152,9 @@ python3 "$PROJECT_ROOT/scripts/analysis/capture_official_eval_provenance.py" \
   --seed "$EVAL_SEED" \
   --checkpoint "$CHECKPOINT" \
   --checkpoint-revision "$MODEL_REVISION" \
+  --checkpoint-load-path "$BASE_SNAPSHOT_PATH" \
+  --vlm-snapshot-path "$VLM_SNAPSHOT_PATH" \
+  --local-files-only \
   --policy-mode "$POLICY_MODE" \
   --policy-type "$policy_type" \
   --chunk-size "$CHUNK_SIZE" \

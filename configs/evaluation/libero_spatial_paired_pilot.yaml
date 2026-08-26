@@ -14,9 +14,9 @@ model:
   num_steps: 2
   chunk_size: 50
 conditions:
-  - name: Static-H1
+  - name: Static-H1-original
     fixed_h: 1
-    safety_enabled: true
+    safety_enabled: false
     replan_after_safety_violation: false
   - name: Static-H5
     fixed_h: 5

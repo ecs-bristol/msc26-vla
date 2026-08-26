@@ -7,6 +7,7 @@ import csv
 import hashlib
 import importlib.metadata
 import json
+import os
 import platform
 import shutil
 import subprocess
@@ -103,6 +104,16 @@ def _write_launcher_resolved_config(
         "seed": args.seed,
         "checkpoint": args.checkpoint,
         "checkpoint_revision": args.checkpoint_revision,
+        "checkpoint_load_path": str(args.checkpoint_load_path.resolve())
+        if args.checkpoint_load_path
+        else None,
+        "vlm_snapshot_path": str(args.vlm_snapshot_path.resolve())
+        if args.vlm_snapshot_path
+        else None,
+        "local_files_only": args.local_files_only,
+        "hf_hub_cache": os.environ.get("HF_HUB_CACHE"),
+        "hf_hub_offline": os.environ.get("HF_HUB_OFFLINE"),
+        "transformers_offline": os.environ.get("TRANSFORMERS_OFFLINE"),
         "policy_mode": args.policy_mode,
         "policy_type": args.policy_type,
         "native_n_action_steps": args.native_n_action_steps,
@@ -165,6 +176,9 @@ def main() -> None:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--checkpoint-revision", required=True)
+    parser.add_argument("--checkpoint-load-path", type=Path)
+    parser.add_argument("--vlm-snapshot-path", type=Path)
+    parser.add_argument("--local-files-only", action="store_true")
     parser.add_argument("--policy-mode", required=True)
     parser.add_argument("--policy-type", required=True)
     parser.add_argument("--native-n-action-steps", type=int)
@@ -223,6 +237,16 @@ def main() -> None:
         "mujoco_gl": __import__("os").environ.get("MUJOCO_GL"),
         "checkpoint": args.checkpoint,
         "checkpoint_revision": args.checkpoint_revision,
+        "checkpoint_load_path": str(args.checkpoint_load_path.resolve())
+        if args.checkpoint_load_path
+        else None,
+        "vlm_snapshot_path": str(args.vlm_snapshot_path.resolve())
+        if args.vlm_snapshot_path
+        else None,
+        "local_files_only": args.local_files_only,
+        "hf_hub_cache": os.environ.get("HF_HUB_CACHE"),
+        "hf_hub_offline": os.environ.get("HF_HUB_OFFLINE"),
+        "transformers_offline": os.environ.get("TRANSFORMERS_OFFLINE"),
         "policy_mode": args.policy_mode,
         "policy_type": args.policy_type,
         "native_n_action_steps": args.native_n_action_steps,

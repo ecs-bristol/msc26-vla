@@ -32,6 +32,27 @@ def _load_libero_runtime() -> SimpleNamespace:
     )
 
 
+def _load_official_lerobot_runtime() -> SimpleNamespace:
+    """Load the LeRobot 0.6.1 LIBERO environment and processor lazily."""
+
+    if importlib.util.find_spec("lerobot") is None:
+        raise RuntimeError("official LIBERO backend requires LeRobot installed")
+    if importlib.util.find_spec("libero") is None:
+        raise RuntimeError("official LIBERO backend requires LIBERO installed")
+
+    from lerobot.envs import preprocess_observation
+    from lerobot.envs.libero import LiberoEnv
+    from lerobot.processor.env_processor import LiberoProcessorStep
+    from libero.libero import benchmark
+
+    return SimpleNamespace(
+        benchmark=benchmark,
+        libero_env=LiberoEnv,
+        preprocess_observation=preprocess_observation,
+        processor_factory=LiberoProcessorStep,
+    )
+
+
 class LiberoBackend:
     """Open deterministic LIBERO episodes from demonstration or benchmark states."""
 
@@ -156,6 +177,182 @@ class LiberoBackend:
             raise ValueError(
                 f"initial_state_id {initial_state_id} is unavailable for task {task.name}"
             ) from exc
+
+
+class OfficialLeRobotLiberoBackend:
+    """Paired-pilot backend that delegates environment semantics to LeRobot 0.6.1.
+
+    Unlike :class:`LiberoBackend`, this path intentionally does not reproduce
+    LeRobot's observation transformations.  It instantiates the official
+    ``LiberoEnv`` and calls ``preprocess_observation`` and
+    ``LiberoProcessorStep`` exactly once per observation.
+    """
+
+    def __init__(self) -> None:
+        self._runtime = _load_official_lerobot_runtime()
+
+    def _resolve_suite(self, suite: str) -> Any:
+        try:
+            suite_type = self._runtime.benchmark.get_benchmark_dict()[suite]
+        except (KeyError, TypeError) as exc:
+            raise ValueError(f"unknown LIBERO suite: {suite}") from exc
+        return suite_type()
+
+    def list_tasks(self, suite: str) -> list[dict[str, object]]:
+        benchmark_suite = self._resolve_suite(suite)
+        return [
+            {"task_id": task_id, "task_name": benchmark_suite.get_task(task_id).name}
+            for task_id in range(benchmark_suite.get_num_tasks())
+        ]
+
+    def open_episode(
+        self, suite: str, task_id: int, initial_state_id: int, max_steps: int, seed: int
+    ) -> OfficialLeRobotLiberoEpisode:
+        _validate_index("task_id", task_id)
+        _validate_index("initial_state_id", initial_state_id)
+        if not isinstance(max_steps, int) or isinstance(max_steps, bool) or max_steps < 1:
+            raise ValueError("max_steps must be a positive integer")
+        if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0:
+            raise ValueError("seed must be a non-negative integer")
+
+        benchmark_suite = self._resolve_suite(suite)
+        if task_id >= benchmark_suite.get_num_tasks():
+            raise ValueError(f"task_id {task_id} is outside suite {suite}")
+        environment = self._runtime.libero_env(
+            task_suite=benchmark_suite,
+            task_id=task_id,
+            task_suite_name=suite,
+            episode_length=max_steps,
+            obs_type="pixels_agent_pos",
+            observation_width=360,
+            observation_height=360,
+            init_states=True,
+            episode_index=initial_state_id,
+            n_envs=1,
+            num_steps_wait=10,
+            control_freq=20,
+            control_mode="relative",
+            hard_reset=True,
+        )
+        return OfficialLeRobotLiberoEpisode(
+            environment=environment,
+            seed=seed,
+            initial_state_id=initial_state_id,
+            preprocess_observation=self._runtime.preprocess_observation,
+            processor=self._runtime.processor_factory(),
+        )
+
+
+class OfficialLeRobotLiberoEpisode:
+    """Adapt one official LeRobot LIBERO environment to the platform protocol."""
+
+    def __init__(
+        self,
+        *,
+        environment: Any,
+        seed: int,
+        initial_state_id: int,
+        preprocess_observation: Any,
+        processor: Any,
+    ) -> None:
+        self._env = environment
+        self._seed = seed
+        self._initial_state_id = initial_state_id
+        self._preprocess_observation = preprocess_observation
+        self._processor = processor
+        self._closed = False
+        self._last_observation: Observation | None = None
+        self.processor_calls = 0
+        self.reset_evidence: ResetEvidence | None = None
+        self.model: object | None = None
+        self.data: object | None = None
+
+    def reset(self) -> Observation:
+        self._ensure_open()
+        initial_state = np.asarray(self._env._init_states[self._initial_state_id]).copy()
+        raw_observation, _ = self._env.reset(seed=self._seed)
+        inner = self._env._env
+        if inner is not None:
+            self.model = inner.sim.model._model
+            self.data = inner.sim.data._data
+        robot_state = raw_observation["robot_state"]
+        self.reset_evidence = ResetEvidence.from_components(
+            seed=self._seed,
+            initial_state_source="benchmark",
+            settle_steps=10,
+            initial_state=initial_state,
+            robot0_eef_pos=robot_state["eef"]["pos"],
+            robot0_eef_quat=robot_state["eef"]["quat"],
+        )
+        self._last_observation = self._observation(raw_observation)
+        return self._last_observation
+
+    def step(self, action: np.ndarray) -> StepResult:
+        self._ensure_open()
+        value = np.asarray(action, dtype=np.float32)
+        if value.shape != (7,):
+            raise ValueError(f"LIBERO action must have shape (7,), got {value.shape}")
+        raw_observation, reward, terminated, truncated, info = self._env.step(value)
+        self._last_observation = self._observation(raw_observation)
+        return StepResult(
+            observation=self._last_observation,
+            reward=float(reward),
+            done=bool(terminated) or bool(truncated),
+            success=bool(info.get("is_success", False)),
+            info=dict(info),
+        )
+
+    def render_frame(self) -> np.ndarray | None:
+        if self._last_observation is None:
+            return None
+        return self._last_observation.images["agentview"].copy()
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._env.close()
+        self._closed = True
+
+    def _observation(self, raw_observation: dict[str, Any]) -> Observation:
+        processed = self._preprocess_observation(
+            _add_single_environment_batch(raw_observation)
+        )
+        processed["task"] = [self._env.task_description]
+        processed = self._processor.observation(processed)
+        self.processor_calls += 1
+        return Observation(
+            images={
+                "agentview": _policy_image_to_hwc_uint8(processed["observation.images.image"]),
+                "wrist": _policy_image_to_hwc_uint8(processed["observation.images.image2"]),
+            },
+            proprioception=np.asarray(
+                processed["observation.state"].detach().cpu().numpy()[0], dtype=np.float32
+            ),
+            instruction=processed["task"][0],
+        )
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("LIBERO episode is closed")
+
+
+def _policy_image_to_hwc_uint8(value: Any) -> np.ndarray:
+    array = np.asarray(value.detach().cpu().numpy())
+    if array.ndim != 4 or array.shape[0] != 1 or array.shape[1] != 3:
+        raise ValueError(
+            f"official processed image must have shape (1, 3, H, W), got {array.shape}"
+        )
+    return np.rint(array[0].transpose(1, 2, 0) * 255.0).clip(0, 255).astype(np.uint8)
+
+
+def _add_single_environment_batch(value: Any) -> Any:
+    """Match the leading environment dimension supplied by Gym vector envs."""
+
+    if isinstance(value, dict):
+        return {key: _add_single_environment_batch(item) for key, item in value.items()}
+    if isinstance(value, np.ndarray):
+        return value[None, ...]
+    return value
 
 
 @dataclass
