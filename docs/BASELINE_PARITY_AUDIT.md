@@ -47,6 +47,10 @@ LIBERO backend，并且额外执行了 safety clipping。
   `2026-08-25 23:13:13.433646347 +0100`。
 - 新结果只写入 `/home/xinrui_shen/vla/runs/baseline-parity-audit`；没有写入仓库的
   `runs/`。
+- paired executor 已打印 `{"executed_episodes": 10, "skipped_episodes": 0}` 且全部
+  episode JSON/summary 已原子落盘后，Python 进程仍停留在 EGL/CUDA interpreter
+  shutdown；等待 10 秒后人工终止了这个 post-rollout 残留进程。终止发生在最终结果
+  输出之后，没有增加、重跑或截断 episode。
 
 ## A/B/C 实现审计
 
@@ -216,6 +220,8 @@ ruff，且按要求没有下载新依赖；`git diff --check` 通过。
    配置匹配的成功率量级，但不是同一组 10 个 trajectory。
 4. 本审计没有逐因素 rollout ablation，不能从 10 集结果量化图像方向、settle、state
    与 clipping 各自的独立效应。
+5. paired executor 的 episode 执行与持久化已完成，但 EGL/CUDA shutdown 残留仍需
+   单独排查；它不属于 observation/action parity，也没有影响本次 10 条 terminal 记录。
 
 以上差异不阻止 baseline parity gate：同一 observation/noise 的 tensor/action 已逐值
 一致，且修复后的 paired H1 与官方 H1 均为 `10/10`。
