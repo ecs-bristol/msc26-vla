@@ -2,3 +2,4 @@ config,num_steps,n_action_steps,chunk_size,success_pct,ep_s,inference_ms_mean,ro
 fp16,2,20,20,72.0,36.2,825.1,858.6,395
 language_int8,2,20,20,80.0,33.3,881.8,915.7,355
 backbone_int8,2,20,20,82.0,33.5,938.1,972.2,357
+mixed,2,20,20,66.0,38.9,1012.5,1045.9,423

@@ -1,0 +1,4 @@
+config,success_pct,ep_s,inference_ms_mean,predict_count
+software_fp16,72.0,36.2,825.1,395
+software_language_int8,80.0,33.3,881.8,355
+software_language_int8_trt_connector,76.0,35.0,854.2,379

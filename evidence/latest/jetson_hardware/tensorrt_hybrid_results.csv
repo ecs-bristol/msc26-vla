@@ -1,0 +1,5 @@
+calibration_samples,n_episodes,success_pct,ep_s,inference_ms_mean,notes
+64,1,10.0,61.1,905.7,smoke
+200,1,40.0,51.1,932.3,smoke
+400,1,50.0,48.3,963.7,smoke
+400,5,16.0,57.4,933.6,formal

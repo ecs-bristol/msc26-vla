@@ -40,7 +40,7 @@ def main() -> int:
     vision_model.to("cpu")
     vision_model.to(torch.float32)
 
-    pixel_values = torch.zeros((1, 3, 256, 256), dtype=torch.float32)
+    pixel_values = torch.zeros((1, 3, 512, 512), dtype=torch.float32)
     with torch.no_grad():
         reference = vision_model(pixel_values)
     image_hidden_states = reference.last_hidden_state

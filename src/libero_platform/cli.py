@@ -62,6 +62,8 @@ def build_parser() -> argparse.ArgumentParser:
     serve_policy.add_argument("--vision-bits", type=int, choices=(4, 8, 16), default=4)
     serve_policy.add_argument("--connector-bits", type=int, choices=(4, 8, 16), default=8)
     serve_policy.add_argument("--text-bits", type=int, choices=(4, 8, 16), default=8)
+    serve_policy.add_argument("--tensorrt-vision-engine", default=None)
+    serve_policy.add_argument("--tensorrt-connector-engine", default=None)
     serve_policy.add_argument("--host", default="127.0.0.1")
     serve_policy.add_argument("--port", default=8081, type=int)
 
@@ -150,6 +152,8 @@ def main(
             "vision_bits": args.vision_bits,
             "connector_bits": args.connector_bits,
             "text_bits": args.text_bits,
+            "tensorrt_vision_engine": args.tensorrt_vision_engine or None,
+            "tensorrt_connector_engine": args.tensorrt_connector_engine or None,
         }
         return _serve_policy(
             args.policy,
@@ -382,6 +386,9 @@ def _serve_policy(
             return 0
         return 0
     except Exception:
+        import traceback
+
+        traceback.print_exc()
         return _report_unavailable(TerminalStatus(), "policy_service_startup_failed")
     finally:
         if server is not None:

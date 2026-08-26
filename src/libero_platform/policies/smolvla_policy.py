@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import time
+import os
+from pathlib import Path
 from collections.abc import Mapping
 from typing import Protocol
 
@@ -69,6 +71,8 @@ class SmolVLAPolicyAdapter(PolicyAdapter):
         vision_bits: int = 4,
         connector_bits: int = 8,
         text_bits: int = 8,
+        tensorrt_vision_engine: str | None = None,
+        tensorrt_connector_engine: str | None = None,
     ) -> None:
         self._model_key = model_key
         self._checkpoint = checkpoint
@@ -86,6 +90,8 @@ class SmolVLAPolicyAdapter(PolicyAdapter):
             vision_bits=vision_bits,
             connector_bits=connector_bits,
             text_bits=text_bits,
+            tensorrt_vision_engine=tensorrt_vision_engine,
+            tensorrt_connector_engine=tensorrt_connector_engine,
         )
         self._loaded = False
 
@@ -189,6 +195,8 @@ class LeRobotSmolVLARuntime:
         vision_bits: int = 4,
         connector_bits: int = 8,
         text_bits: int = 8,
+        tensorrt_vision_engine: str | None = None,
+        tensorrt_connector_engine: str | None = None,
     ) -> None:
         self._checkpoint = checkpoint
         self._precision = precision
@@ -199,6 +207,8 @@ class LeRobotSmolVLARuntime:
         self._vision_bits = vision_bits
         self._connector_bits = connector_bits
         self._text_bits = text_bits
+        self._tensorrt_vision_engine = tensorrt_vision_engine
+        self._tensorrt_connector_engine = tensorrt_connector_engine
         self.device = "unavailable"
         self._torch = None
         self._policy = None
@@ -279,8 +289,63 @@ class LeRobotSmolVLARuntime:
                 )
             _validate_smolvla_preprocessor_state(preprocessor)
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
+            self._trt_connector = None
+            if self._tensorrt_connector_engine is not None:
+                from libero_platform.deployment.tensorrt_runtime import (
+                    TensorRTConnector,
+                )
+
+                _load_status("preloading TensorRT connector engine")
+                self._trt_connector = TensorRTConnector(
+                    self._tensorrt_connector_engine,
+                    device=self.device,
+                )
             _load_status(f"moving policy to {self.device}")
             policy.to(self.device)
+            policy_model = getattr(policy, "inner", policy)
+            attention_implementation = os.environ.get("ATTN_IMPLEMENTATION")
+            if attention_implementation in {"eager", "sdpa", "flash_attention_2"}:
+                text_model = (
+                    policy_model.model.vlm_with_expert.vlm.model.text_model
+                )
+                text_model.config._attn_implementation = attention_implementation
+                text_model.config.attn_implementation = attention_implementation
+                _load_status(
+                    f"attention implementation: {attention_implementation}"
+                )
+            if self._tensorrt_vision_engine is not None:
+                from libero_platform.deployment.tensorrt_runtime import (
+                    TensorRTVisionEncoder,
+                )
+
+                _load_status("replacing vision encoder with TensorRT engine")
+                vision_module = (
+                    policy_model.model.vlm_with_expert.vlm.model.vision_model
+                )
+                vision_module.to("cpu")
+                torch.cuda.empty_cache()
+                setattr(
+                    policy_model.model.vlm_with_expert.vlm.model,
+                    "vision_model",
+                    TensorRTVisionEncoder(
+                        self._tensorrt_vision_engine,
+                        device=self.device,
+                    ),
+                )
+                del vision_module
+            if self._tensorrt_connector_engine is not None:
+                _load_status("replacing connector with TensorRT engine")
+                connector_module = (
+                    policy_model.model.vlm_with_expert.vlm.model.connector
+                )
+                connector_module.to("cpu")
+                torch.cuda.empty_cache()
+                setattr(
+                    policy_model.model.vlm_with_expert.vlm.model,
+                    "connector",
+                    self._trt_connector,
+                )
+                del connector_module
             inference_dtype = None
             if self.device == "cuda" and self._precision == "fp16":
                 inference_dtype = torch.float16
@@ -326,6 +391,19 @@ class LeRobotSmolVLARuntime:
                 else value
                 for key, value in normalized.items()
             }
+            calibration_dir = os.environ.get("SMOLVLA_CALIB_DIR")
+            if calibration_dir:
+                calibration_path = Path(calibration_dir).expanduser()
+                calibration_path.mkdir(parents=True, exist_ok=True)
+                for key, value in normalized.items():
+                    if "image" not in key or not hasattr(value, "cpu"):
+                        continue
+                    counter = getattr(self, "_calibration_counter", 0)
+                    target = calibration_path / (
+                        f"{key.replace('.', '_')}_{counter:05d}.pt"
+                    )
+                    self._torch.save(value.cpu(), target)
+                    self._calibration_counter = counter + 1
             with self._torch.inference_mode():
                 with self._torch.autocast(
                     device_type=self.device,
@@ -346,6 +424,9 @@ class LeRobotSmolVLARuntime:
         except SmolVLAPolicyRuntimeError:
             raise
         except Exception as exc:
+            import traceback
+
+            traceback.print_exc()
             raise SmolVLAPolicyRuntimeError("invalid_action", str(exc)) from exc
 
     def _sampling_noise(self, batch: dict[str, object]):

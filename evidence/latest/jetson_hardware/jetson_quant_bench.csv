@@ -2,3 +2,4 @@ config,quant_method,quant_scope,num_steps,n_action_steps,mean_ms,p95_ms,peak_all
 fp16,none,language,2,1,640.58,642.92,1279.71,1217.9
 language_int8,int8_groupwise,language,2,1,704.71,709.97,991.81,929.4
 backbone_int8,int8_groupwise,backbone,2,1,883.52,893.34,961.80,835.9
+mixed,mixed,language,2,1,745.70,748.13,959.03,787.5

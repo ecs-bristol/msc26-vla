@@ -16,6 +16,27 @@ REVISION = "6721902bc4d61e50a3bfdb11dfb4cb626f05d102"
 OUTPUT_PATH = Path("/workspace/outputs/smolvla_vision.onnx")
 
 
+class VisionWrapper(torch.nn.Module):
+    def __init__(self, vision_model: torch.nn.Module) -> None:
+        super().__init__()
+        self.vision_model = vision_model
+
+    def forward(
+        self,
+        pixel_values: torch.Tensor,
+    ) -> torch.Tensor:
+        patch_attention_mask = torch.ones(
+            (1, 32, 32),
+            dtype=torch.bool,
+            device=pixel_values.device,
+        )
+        output = self.vision_model(
+            pixel_values=pixel_values,
+            patch_attention_mask=patch_attention_mask,
+        )
+        return output.last_hidden_state
+
+
 def main() -> int:
     runtime = LeRobotSmolVLARuntime(
         checkpoint=CHECKPOINT,
@@ -37,24 +58,20 @@ def main() -> int:
     vision_model.config.attn_implementation = "eager"
     vision_model.eval()
     vision_model.to("cpu")
-    vision_model.to(torch.float32)
+    vision_model.to(torch.float16)
 
-    pixel_values = torch.zeros((1, 3, 256, 256), dtype=torch.float32)
-    with torch.no_grad():
-        reference = vision_model(pixel_values)
-    sequence_length = reference.last_hidden_state.shape[1]
-    patch_attention_mask = torch.ones(
-        (1, sequence_length), dtype=torch.bool
-    )
+    pixel_values = torch.zeros((1, 3, 512, 512), dtype=torch.float16)
+    wrapper = VisionWrapper(vision_model)
+    wrapper.eval()
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     torch.onnx.export(
-        vision_model,
-        (pixel_values, patch_attention_mask),
+        wrapper,
+        (pixel_values,),
         str(OUTPUT_PATH),
-        input_names=["pixel_values", "patch_attention_mask"],
+        input_names=["pixel_values"],
         output_names=["vision_features"],
         opset_version=17,
-        dynamic_axes={"pixel_values": {0: "batch"}},
+        dynamo=True,
     )
     print(f"exported {OUTPUT_PATH}")
     return 0
