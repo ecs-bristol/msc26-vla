@@ -1,0 +1,28 @@
+{
+  "buffer_discards": null,
+  "condition": "Static-H5",
+  "condition_config": {
+    "fixed_h": 5,
+    "name": "Static-H5",
+    "replan_after_safety_violation": false,
+    "safety_enabled": true
+  },
+  "episode_index": 2,
+  "executed_env_steps": null,
+  "git_sha": "cbc2cc3fdb4cf25309d3f67d5b7a04067bdd10b9",
+  "initial_state_id": 2,
+  "mean_actual_horizon": null,
+  "model_inference_time_s": null,
+  "model_invocations": null,
+  "range_clips": null,
+  "range_violations": null,
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-telemetry-accounting-preflight-20260824/resolved_config.json",
+  "schema_version": 1,
+  "seed": 1002,
+  "status": "planned_dry_run",
+  "success_at_280": null,
+  "success_step": null,
+  "task_id": 5,
+  "termination_reason": "not_started_dry_run",
+  "wall_time_to_terminal_s": null
+}

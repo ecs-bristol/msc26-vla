@@ -1,5 +1,5 @@
 {
-  "buffer_discards": null,
+  "buffer_discards": 0,
   "condition": "Static-H50",
   "condition_config": {
     "fixed_h": 50,
@@ -8,21 +8,21 @@
     "safety_enabled": true
   },
   "episode_index": 0,
-  "executed_env_steps": null,
-  "git_sha": "fd2db7315cd7b62d049ad78a8a7aa4b7d84f4500",
+  "executed_env_steps": 280,
+  "git_sha": "fc574cf1addd60bbe39698a897b01ec3069d259d",
   "initial_state_id": 0,
-  "mean_actual_horizon": null,
-  "model_inference_time_s": null,
-  "model_invocations": null,
-  "range_clips": null,
-  "range_violations": null,
+  "mean_actual_horizon": 50.0,
+  "model_inference_time_s": 3.001360090000162,
+  "model_invocations": 6,
+  "range_clips": 137,
+  "range_violations": 137,
   "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-dry-run/resolved_config.json",
   "schema_version": 1,
   "seed": 1000,
-  "status": "planned_dry_run",
-  "success_at_280": null,
+  "status": "completed",
+  "success_at_280": false,
   "success_step": null,
   "task_id": 1,
-  "termination_reason": "not_started_dry_run",
-  "wall_time_to_terminal_s": null
+  "termination_reason": "max_steps",
+  "wall_time_to_terminal_s": 59.77395178900042
 }

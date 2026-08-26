@@ -1,0 +1,31 @@
+{
+  "action_trace_sha256": "0ac0bca4e7b92a9f1e585b4f547f307cb592d7f67e23d21d33f66e15c865328b",
+  "buffer_discards": 0,
+  "condition": "Static-H1",
+  "condition_config": {
+    "fixed_h": 1,
+    "name": "Static-H1",
+    "replan_after_safety_violation": false,
+    "safety_enabled": true
+  },
+  "environment_seed": 1004,
+  "episode_index": 4,
+  "executed_env_steps": 280,
+  "git_sha": "e870c38eb025b942dca13e04de73c6cd595c4821",
+  "inference_seed": 4768231714663301246,
+  "initial_state_id": 4,
+  "mean_actual_horizon": 1.0,
+  "model_inference_time_s": 87.07192416788894,
+  "model_invocations": 280,
+  "range_clips": 24,
+  "range_violations": 24,
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-final-preflight-deterministic-20260825/resolved_config.json",
+  "schema_version": 1,
+  "seed": 1004,
+  "status": "completed",
+  "success_at_280": false,
+  "success_step": null,
+  "task_id": 1,
+  "termination_reason": "max_steps",
+  "wall_time_to_terminal_s": 147.90209240699187
+}

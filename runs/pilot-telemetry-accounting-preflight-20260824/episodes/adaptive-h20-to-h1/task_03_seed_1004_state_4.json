@@ -1,0 +1,28 @@
+{
+  "buffer_discards": null,
+  "condition": "Adaptive-H20\u2192H1",
+  "condition_config": {
+    "fixed_h": 20,
+    "name": "Adaptive-H20\u2192H1",
+    "replan_after_safety_violation": true,
+    "safety_enabled": true
+  },
+  "episode_index": 4,
+  "executed_env_steps": null,
+  "git_sha": "cbc2cc3fdb4cf25309d3f67d5b7a04067bdd10b9",
+  "initial_state_id": 4,
+  "mean_actual_horizon": null,
+  "model_inference_time_s": null,
+  "model_invocations": null,
+  "range_clips": null,
+  "range_violations": null,
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-telemetry-accounting-preflight-20260824/resolved_config.json",
+  "schema_version": 1,
+  "seed": 1004,
+  "status": "planned_dry_run",
+  "success_at_280": null,
+  "success_step": null,
+  "task_id": 3,
+  "termination_reason": "not_started_dry_run",
+  "wall_time_to_terminal_s": null
+}

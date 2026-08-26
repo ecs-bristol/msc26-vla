@@ -1,0 +1,25 @@
+{
+  "base_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceVLA--smolvla_libero/snapshots/6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+  "git_sha": "cbc2cc3fdb4cf25309d3f67d5b7a04067bdd10b9",
+  "local_files_only": true,
+  "mode": "execute",
+  "paired_manifest_path": "/mnt/d/VLA/msc26-vla/runs/pilot-telemetry-accounting-preflight-20260824/paired_manifest.json",
+  "paired_manifest_sha256": "934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2",
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-telemetry-accounting-preflight-20260824/resolved_config.json",
+  "schema_version": 1,
+  "selected_episodes_per_task": 1,
+  "selected_task_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "started_at_utc": "2026-08-24T16:28:31.955358+00:00",
+  "vlm_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceTB--SmolVLM2-500M-Instruct/snapshots/7b375e1b73b11138ff12fe22c8f2822d8fe03467"
+}

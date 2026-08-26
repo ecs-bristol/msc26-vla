@@ -1,0 +1,323 @@
+{
+  "base_revision": "6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+  "base_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceVLA--smolvla_libero/snapshots/6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+  "batch_size": 1,
+  "chunk_size": 50,
+  "config_source_path": "/mnt/d/VLA/msc26-vla/configs/evaluation/libero_spatial_paired_pilot.yaml",
+  "created_at_utc": "2026-08-25T02:55:31.382705+00:00",
+  "environment_seed_source": "paired_manifest.trials[].seed",
+  "episode_cap": 280,
+  "git_sha": "e870c38eb025b942dca13e04de73c6cd595c4821",
+  "inference_seed_derivation": "sha256(libero_spatial|task_id|seed|initial_state_id)[:8] & ((1<<63)-1)",
+  "local_files_only": true,
+  "mode": "dry_run",
+  "num_steps": 2,
+  "paired_manifest_path": "/mnt/d/VLA/msc26-vla/runs/pilot-determinism-smoke-b/paired_manifest.json",
+  "paired_manifest_sha256": "934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2",
+  "pairing_seeds": [
+    {
+      "environment_seed": 1000,
+      "inference_seed": 7291560000556540053,
+      "initial_state_id": 0,
+      "task_id": 0
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 5423831692597276035,
+      "initial_state_id": 1,
+      "task_id": 0
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 2375001413206966694,
+      "initial_state_id": 2,
+      "task_id": 0
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 4270611907575412332,
+      "initial_state_id": 3,
+      "task_id": 0
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 839877525152245279,
+      "initial_state_id": 4,
+      "task_id": 0
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 7380877101995076934,
+      "initial_state_id": 0,
+      "task_id": 1
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 785292248529111346,
+      "initial_state_id": 1,
+      "task_id": 1
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 8319009757324386309,
+      "initial_state_id": 2,
+      "task_id": 1
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 6993734918692727842,
+      "initial_state_id": 3,
+      "task_id": 1
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 4768231714663301246,
+      "initial_state_id": 4,
+      "task_id": 1
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 4405198951258256139,
+      "initial_state_id": 0,
+      "task_id": 2
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 4043387461487274640,
+      "initial_state_id": 1,
+      "task_id": 2
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 9103535555776948696,
+      "initial_state_id": 2,
+      "task_id": 2
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 2166568339062684596,
+      "initial_state_id": 3,
+      "task_id": 2
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 5815502219292240428,
+      "initial_state_id": 4,
+      "task_id": 2
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 872139382400650529,
+      "initial_state_id": 0,
+      "task_id": 3
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 8367772792250325226,
+      "initial_state_id": 1,
+      "task_id": 3
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 6816212165976561234,
+      "initial_state_id": 2,
+      "task_id": 3
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 547466004784815430,
+      "initial_state_id": 3,
+      "task_id": 3
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 7323120285149477339,
+      "initial_state_id": 4,
+      "task_id": 3
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 8513169697475700089,
+      "initial_state_id": 0,
+      "task_id": 4
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 3469257450944538572,
+      "initial_state_id": 1,
+      "task_id": 4
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 5572084660172881480,
+      "initial_state_id": 2,
+      "task_id": 4
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 402975405451108653,
+      "initial_state_id": 3,
+      "task_id": 4
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 8905480769858965570,
+      "initial_state_id": 4,
+      "task_id": 4
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 6660030712243819836,
+      "initial_state_id": 0,
+      "task_id": 5
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 9089024622675674847,
+      "initial_state_id": 1,
+      "task_id": 5
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 6434700622396312420,
+      "initial_state_id": 2,
+      "task_id": 5
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 6050195505808188584,
+      "initial_state_id": 3,
+      "task_id": 5
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 148506301758857801,
+      "initial_state_id": 4,
+      "task_id": 5
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 6997229937442983994,
+      "initial_state_id": 0,
+      "task_id": 6
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 1260626615688585010,
+      "initial_state_id": 1,
+      "task_id": 6
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 589902366963284891,
+      "initial_state_id": 2,
+      "task_id": 6
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 8109541093867328847,
+      "initial_state_id": 3,
+      "task_id": 6
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 6634218549427139172,
+      "initial_state_id": 4,
+      "task_id": 6
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 5560803851283768854,
+      "initial_state_id": 0,
+      "task_id": 7
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 5089618222436797426,
+      "initial_state_id": 1,
+      "task_id": 7
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 1975631248050398168,
+      "initial_state_id": 2,
+      "task_id": 7
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 2168073338465533807,
+      "initial_state_id": 3,
+      "task_id": 7
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 7750479823927747336,
+      "initial_state_id": 4,
+      "task_id": 7
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 2480725720429303213,
+      "initial_state_id": 0,
+      "task_id": 8
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 7491216410967156604,
+      "initial_state_id": 1,
+      "task_id": 8
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 6548894511804397145,
+      "initial_state_id": 2,
+      "task_id": 8
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 8744096324536139809,
+      "initial_state_id": 3,
+      "task_id": 8
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 415862067894842786,
+      "initial_state_id": 4,
+      "task_id": 8
+    },
+    {
+      "environment_seed": 1000,
+      "inference_seed": 4032145136358586291,
+      "initial_state_id": 0,
+      "task_id": 9
+    },
+    {
+      "environment_seed": 1001,
+      "inference_seed": 1252945996683820954,
+      "initial_state_id": 1,
+      "task_id": 9
+    },
+    {
+      "environment_seed": 1002,
+      "inference_seed": 4162912720903608682,
+      "initial_state_id": 2,
+      "task_id": 9
+    },
+    {
+      "environment_seed": 1003,
+      "inference_seed": 4173967112482337571,
+      "initial_state_id": 3,
+      "task_id": 9
+    },
+    {
+      "environment_seed": 1004,
+      "inference_seed": 5437976892542091246,
+      "initial_state_id": 4,
+      "task_id": 9
+    }
+  ],
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-determinism-smoke-b/resolved_config.json",
+  "schema_version": 1,
+  "vlm_revision": "7b375e1b73b11138ff12fe22c8f2822d8fe03467",
+  "vlm_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceTB--SmolVLM2-500M-Instruct/snapshots/7b375e1b73b11138ff12fe22c8f2822d8fe03467"
+}

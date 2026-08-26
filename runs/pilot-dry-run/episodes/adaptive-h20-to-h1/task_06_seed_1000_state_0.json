@@ -1,5 +1,5 @@
 {
-  "buffer_discards": null,
+  "buffer_discards": 289,
   "condition": "Adaptive-H20\u2192H1",
   "condition_config": {
     "fixed_h": 20,
@@ -8,21 +8,21 @@
     "safety_enabled": true
   },
   "episode_index": 0,
-  "executed_env_steps": null,
-  "git_sha": "fd2db7315cd7b62d049ad78a8a7aa4b7d84f4500",
+  "executed_env_steps": 130,
+  "git_sha": "fc574cf1addd60bbe39698a897b01ec3069d259d",
   "initial_state_id": 0,
-  "mean_actual_horizon": null,
-  "model_inference_time_s": null,
-  "model_invocations": null,
-  "range_clips": null,
-  "range_violations": null,
+  "mean_actual_horizon": 15.939687267311989,
+  "model_inference_time_s": 28.067402977998427,
+  "model_invocations": 461,
+  "range_clips": 289,
+  "range_violations": 289,
   "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-dry-run/resolved_config.json",
   "schema_version": 1,
   "seed": 1000,
-  "status": "planned_dry_run",
-  "success_at_280": null,
-  "success_step": null,
+  "status": "completed",
+  "success_at_280": true,
+  "success_step": 130,
   "task_id": 6,
-  "termination_reason": "not_started_dry_run",
-  "wall_time_to_terminal_s": null
+  "termination_reason": "success",
+  "wall_time_to_terminal_s": 55.78020571599973
 }

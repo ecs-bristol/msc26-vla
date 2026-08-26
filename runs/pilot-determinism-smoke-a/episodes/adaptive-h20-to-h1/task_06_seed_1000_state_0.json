@@ -1,0 +1,31 @@
+{
+  "action_trace_sha256": null,
+  "buffer_discards": null,
+  "condition": "Adaptive-H20\u2192H1",
+  "condition_config": {
+    "fixed_h": 20,
+    "name": "Adaptive-H20\u2192H1",
+    "replan_after_safety_violation": true,
+    "safety_enabled": true
+  },
+  "environment_seed": 1000,
+  "episode_index": 0,
+  "executed_env_steps": null,
+  "git_sha": "e870c38eb025b942dca13e04de73c6cd595c4821",
+  "inference_seed": 6997229937442983994,
+  "initial_state_id": 0,
+  "mean_actual_horizon": null,
+  "model_inference_time_s": null,
+  "model_invocations": null,
+  "range_clips": null,
+  "range_violations": null,
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-determinism-smoke-a/resolved_config.json",
+  "schema_version": 1,
+  "seed": 1000,
+  "status": "planned_dry_run",
+  "success_at_280": null,
+  "success_step": null,
+  "task_id": 6,
+  "termination_reason": "not_started_dry_run",
+  "wall_time_to_terminal_s": null
+}

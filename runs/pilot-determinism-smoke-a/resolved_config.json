@@ -1,0 +1,69 @@
+{
+  "batch_size": 1,
+  "conditions": [
+    {
+      "fixed_h": 1,
+      "name": "Static-H1",
+      "replan_after_safety_violation": false,
+      "safety_enabled": true
+    },
+    {
+      "fixed_h": 5,
+      "name": "Static-H5",
+      "replan_after_safety_violation": false,
+      "safety_enabled": true
+    },
+    {
+      "fixed_h": 10,
+      "name": "Static-H10",
+      "replan_after_safety_violation": false,
+      "safety_enabled": true
+    },
+    {
+      "fixed_h": 20,
+      "name": "Static-H20",
+      "replan_after_safety_violation": false,
+      "safety_enabled": true
+    },
+    {
+      "fixed_h": 50,
+      "name": "Static-H50",
+      "replan_after_safety_violation": false,
+      "safety_enabled": true
+    },
+    {
+      "fixed_h": 20,
+      "name": "Adaptive-H20\u2192H1",
+      "replan_after_safety_violation": true,
+      "safety_enabled": true
+    }
+  ],
+  "episode_cap": 280,
+  "episodes_per_task": 5,
+  "model": {
+    "base_revision": "6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+    "base_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceVLA--smolvla_libero/snapshots/6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+    "checkpoint": "HuggingFaceVLA/smolvla_libero",
+    "chunk_size": 50,
+    "local_files_only": true,
+    "num_steps": 2,
+    "vlm_checkpoint": "HuggingFaceTB/SmolVLM2-500M-Instruct",
+    "vlm_revision": "7b375e1b73b11138ff12fe22c8f2822d8fe03467",
+    "vlm_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceTB--SmolVLM2-500M-Instruct/snapshots/7b375e1b73b11138ff12fe22c8f2822d8fe03467"
+  },
+  "schema_version": 1,
+  "seed": 1000,
+  "suite": "libero_spatial",
+  "task_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ]
+}

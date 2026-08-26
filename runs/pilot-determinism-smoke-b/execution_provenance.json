@@ -1,0 +1,26 @@
+{
+  "base_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceVLA--smolvla_libero/snapshots/6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+  "environment_seed_source": "paired_manifest.trials[].seed",
+  "git_sha": "e870c38eb025b942dca13e04de73c6cd595c4821",
+  "inference_seed_derivation": "sha256(libero_spatial|task_id|seed|initial_state_id)[:8] & ((1<<63)-1)",
+  "local_files_only": true,
+  "mode": "execute",
+  "paired_manifest_path": "/mnt/d/VLA/msc26-vla/runs/pilot-determinism-smoke-b/paired_manifest.json",
+  "paired_manifest_sha256": "934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2",
+  "pairing_seeds": [
+    {
+      "environment_seed": 1000,
+      "inference_seed": 7291560000556540053,
+      "initial_state_id": 0,
+      "task_id": 0
+    }
+  ],
+  "resolved_config_path": "/mnt/d/VLA/msc26-vla/runs/pilot-determinism-smoke-b/resolved_config.json",
+  "schema_version": 1,
+  "selected_episodes_per_task": 1,
+  "selected_task_ids": [
+    0
+  ],
+  "started_at_utc": "2026-08-25T02:56:03.986424+00:00",
+  "vlm_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceTB--SmolVLM2-500M-Instruct/snapshots/7b375e1b73b11138ff12fe22c8f2822d8fe03467"
+}

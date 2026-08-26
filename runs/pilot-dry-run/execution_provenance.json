@@ -1,6 +1,6 @@
 {
   "base_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceVLA--smolvla_libero/snapshots/6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
-  "git_sha": "fd2db7315cd7b62d049ad78a8a7aa4b7d84f4500",
+  "git_sha": "fc574cf1addd60bbe39698a897b01ec3069d259d",
   "local_files_only": true,
   "mode": "execute",
   "paired_manifest_path": "/mnt/d/VLA/msc26-vla/runs/pilot-dry-run/paired_manifest.json",
@@ -9,8 +9,17 @@
   "schema_version": 1,
   "selected_episodes_per_task": 1,
   "selected_task_ids": [
-    0
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
   ],
-  "started_at_utc": "2026-08-24T04:42:26.472942+00:00",
+  "started_at_utc": "2026-08-24T05:08:35.589417+00:00",
   "vlm_snapshot_path": "/home/xinrui_shen/vla/hf-cache/hub/models--HuggingFaceTB--SmolVLM2-500M-Instruct/snapshots/7b375e1b73b11138ff12fe22c8f2822d8fe03467"
 }
