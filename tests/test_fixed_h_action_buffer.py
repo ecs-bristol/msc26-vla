@@ -48,10 +48,25 @@ def test_fixed_h_twenty_refills_once_and_releases_twenty_actions() -> None:
     assert all(release.action.tolist() == pytest.approx([0.25] * 7) for release in first_twenty)
     assert twenty_first.action.tolist() == pytest.approx([-0.25] * 7)
     assert first_twenty[0].telemetry["planned_horizon"] == 20
-    assert first_twenty[0].telemetry["actual_horizon"] == 20
+    assert "actual_horizon" not in first_twenty[0].telemetry
     assert first_twenty[0].telemetry["buffer_size_before"] == 50
     assert first_twenty[19].telemetry["buffer_size_after"] == 0
     assert twenty_first.telemetry["model_invocation"] == 2
+    finalized = [record for record in buffer.telemetry if record["event"] == "call_finalized"]
+    assert finalized == [
+        {
+            "event": "call_finalized",
+            "chunk_origin": "model_invocation:1",
+            "model_invocation": 1,
+            "planned_horizon": 20,
+            "actual_horizon": 20,
+            "realized_actions": 20,
+            "finalization_reason": "horizon",
+            "horizon_tail_discarded_actions": 30,
+            "trigger_tail_discarded_actions": 0,
+            "terminal_tail_unused_actions": 0,
+        }
+    ]
 
 
 @pytest.mark.parametrize("horizon", [1, 5, 10, 20, 25, 30, 50])
@@ -136,9 +151,11 @@ def test_adaptive_h20_detection_only_discards_and_forces_one_step_replan() -> No
     assert triggered.telemetry["buffer_discarded"] is True
     assert triggered.telemetry["buffer_size_after"] == 0
     assert triggered.telemetry["forced_horizon_next"] == 1
-    assert triggered.telemetry["actual_horizon"] == 20
+    assert "actual_horizon" not in triggered.telemetry
+    assert triggered.telemetry["range_violation_dimensions"] == [0, 6]
+    assert triggered.telemetry["trigger_violation_dimensions"] == [0]
     assert recovery.telemetry["planned_horizon"] == 1
-    assert recovery.telemetry["actual_horizon"] == 1
+    assert "actual_horizon" not in recovery.telemetry
     assert buffer.buffered_actions == 49
     assert normal.telemetry["planned_horizon"] == 20
     assert len(predictor.observations) == 3
@@ -162,7 +179,10 @@ def test_static_h1_original_does_not_modify_out_of_range_native_action() -> None
     assert release.telemetry["range_clipped"] is False
     assert release.telemetry["buffer_discarded"] is False
     assert release.telemetry["planned_horizon"] == 1
-    assert release.telemetry["actual_horizon"] == 1
+    assert "actual_horizon" not in release.telemetry
+    finalized = buffer.telemetry[-1]
+    assert finalized["event"] == "call_finalized"
+    assert finalized["actual_horizon"] == 1
 
 
 def test_release_telemetry_is_complete_and_json_serializable() -> None:
@@ -174,12 +194,17 @@ def test_release_telemetry_is_complete_and_json_serializable() -> None:
     assert {
         "chunk_origin",
         "planned_horizon",
-        "actual_horizon",
         "buffer_size_before",
         "buffer_size_after",
         "model_invocation",
         "model_invoked",
         "range_violation",
+        "range_violation_dimensions",
+        "range_violation_excess",
+        "range_violation_max_excess",
+        "trigger_range_violation",
+        "trigger_violation_dimensions",
+        "gripper_only_range_violation",
         "clip_actions",
         "range_clipped",
         "buffer_discarded",
@@ -189,4 +214,23 @@ def test_release_telemetry_is_complete_and_json_serializable() -> None:
         "gripper_positive_is_closed",
     } <= release.telemetry.keys()
     assert release.telemetry["gripper_index"] == 6
+    assert "actual_horizon" not in release.telemetry
     assert json.loads(json.dumps(buffer.telemetry))[-1]["event"] == "action_release"
+
+
+def test_finalize_episode_records_terminal_realized_horizon() -> None:
+    predictor = FakeChunkPredictor([chunk(fill=0.25)])
+    buffer = FixedHActionBuffer(predictor, horizon=20)
+    for _ in range(7):
+        buffer.next_action(None)
+
+    buffer.finalize_episode()
+
+    finalized = buffer.telemetry[-1]
+    assert finalized["event"] == "call_finalized"
+    assert finalized["planned_horizon"] == 20
+    assert finalized["actual_horizon"] == finalized["realized_actions"] == 7
+    assert finalized["finalization_reason"] == "terminal"
+    assert finalized["horizon_tail_discarded_actions"] == 30
+    assert finalized["terminal_tail_unused_actions"] == 13
+    assert buffer.buffered_actions == 0

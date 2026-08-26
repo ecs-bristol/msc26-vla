@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "mode": "one CUDA model inference plus one explicit env.step lifecycle smoke",
+  "success_rate_computed": false,
+  "formal_rollout": false,
+  "condition": "Static-H1-original",
+  "task_id": 0,
+  "initial_state_id": 0,
+  "environment_seed": 1000,
+  "inference_seed": 7291560000556540053,
+  "model_inferences": 1,
+  "policy_actions_selected": 1,
+  "environment_steps_executed": 1,
+  "reset_settle_steps": 10,
+  "action_sha256": "5999d9b0e139d2e915093618b60707e9ebe7a2a6d9b14f248e736bf5ff3fd6ba",
+  "offline": {
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "HF_DATASETS_OFFLINE": "1",
+    "local_files_only": true
+  },
+  "timeout_s": 600,
+  "elapsed_s": 285.76,
+  "exit_code": 0,
+  "timed_out": false
+}

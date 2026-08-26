@@ -158,6 +158,11 @@ class SmolVLAAdaptivePolicy(PreTrainedPolicy):
         finally:
             self._buffer.reset()
 
+    def finalize_episode(self) -> None:
+        """Record the realized tail of the last model call before episode reset."""
+
+        self._buffer.finalize_episode()
+
     def predict_action_chunk(self, batch: dict[str, torch.Tensor]) -> torch.Tensor:
         """Prevent evaluator code from accidentally creating a second action queue."""
 

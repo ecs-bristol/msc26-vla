@@ -17,7 +17,7 @@ import numpy.typing as npt
 
 
 Action: TypeAlias = npt.NDArray[np.float32]
-TelemetryValue: TypeAlias = str | int | float | bool | None
+TelemetryValue: TypeAlias = str | int | float | bool | None | list[int] | list[float]
 TelemetryRecord: TypeAlias = dict[str, TelemetryValue]
 
 _ACTION_DIM = 7
@@ -103,6 +103,14 @@ class FixedHActionBuffer:
         self._clear_buffer()
         self._force_next_horizon_one = False
 
+    def finalize_episode(self) -> None:
+        """Finalize a partially consumed call at an environment terminal boundary."""
+
+        if self._buffer_origin is None:
+            return
+        self._record_call_finalized(reason="terminal")
+        self._clear_buffer()
+
     def next_action(self, observation: object) -> ActionRelease:
         """Return the next action, refilling from the supplied observation if needed.
 
@@ -150,41 +158,50 @@ class FixedHActionBuffer:
         active_horizon = self._active_horizon
         chunk_action_index = self._buffer_action_index
         self._buffer_action_index += 1
-        range_violation = bool((action < -1.0).any() or (action > 1.0).any())
+        excess = np.maximum(np.abs(action) - 1.0, 0.0)
+        violation_dimensions = np.flatnonzero(excess > 0.0).astype(int).tolist()
+        violation_excess = [float(excess[index]) for index in violation_dimensions]
+        trigger_dimensions = [
+            index for index in violation_dimensions if index != _GRIPPER_INDEX
+        ]
+        range_violation = bool(violation_dimensions)
+        trigger_range_violation = bool(trigger_dimensions)
+        gripper_only_range_violation = (
+            range_violation and not trigger_range_violation
+        )
         range_clipped = self._clip_actions and range_violation
 
         buffer_discarded = (
             self._safety_enabled
-            and range_violation
+            and trigger_range_violation
             and self._replan_after_safety_violation
         )
+        horizon_complete = self._buffer_action_index >= active_horizon
         if range_clipped:
             released_action = np.clip(action, -1.0, 1.0).astype(np.float32, copy=False)
         else:
             released_action = action
-
-        if buffer_discarded:
-            self._clear_buffer()
-            self._force_next_horizon_one = True
-        else:
-            if self._buffer_action_index >= active_horizon:
-                # The next action must be planned from its new observation;
-                # no unused tail of a 50-step model chunk may leak through.
-                self._clear_buffer()
 
         record: TelemetryRecord = {
             "event": "action_release",
             "chunk_origin": f"model_invocation:{chunk_origin}",
             "chunk_action_index": chunk_action_index,
             "planned_horizon": active_horizon,
-            "actual_horizon": active_horizon,
             "buffer_size_before": buffer_size_before,
-            "buffer_size_after": len(self._buffer),
+            "buffer_size_after": (
+                0 if buffer_discarded or horizon_complete else len(self._buffer)
+            ),
             "model_invocation": chunk_origin,
             "model_invoked": chunk_action_index == 0,
             "safety_enabled": self._safety_enabled,
             "clip_actions": self._clip_actions,
             "range_violation": range_violation,
+            "range_violation_dimensions": violation_dimensions,
+            "range_violation_excess": violation_excess,
+            "range_violation_max_excess": max(violation_excess, default=0.0),
+            "trigger_range_violation": trigger_range_violation,
+            "trigger_violation_dimensions": trigger_dimensions,
+            "gripper_only_range_violation": gripper_only_range_violation,
             "range_clipped": range_clipped,
             "buffer_discarded": buffer_discarded,
             "forced_horizon_next": 1 if buffer_discarded else None,
@@ -193,7 +210,42 @@ class FixedHActionBuffer:
             "gripper_positive_is_closed": True,
         }
         self._telemetry.append(record)
+        if buffer_discarded:
+            self._record_call_finalized(reason="trigger")
+            self._clear_buffer()
+            self._force_next_horizon_one = True
+        elif horizon_complete:
+            # The next action must be planned from its new observation;
+            # no unused tail of a 50-step model chunk may leak through.
+            self._record_call_finalized(reason="horizon")
+            self._clear_buffer()
         return ActionRelease(action=released_action.copy(), telemetry=dict(record))
+
+    def _record_call_finalized(self, *, reason: str) -> None:
+        if self._buffer_origin is None:
+            raise RuntimeError("cannot finalize an action call without an active chunk")
+        actual_horizon = self._buffer_action_index
+        planned_horizon = self._active_horizon
+        if actual_horizon > planned_horizon:
+            raise RuntimeError("realized actions cannot exceed the planned horizon")
+        self._telemetry.append(
+            {
+                "event": "call_finalized",
+                "chunk_origin": f"model_invocation:{self._buffer_origin}",
+                "model_invocation": self._buffer_origin,
+                "planned_horizon": planned_horizon,
+                "actual_horizon": actual_horizon,
+                "realized_actions": actual_horizon,
+                "finalization_reason": reason,
+                "horizon_tail_discarded_actions": _CHUNK_SIZE - planned_horizon,
+                "trigger_tail_discarded_actions": (
+                    planned_horizon - actual_horizon if reason == "trigger" else 0
+                ),
+                "terminal_tail_unused_actions": (
+                    planned_horizon - actual_horizon if reason == "terminal" else 0
+                ),
+            }
+        )
 
     def _clear_buffer(self) -> None:
         self._buffer.clear()

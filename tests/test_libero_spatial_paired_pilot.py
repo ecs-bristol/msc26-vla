@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 import numpy as np
+import pytest
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -28,7 +29,18 @@ SUMMARY_FIELDS = {
     "wall_time_to_terminal_s",
     "model_invocations",
     "model_inference_time_s",
+    "realized_actions_per_call",
+    "generated_actions",
+    "unused_actions",
+    "chunk_utilization",
+    "horizon_tail_discarded_actions",
+    "trigger_tail_discarded_actions",
+    "terminal_tail_unused_actions",
     "range_violations",
+    "range_violation_dimension_counts",
+    "range_violation_max_excess_by_dimension",
+    "trigger_range_violations",
+    "gripper_only_range_violations",
     "range_clips",
     "buffer_discards",
     "mean_actual_horizon",
@@ -236,6 +248,7 @@ class _FakePolicy:
     def __init__(self) -> None:
         self.telemetry: list[dict[str, object]] = []
         self.model_inference_time_s = 0.0
+        self.invocations = 0
 
     def reset(self) -> None:
         # Match the real wrapper: reset clears the action buffer but retains
@@ -244,22 +257,42 @@ class _FakePolicy:
 
     def select_action(self, observation):
         assert observation.instruction == "fake task"
+        self.invocations += 1
         self.telemetry.extend(
             [
-                {"event": "refill", "planned_horizon": 20},
+                {
+                    "event": "refill",
+                    "model_invocation": self.invocations,
+                    "planned_horizon": 20,
+                },
                 {
                     "event": "action_release",
+                    "model_invocation": self.invocations,
                     "model_invoked": True,
-                    "actual_horizon": 20,
                     "range_violation": True,
+                    "range_violation_dimensions": [0],
+                    "range_violation_excess": [1.0],
+                    "trigger_range_violation": True,
+                    "gripper_only_range_violation": False,
                     "range_clipped": True,
                     "buffer_discarded": True,
+                },
+                {
+                    "event": "call_finalized",
+                    "model_invocation": self.invocations,
+                    "planned_horizon": 20,
+                    "actual_horizon": 1,
+                    "realized_actions": 1,
+                    "finalization_reason": "trigger",
                 },
             ]
         )
         self.model_inference_time_s += 0.25
         value = (random.random() + float(np.random.random())) / 4.0
         return np.full(7, value, dtype=np.float32)
+
+    def finalize_episode(self) -> None:
+        return None
 
     def close(self) -> None:
         return None
@@ -357,10 +390,21 @@ def test_executor_persists_every_required_episode_metric(tmp_path: Path) -> None
     assert result["success_step"] == 1
     assert result["executed_env_steps"] == 1
     assert result["model_invocations"] == 1
+    assert result["realized_actions_per_call"] == [1]
+    assert result["generated_actions"] == 50
+    assert result["unused_actions"] == 49
+    assert result["chunk_utilization"] == 0.02
+    assert result["horizon_tail_discarded_actions"] == 30
+    assert result["trigger_tail_discarded_actions"] == 19
+    assert result["terminal_tail_unused_actions"] == 0
     assert result["range_violations"] == 1
+    assert result["range_violation_dimension_counts"]["0"] == 1
+    assert result["range_violation_max_excess_by_dimension"]["0"] == 1.0
+    assert result["trigger_range_violations"] == 1
+    assert result["gripper_only_range_violations"] == 0
     assert result["range_clips"] == 1
     assert result["buffer_discards"] == 1
-    assert result["mean_actual_horizon"] == 20.0
+    assert result["mean_actual_horizon"] == 1.0
     assert result["termination_reason"] == "success"
     assert result["environment_seed"] == 1000
     assert isinstance(result["inference_seed"], int)
@@ -400,7 +444,10 @@ def test_second_episode_uses_only_its_telemetry_and_inference_deltas(tmp_path: P
     assert first["range_violations"] == second["range_violations"] == 1
     assert first["range_clips"] == second["range_clips"] == 1
     assert first["buffer_discards"] == second["buffer_discards"] == 1
-    assert first["mean_actual_horizon"] == second["mean_actual_horizon"] == 20.0
+    assert first["mean_actual_horizon"] == second["mean_actual_horizon"] == 1.0
+    assert first["realized_actions_per_call"] == second["realized_actions_per_call"] == [1]
+    assert first["generated_actions"] == second["generated_actions"] == 50
+    assert first["unused_actions"] == second["unused_actions"] == 49
     assert first["model_inference_time_s"] == second["model_inference_time_s"] == 0.25
     with (output_dir / "summary.csv").open(newline="", encoding="utf-8") as handle:
         summary = [
@@ -457,7 +504,18 @@ def test_same_pairing_key_repeats_deterministic_action_trace_and_metrics(tmp_pat
         "success_step",
         "executed_env_steps",
         "model_invocations",
+        "realized_actions_per_call",
+        "generated_actions",
+        "unused_actions",
+        "chunk_utilization",
+        "horizon_tail_discarded_actions",
+        "trigger_tail_discarded_actions",
+        "terminal_tail_unused_actions",
         "range_violations",
+        "range_violation_dimension_counts",
+        "range_violation_max_excess_by_dimension",
+        "trigger_range_violations",
+        "gripper_only_range_violations",
         "range_clips",
         "buffer_discards",
         "mean_actual_horizon",
@@ -467,6 +525,93 @@ def test_same_pairing_key_repeats_deterministic_action_trace_and_metrics(tmp_pat
         field: second[field] for field in fields
     }
     assert first["environment_seed"] == second["environment_seed"] == trial["seed"]
+
+
+def test_utilization_accounting_partitions_all_unused_generated_actions() -> None:
+    module = _pilot_module()
+    records: list[dict[str, object]] = []
+
+    def add_call(
+        invocation: int,
+        planned: int,
+        realized: int,
+        reason: str,
+        *,
+        violation_dimension: int | None = None,
+        excess: float = 0.0,
+    ) -> None:
+        records.append({
+            "event": "refill",
+            "model_invocation": invocation,
+            "planned_horizon": planned,
+        })
+        for _ in range(realized):
+            dimensions = [] if violation_dimension is None else [violation_dimension]
+            excesses = [] if violation_dimension is None else [excess]
+            records.append({
+                "event": "action_release",
+                "model_invocation": invocation,
+                "range_violation": bool(dimensions),
+                "range_violation_dimensions": dimensions,
+                "range_violation_excess": excesses,
+                "trigger_range_violation": violation_dimension not in {None, 6},
+                "gripper_only_range_violation": violation_dimension == 6,
+                "range_clipped": False,
+                "buffer_discarded": reason == "trigger",
+            })
+        records.append({
+            "event": "call_finalized",
+            "model_invocation": invocation,
+            "planned_horizon": planned,
+            "actual_horizon": realized,
+            "realized_actions": realized,
+            "finalization_reason": reason,
+        })
+
+    add_call(1, 20, 1, "trigger", violation_dimension=0, excess=0.25)
+    add_call(2, 1, 1, "horizon", violation_dimension=6, excess=0.061)
+    add_call(3, 20, 3, "terminal")
+
+    metrics = module._telemetry_metrics(tuple(records), executed_env_steps=5)
+
+    assert metrics["realized_actions_per_call"] == [1, 1, 3]
+    assert metrics["mean_actual_horizon"] == 5 / 3
+    assert metrics["generated_actions"] == 150
+    assert metrics["unused_actions"] == 145
+    assert metrics["chunk_utilization"] == 5 / 150
+    assert metrics["horizon_tail_discarded_actions"] == 109
+    assert metrics["trigger_tail_discarded_actions"] == 19
+    assert metrics["terminal_tail_unused_actions"] == 17
+    assert 109 + 19 + 17 == 150 - 5
+    assert metrics["range_violation_dimension_counts"] == {
+        "0": 1,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 1,
+    }
+    assert metrics["range_violation_max_excess_by_dimension"]["0"] == 0.25
+    assert metrics["range_violation_max_excess_by_dimension"]["6"] == 0.061
+    assert metrics["trigger_range_violations"] == 1
+    assert metrics["gripper_only_range_violations"] == 1
+
+
+def test_utilization_accounting_rejects_nonconserving_step_count() -> None:
+    module = _pilot_module()
+    records = (
+        {"event": "refill", "model_invocation": 1, "planned_horizon": 20},
+        {
+            "event": "action_release",
+            "model_invocation": 1,
+            "range_violation_dimensions": [],
+            "range_violation_excess": [],
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="released action count"):
+        module._telemetry_metrics(records, executed_env_steps=0)
 
 
 def test_executor_can_select_only_original_h1_without_touching_other_conditions(

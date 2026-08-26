@@ -45,7 +45,18 @@ SUMMARY_FIELDS = (
     "wall_time_to_terminal_s",
     "model_invocations",
     "model_inference_time_s",
+    "realized_actions_per_call",
+    "generated_actions",
+    "unused_actions",
+    "chunk_utilization",
+    "horizon_tail_discarded_actions",
+    "trigger_tail_discarded_actions",
+    "terminal_tail_unused_actions",
     "range_violations",
+    "range_violation_dimension_counts",
+    "range_violation_max_excess_by_dimension",
+    "trigger_range_violations",
+    "gripper_only_range_violations",
     "range_clips",
     "buffer_discards",
     "mean_actual_horizon",
@@ -66,6 +77,8 @@ class PilotPolicy(Protocol):
     def model_inference_time_s(self) -> float: ...
 
     def reset(self) -> None: ...
+
+    def finalize_episode(self) -> None: ...
 
     def select_action(self, observation: object) -> np.ndarray: ...
 
@@ -339,7 +352,18 @@ def materialize_dry_run(
                 "wall_time_to_terminal_s": None,
                 "model_invocations": None,
                 "model_inference_time_s": None,
+                "realized_actions_per_call": None,
+                "generated_actions": None,
+                "unused_actions": None,
+                "chunk_utilization": None,
+                "horizon_tail_discarded_actions": None,
+                "trigger_tail_discarded_actions": None,
+                "terminal_tail_unused_actions": None,
                 "range_violations": None,
+                "range_violation_dimension_counts": None,
+                "range_violation_max_excess_by_dimension": None,
+                "trigger_range_violations": None,
+                "gripper_only_range_violations": None,
                 "range_clips": None,
                 "buffer_discards": None,
                 "mean_actual_horizon": None,
@@ -378,7 +402,17 @@ def _write_summary(path: Path, rows: list[dict[str, object]]) -> None:
     with temporary.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=SUMMARY_FIELDS)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(
+            {
+                field: (
+                    json.dumps(value, separators=(",", ":"), sort_keys=True)
+                    if isinstance(value, (dict, list))
+                    else value
+                )
+                for field, value in row.items()
+            }
+            for row in rows
+        )
     os.replace(temporary, path)
 
 
@@ -461,23 +495,108 @@ def _refresh_summary(
     _write_summary(output_dir / "summary.csv", rows)
 
 
-def _telemetry_metrics(records: tuple[dict[str, object], ...]) -> dict[str, object]:
+def _telemetry_metrics(
+    records: tuple[dict[str, object], ...], *, executed_env_steps: int
+) -> dict[str, object]:
+    refills = [record for record in records if record.get("event") == "refill"]
     releases = [record for record in records if record.get("event") == "action_release"]
-    horizons = [float(record["actual_horizon"]) for record in releases]
+    finalizations = {
+        int(record["model_invocation"]): record
+        for record in records
+        if record.get("event") == "call_finalized"
+    }
+    if len(releases) != executed_env_steps:
+        raise RuntimeError(
+            "released action count must equal executed_env_steps for utilization accounting"
+        )
+
+    releases_by_call: dict[int, list[dict[str, object]]] = {}
+    for record in releases:
+        releases_by_call.setdefault(int(record["model_invocation"]), []).append(record)
+
+    realized_actions_per_call: list[int] = []
+    horizon_tail = 0
+    trigger_tail = 0
+    terminal_tail = 0
+    for refill in refills:
+        invocation = int(refill["model_invocation"])
+        planned_horizon = int(refill["planned_horizon"])
+        realized = len(releases_by_call.pop(invocation, []))
+        if realized > planned_horizon:
+            raise RuntimeError("realized actions cannot exceed planned_horizon")
+        finalization = finalizations.get(invocation)
+        if finalization is not None:
+            if int(finalization["actual_horizon"]) != realized:
+                raise RuntimeError("call finalization actual_horizon does not match releases")
+            reason = str(finalization["finalization_reason"])
+        else:
+            reason = "terminal"
+        realized_actions_per_call.append(realized)
+        horizon_tail += 50 - planned_horizon
+        planned_remainder = planned_horizon - realized
+        if reason == "trigger":
+            trigger_tail += planned_remainder
+        elif reason == "terminal":
+            terminal_tail += planned_remainder
+        elif reason != "horizon" or planned_remainder != 0:
+            raise RuntimeError("invalid action-call finalization telemetry")
+    if releases_by_call:
+        raise RuntimeError("action release exists without a matching refill")
+
+    model_invocations = len(refills)
+    generated_actions = 50 * model_invocations
+    unused_actions = generated_actions - executed_env_steps
+    if unused_actions < 0:
+        raise RuntimeError("executed actions cannot exceed generated actions")
+    if horizon_tail + trigger_tail + terminal_tail != unused_actions:
+        raise RuntimeError("unused action categories do not sum to generated minus executed")
+
+    dimension_counts = {str(index): 0 for index in range(7)}
+    max_excess = {str(index): 0.0 for index in range(7)}
+    for release in releases:
+        dimensions = list(release.get("range_violation_dimensions", []))
+        excesses = list(release.get("range_violation_excess", []))
+        if len(dimensions) != len(excesses):
+            raise RuntimeError("range violation dimensions and excess telemetry must align")
+        for dimension, excess in zip(dimensions, excesses, strict=True):
+            key = str(int(dimension))
+            if key not in dimension_counts:
+                raise RuntimeError("range violation dimension is outside the LIBERO action")
+            dimension_counts[key] += 1
+            max_excess[key] = max(max_excess[key], float(excess))
+
     return {
-        "model_invocations": sum(bool(record.get("model_invoked")) for record in releases),
+        "model_invocations": model_invocations,
+        "realized_actions_per_call": realized_actions_per_call,
+        "generated_actions": generated_actions,
+        "unused_actions": unused_actions,
+        "chunk_utilization": (
+            executed_env_steps / generated_actions if generated_actions else None
+        ),
+        "horizon_tail_discarded_actions": horizon_tail,
+        "trigger_tail_discarded_actions": trigger_tail,
+        "terminal_tail_unused_actions": terminal_tail,
         "range_violations": sum(bool(record.get("range_violation")) for record in releases),
+        "range_violation_dimension_counts": dimension_counts,
+        "range_violation_max_excess_by_dimension": max_excess,
+        "trigger_range_violations": sum(
+            bool(record.get("trigger_range_violation")) for record in releases
+        ),
+        "gripper_only_range_violations": sum(
+            bool(record.get("gripper_only_range_violation")) for record in releases
+        ),
         "range_clips": sum(bool(record.get("range_clipped")) for record in releases),
         "buffer_discards": sum(bool(record.get("buffer_discarded")) for record in releases),
-        "mean_actual_horizon": sum(horizons) / len(horizons) if horizons else None,
+        "mean_actual_horizon": (
+            sum(realized_actions_per_call) / len(realized_actions_per_call)
+            if realized_actions_per_call
+            else None
+        ),
     }
 
 
 def _model_invocation_count(records: tuple[dict[str, object], ...]) -> int:
-    return sum(
-        record.get("event") == "action_release" and record.get("model_invoked") is True
-        for record in records
-    )
+    return sum(record.get("event") == "refill" for record in records)
 
 
 def _episode_telemetry_snapshot(policy: PilotPolicy) -> EpisodeTelemetrySnapshot:
@@ -530,8 +649,8 @@ def _run_episode(
             if action.shape != (7,):
                 raise ValueError(f"policy action must have shape (7,), got {action.shape}")
             action_trace.append(action.copy())
-            step = episode.step(action)
             steps = step_id
+            step = episode.step(action)
             observation = step.observation
             if step.success:
                 success = True
@@ -547,7 +666,12 @@ def _run_episode(
         status = "failed"
         termination_reason = f"error:{type(exc).__name__}"
     finally:
-        episode.close()
+        try:
+            finalize_episode = getattr(policy, "finalize_episode", None)
+            if callable(finalize_episode):
+                finalize_episode()
+        finally:
+            episode.close()
 
     if telemetry_snapshot is None:
         # reset failed before a policy snapshot could be taken; report no
@@ -568,8 +692,9 @@ def _run_episode(
         )
         if model_invocations < 0 or inference_seconds < 0.0:
             raise RuntimeError("policy telemetry counters must be monotonic within a condition")
-    metrics = _telemetry_metrics(episode_records)
-    metrics["model_invocations"] = model_invocations
+    metrics = _telemetry_metrics(episode_records, executed_env_steps=steps)
+    if metrics["model_invocations"] != model_invocations:
+        raise RuntimeError("model invocation delta does not match episode refill telemetry")
     return {
         "schema_version": 1,
         "status": status,

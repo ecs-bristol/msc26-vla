@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -27,7 +29,7 @@ def test_export_bundle_selects_only_ten_completed_h1_episodes(tmp_path: Path) ->
     output = tmp_path / "export"
     episodes.mkdir()
     official.write_text('{"success": 10}\n', encoding="utf-8")
-    summary.write_text("condition,task_id\nStatic-H1-original,0\n", encoding="utf-8")
+    summary.write_bytes(b"condition,task_id\r\nStatic-H1-original,0\r\n")
     parity.write_text('{"action_parity": "PASS"}\n', encoding="utf-8")
     for task_id in range(10):
         payload = {
@@ -57,8 +59,16 @@ def test_export_bundle_selects_only_ten_completed_h1_episodes(tmp_path: Path) ->
     )
 
     assert len(list((output / "episodes").glob("*.json"))) == 10
-    assert (output / "paired_summary.csv").read_bytes() == summary.read_bytes()
+    assert (output / "paired_summary.csv").read_bytes() == (
+        b"condition,task_id\nStatic-H1-original,0\n"
+    )
     assert len(manifest["files"]) == 13
+    summary_evidence = manifest["files"]["paired_summary.csv"]
+    assert summary_evidence["source_sha256"] == hashlib.sha256(summary.read_bytes()).hexdigest()
+    assert summary_evidence["committed_export_sha256"] == hashlib.sha256(
+        (output / "paired_summary.csv").read_bytes()
+    ).hexdigest()
+    assert summary_evidence["source_sha256"] != summary_evidence["committed_export_sha256"]
     assert (output / "SHA256SUMS").is_file()
 
 
@@ -75,3 +85,34 @@ def test_export_bundle_refuses_to_overwrite_nonempty_output(tmp_path: Path) -> N
             parity_report=tmp_path / "missing-parity",
             output_dir=output,
         )
+
+
+def test_committed_evidence_sha256s_pass_in_clean_checkout_bytes() -> None:
+    bundle = PROJECT_ROOT / "evidence" / "parity_hardening" / "baseline_parity_export"
+    checksum_lines = (bundle / "SHA256SUMS").read_text(encoding="utf-8").splitlines()
+    assert checksum_lines
+    for line in checksum_lines:
+        expected, relative_path = line.split("  ", 1)
+        data = (bundle / relative_path).read_bytes()
+        assert b"\r\n" not in data
+        assert hashlib.sha256(data).hexdigest() == expected
+
+    summary_hash = next(
+        line.split("  ", 1)[0]
+        for line in checksum_lines
+        if line.endswith("  paired_summary.csv")
+    )
+    assert summary_hash == "5372dab2cbf5538035632a536dbf76674c47c572ec565b0e41e11a790e78a791"
+
+    attribute = subprocess.check_output(
+        [
+            "git",
+            "check-attr",
+            "eol",
+            "--",
+            "evidence/parity_hardening/baseline_parity_export/paired_summary.csv",
+        ],
+        cwd=PROJECT_ROOT,
+        text=True,
+    )
+    assert attribute.rstrip().endswith("eol: lf")

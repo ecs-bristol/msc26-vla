@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
 from pathlib import Path
 
 
@@ -22,7 +21,18 @@ EPISODE_FIELDS = (
     "wall_time_to_terminal_s",
     "model_invocations",
     "model_inference_time_s",
+    "realized_actions_per_call",
+    "generated_actions",
+    "unused_actions",
+    "chunk_utilization",
+    "horizon_tail_discarded_actions",
+    "trigger_tail_discarded_actions",
+    "terminal_tail_unused_actions",
     "range_violations",
+    "range_violation_dimension_counts",
+    "range_violation_max_excess_by_dimension",
+    "trigger_range_violations",
+    "gripper_only_range_violations",
     "range_clips",
     "buffer_discards",
     "mean_actual_horizon",
@@ -39,6 +49,22 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _normalized_text_bytes(path: Path) -> bytes:
+    text = path.read_bytes().decode("utf-8")
+    return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
+def _export_text(source: Path, destination: Path) -> dict[str, object]:
+    normalized = _normalized_text_bytes(source)
+    destination.write_bytes(normalized)
+    return {
+        "source_path": str(source.resolve()),
+        "source_sha256": _sha256(source),
+        "committed_export_sha256": hashlib.sha256(normalized).hexdigest(),
+        "size_bytes": len(normalized),
+    }
 
 
 def _completed_h1_episodes(episodes_dir: Path) -> list[tuple[Path, dict[str, object]]]:
@@ -70,45 +96,48 @@ def export_bundle(
     episode_output = output_dir / "episodes"
     episode_output.mkdir()
 
-    shutil.copyfile(official_eval_info, output_dir / "official_eval_info.json")
-    shutil.copyfile(paired_summary, output_dir / "paired_summary.csv")
-    shutil.copyfile(parity_report, output_dir / "parity_report.json")
+    file_evidence = {
+        "official_eval_info.json": _export_text(
+            official_eval_info, output_dir / "official_eval_info.json"
+        ),
+        "paired_summary.csv": _export_text(
+            paired_summary, output_dir / "paired_summary.csv"
+        ),
+        "parity_report.json": _export_text(
+            parity_report, output_dir / "parity_report.json"
+        ),
+    }
 
-    source_hashes: dict[str, str] = {}
     for source, payload in _completed_h1_episodes(paired_episodes_dir):
         selected = {field: payload.get(field) for field in EPISODE_FIELDS}
-        destination = episode_output / f"task_{int(payload['task_id']):02d}.json"
-        destination.write_text(
-            json.dumps(selected, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        relative_path = f"episodes/task_{int(payload['task_id']):02d}.json"
+        destination = output_dir / relative_path
+        normalized = (json.dumps(selected, indent=2, sort_keys=True) + "\n").encode(
+            "utf-8"
         )
-        source_hashes[str(source.resolve())] = _sha256(source)
-
-    files = sorted(path for path in output_dir.rglob("*") if path.is_file())
-    checksums = {
-        path.relative_to(output_dir).as_posix(): {
-            "sha256": _sha256(path),
-            "size_bytes": path.stat().st_size,
+        destination.write_bytes(normalized)
+        file_evidence[relative_path] = {
+            "source_path": str(source.resolve()),
+            "source_sha256": _sha256(source),
+            "committed_export_sha256": hashlib.sha256(normalized).hexdigest(),
+            "size_bytes": len(normalized),
         }
-        for path in files
-    }
+
     manifest = {
-        "schema_version": 1,
-        "sources": {
-            "official_eval_info": str(official_eval_info.resolve()),
-            "paired_summary": str(paired_summary.resolve()),
-            "paired_episode_source_sha256": source_hashes,
-            "parity_report": str(parity_report.resolve()),
-        },
-        "files": checksums,
+        "schema_version": 2,
+        "text_normalization": "UTF-8 with CRLF and CR normalized to LF before export hashing",
+        "files": dict(sorted(file_evidence.items())),
     }
-    (output_dir / "manifest.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    (output_dir / "manifest.json").write_bytes(
+        (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8")
     )
     checksum_lines = [
-        f"{metadata['sha256']}  {relative_path}"
-        for relative_path, metadata in sorted(checksums.items())
+        f"{metadata['committed_export_sha256']}  {relative_path}"
+        for relative_path, metadata in sorted(file_evidence.items())
     ]
-    (output_dir / "SHA256SUMS").write_text("\n".join(checksum_lines) + "\n", encoding="utf-8")
+    (output_dir / "SHA256SUMS").write_bytes(
+        ("\n".join(checksum_lines) + "\n").encode("utf-8")
+    )
     return manifest
 
 

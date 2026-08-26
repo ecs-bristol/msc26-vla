@@ -1,6 +1,6 @@
 # Paired-pilot parity hardening
 
-日期：2026-08-26
+日期：2026-08-26 至 2026-08-27
 
 分支：`parity-hardening`
 
@@ -18,12 +18,50 @@ paired-pilot 的方法语义现为：
 | --- | --- | --- | --- |
 | `Static-H1-original` | 官方 native、no clip | 记录 | 无 |
 | `Static-H5/H10/H20/H50` | 官方 native、no clip | 记录 | 无 |
-| `Adaptive-H20→H1` | 官方 native、no clip | 记录 | 越界时 detection-only discard，并强制下一次 H1 |
+| `Adaptive-H20→H1` | 官方 native、no clip | 记录 | 非 gripper 维度越界时 detection-only discard，并强制下一次 H1 |
 
 `range_violation` 检测与 `clip_actions` 已成为两个独立开关。当前六个主条件均显式
 `clip_actions=false`；Adaptive 仍能以越界检测触发 replanning，但不修改送入环境的
 当前动作。若以后引入 clipping，必须作为所有对照条件共同的 action transform，且
 继续保留 `Static-H1-original` 这个 official-native reference。
+
+## realized horizon 与 action utilization
+
+`planned_horizon` 现在只描述模型调用时计划执行的动作数，不再复制到每条 release 的
+`actual_horizon`。每个调用仅在 horizon 到达、trigger discard 或 episode terminal 时
+写一条 `call_finalized`，其中 `actual_horizon=realized_actions`。episode 汇总的
+`realized_actions_per_call` 是这些真实执行数的列表，`mean_actual_horizon` 是该列表的
+算术平均。
+
+每 episode 还记录：
+
+- `generated_actions = 50 * model_invocations`；
+- `unused_actions = generated_actions - executed_env_steps`；
+- `chunk_utilization = executed_env_steps / generated_actions`；
+- `horizon_tail_discarded_actions`：每次调用固定的 `50 - planned_horizon`；
+- `trigger_tail_discarded_actions`：trigger 时尚未执行的 planned tail；
+- `terminal_tail_unused_actions`：episode 终止时尚未执行的 planned tail。
+
+三类 tail 是互斥分解；executor 会强制断言其总和等于 `unused_actions`，不守恒则拒绝
+写出误导性指标。
+
+## Adaptive trigger 审计与 v2 提案
+
+每条越界 release 现在记录越界 dimension、各 dimension 超出 ±1 的 excess、最大 excess、
+trigger dimensions，以及是否为 gripper-only violation；episode 汇总按 0..6 维记录次数
+和最大 excess。dimension 6 的 gripper 幅值越界仍计入 `range_violations`，但不能直接
+触发 discard/replan。clipping 仍由独立的 `clip_actions` 控制，当前正式六条件全部关闭。
+
+未使用任何成功/失败结果选择阈值。建议的 trigger v2 在进入 manifest 前先冻结为：
+
+1. 非有限 action 继续作为硬错误，不以替代动作掩盖；
+2. gripper dimension 6 从幅值 trigger 中排除，仅做 diagnostics；
+3. arm dimensions 0..5 使用环境 action contract 导出的界限与预先声明的数值容差；
+4. 如需 persistence，只能依据 official-native H1 的无标签 action trace 预注册连续次数，
+   不读取 task success、success step 或 Adaptive 结果；
+5. 在独立 pairing key 上先做 action/trigger replay gate，再决定是否进入新 manifest。
+
+本次没有实现或运行 Adaptive v2，也没有把 H25/H30 或 v2 加入正式 manifest。
 
 ## pytest 回归对比
 
@@ -54,6 +92,10 @@ action、配置、导出与 cleanup 定向测试结果为 `65 passed in 210.84s`
 `evidence/parity_hardening/pytest_653_vs_hardening.json`，其 SHA256 为
 `9e90eca8127a756aefe704cd13a8d5f4d84fe92d2d75c22bf3141d56a2199aab`。
 
+2026-08-27 hardening 增量测试分两组运行：hash/telemetry/trigger/lifecycle fast suite
+`45 passed in 13.46s`，plugin wrapper suite `24 passed in 210.00s`。两组均未加载真实
+模型或打开真实 LIBERO 环境；唯一真实模型/环境操作仅为下述一次 lifecycle smoke。
+
 ## EGL/CUDA 正常退出
 
 旧的 10 集 paired H1 已在结果全部原子落盘并打印最终计数后卡于 interpreter
@@ -70,6 +112,13 @@ action，也不进入 rollout loop。外层使用 600 秒硬超时；进程在 `
 cleanup 路径上没有复现。由于没有做逐引用 A/B teardown，本审计将根因准确限定为
 “缺少确定的 EGL/CUDA/MuJoCo 生命周期收尾”，不声称已证明其中某一个单独引用是
 唯一原因。命令与结果见 `evidence/parity_hardening/shutdown_preflight.json`。
+
+2026-08-27 又执行了唯一一次推理后 lifecycle smoke：`Static-H1-original`、task 0、
+state 0、environment seed 1000；恰好一次 CUDA model inference、一次 action selection 和
+一次显式 `env.step`。没有循环、没有计算 success rate。进程在 `285.76 s` 自行退出，
+`exit_code=0`、`timed_out=false`，证明推理后的 EGL/CUDA 路径也能正常 shutdown。
+结果见 `evidence/parity_hardening/lifecycle_smoke_20260827.json`；该 smoke 不计作 rollout
+或成功率样本，且不会重复运行。
 
 ## chunk_size=50 审计
 
@@ -92,26 +141,32 @@ H25/H30 只作为 execution horizon：模型仍生成 `[1,50,7]`，buffer 分别
 
 `evidence/parity_hardening/baseline_parity_export/` 包含：
 
-- 官方 `eval_info.json` 的原样副本；
-- paired `summary.csv` 的原样副本；
+- 官方 `eval_info.json` 的 LF 规范化导出；
+- paired `summary.csv` 的 LF 规范化导出；
 - 10 个已完成 `Static-H1-original` episode 的关键字段 JSON；
-- `parity_report.json` 的原样副本；
-- 来源路径、源 episode SHA256、文件尺寸与 SHA256 manifest；
+- `parity_report.json` 的 LF 规范化导出；
+- 每个文件分别记录 raw `source_sha256` 与 LF `committed_export_sha256`；
 - 可直接使用 `sha256sum -c SHA256SUMS` 验证的数据文件清单。
 
-导出 manifest SHA256 为
-`2f8c59c6c6f48ec61f9b860187d78e9144316a46deea5b5afce59ef1db9d5233`。
+paired summary 的 source SHA256 为
+`268beb85a5fac4015954471324e270cd90ece7f4406e0118169ce71f7f568a7a`，LF committed-export
+SHA256 为用户核验值
+`5372dab2cbf5538035632a536dbf76674c47c572ec565b0e41e11a790e78a791`。导出 manifest
+SHA256 为 `ab15184c1426763390a766727fa08eecd90d4751ee477e414140b543d7980fc7`。
+`.gitattributes` 固定该 bundle 为 `eol=lf`，测试直接在 checkout bytes 上验证
+`SHA256SUMS` 全部通过。
 视频、模型、tensor dump 和大型运行目录均未提交。
 
 ## dry-run
 
 新 dry-run 位于：
 
-`/home/xinrui_shen/vla/runs/parity-hardening/pilot-dry-run-native-actions`
+`/home/xinrui_shen/vla/runs/parity-hardening/lifecycle-accounting-dry-run-20260827`
 
 结果为 50 个严格 pairing key、六条件各 50 条、总计 300 条 planned episode；manifest
 SHA256 为 `934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2`。
-未传 `--execute`，没有加载模型或调用 rollout `env.step`。
+新增 utilization 与 violation-dimension schema 均存在。未传 `--execute`，没有加载模型
+或调用 rollout `env.step`；H25/H30 和 Adaptive v2 均不在六条件配置中。
 
 ## 样本规模表述修正
 

@@ -1,1 +1,2 @@
 *.sh text eol=lf
+evidence/parity_hardening/baseline_parity_export/** text eol=lf

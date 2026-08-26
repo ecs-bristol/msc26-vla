@@ -1,15 +1,16 @@
-"""Load and close the real paired EGL/CUDA runtime without executing actions.
+"""Run exactly one inference and one environment step, then verify cleanup.
 
-This is a preflight, not a rollout: it performs one official environment
-reset (including LeRobot's ten settle no-ops), loads the frozen local policy,
-and then explicitly closes both sides.  A caller should wrap it in a bounded
-subprocess and require exit code zero to verify interpreter shutdown.
+This is a lifecycle smoke, not a rollout or success-rate evaluation. It performs
+one official reset (including ten settle no-ops), exactly one policy action
+selection, exactly one explicit ``env.step``, and then closes both sides. A
+caller must wrap it in a bounded subprocess and require exit code zero.
 """
 
 from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import importlib.util
 import json
 import os
@@ -59,14 +60,42 @@ def main() -> None:
     backend = module._local_backend_factory()()
     policy = module._local_policy_factory(device=args.device)(condition, config)
     episode = None
+    model_inferences = 0
+    environment_steps = 0
+    action_sha256 = None
+    inference_seed = module._inference_seed(
+        {"task_id": 0, "seed": 1000, "initial_state_id": 0}
+    )
     try:
         episode = backend.open_episode("libero_spatial", 0, 0, 280, 1000)
         observation = episode.reset()
         if observation.proprioception.shape != (8,):
             raise RuntimeError("official reset did not produce an 8D state")
+        module._set_inference_seed(inference_seed)
+        policy.reset()
+        telemetry_start = len(policy.telemetry)
+        action = policy.select_action(observation)
+        episode_records = policy.telemetry[telemetry_start:]
+        model_inferences = sum(
+            record.get("event") == "refill" for record in episode_records
+        )
+        if model_inferences != 1:
+            raise RuntimeError("lifecycle smoke must perform exactly one model inference")
+        if action.shape != (7,):
+            raise RuntimeError("lifecycle smoke policy action must have shape (7,)")
+        action_sha256 = hashlib.sha256(action.astype("<f4", copy=False).tobytes()).hexdigest()
+        episode.step(action)
+        environment_steps += 1
+        if environment_steps != 1:
+            raise RuntimeError("lifecycle smoke must perform exactly one explicit env.step")
     finally:
         if episode is not None:
-            episode.close()
+            try:
+                finalize_episode = getattr(policy, "finalize_episode", None)
+                if callable(finalize_episode):
+                    finalize_episode()
+            finally:
+                episode.close()
         policy.close()
         backend.close()
         del episode, policy, backend
@@ -76,10 +105,14 @@ def main() -> None:
         json.dumps(
             {
                 "status": "clean_shutdown_ready",
-                "environment_steps_executed": 0,
-                "policy_actions_selected": 0,
+                "model_inferences": model_inferences,
+                "environment_steps_executed": environment_steps,
+                "policy_actions_selected": 1,
                 "reset_settle_steps": 10,
                 "device": args.device,
+                "inference_seed": inference_seed,
+                "action_sha256": action_sha256,
+                "success_rate_computed": False,
             },
             sort_keys=True,
         )
