@@ -1,0 +1,22 @@
+{
+  "action_trace_sha256": "c0080b98f0e938d5eff0d24f8ab9183c387ff153684efe339a3e290c24ecf68e",
+  "buffer_discards": 0,
+  "condition": "Static-H1-original",
+  "environment_seed": 1000,
+  "executed_env_steps": 121,
+  "git_sha": "58e3fe86da9eada60d78829c9208982154f68e74",
+  "inference_seed": 5560803851283768854,
+  "initial_state_id": 0,
+  "mean_actual_horizon": 1.0,
+  "model_inference_time_s": 71.75728740500108,
+  "model_invocations": 121,
+  "range_clips": 0,
+  "range_violations": 16,
+  "resolved_config_path": "/home/xinrui_shen/vla/runs/baseline-parity-audit/paired-h1-original-fixed-20260826/resolved_config.json",
+  "seed": 1000,
+  "success_at_280": true,
+  "success_step": 121,
+  "task_id": 7,
+  "termination_reason": "success",
+  "wall_time_to_terminal_s": 136.10467242599998
+}

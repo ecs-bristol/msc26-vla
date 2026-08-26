@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "venv": "/mnt/d/VLA/msc26-vla/.venv_wsl_lerobot_v061",
+    "python": "3.12.3",
+    "pytest_namespace_note": "The local tests package was injected to prevent site-packages/tests from shadowing the repository tests directory."
+  },
+  "command_template": "cd <WORKTREE> && export PYTHONPATH=\"$PWD:$PWD/src:$PWD/plugins/lerobot_policy_smolvla_adaptive/src\" && /mnt/d/VLA/msc26-vla/.venv_wsl_lerobot_v061/bin/python -c \"import os,sys,types,pytest; m=types.ModuleType('tests'); m.__path__=[os.path.join(os.getcwd(),'tests')]; sys.modules['tests']=m; raise SystemExit(pytest.main(['-q','--junitxml=pytest-full.xml']))\"",
+  "runs": [
+    {
+      "git_sha": "06d8531c70b68009dbb51cca3326a0fb8de51d96",
+      "worktree": "/home/xinrui_shen/vla/worktrees/parity-pytest-06d",
+      "junit_sha256": "fac4ed9499668868daf209fc0b9921a0c9c03d1da5ff7827415334e249762416",
+      "result": "204 passed, 1 skipped, 56 failed, 34 errors in 296.08s"
+    },
+    {
+      "git_sha": "6539536fb30cbd34dcadfca059bdfa7c275bfb4f",
+      "worktree": "/home/xinrui_shen/vla/worktrees/parity-pytest-653",
+      "junit_sha256": "cd7dd56473817b5a76989030c1320a7369cfb4f075a5540d5ad86a6a9da3d0e1",
+      "result": "210 passed, 1 skipped, 56 failed, 34 errors in 297.28s"
+    },
+    {
+      "git_sha": "parity-hardening worktree based on 6539536fb30cbd34dcadfca059bdfa7c275bfb4f",
+      "worktree": "/mnt/d/VLA/msc26-vla",
+      "junit_sha256": "943bd73c0df3c839ee9a03151ec98753689c2d52af72690a3d8f0854d4926ee0",
+      "result": "217 passed, 1 skipped, 56 failed, 34 errors in 267.95s",
+      "note": "Same full-suite invocation; JUnit destination was /home/xinrui_shen/vla/worktrees/pytest-full-parity-hardening.xml."
+    }
+  ]
+}

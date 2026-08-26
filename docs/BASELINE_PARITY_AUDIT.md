@@ -29,10 +29,13 @@ LIBERO backend，并且额外执行了 safety clipping。
    原始最小值 `-1.060972`，最大超界幅度 `0.060972`。因此旧 Static-H1 的实际
    action 不可能与 native H1 相同。
 
-上述差异是共同确认的根因集合：修复全部 parity 破坏后，paired H1 从冻结实验的
-`3/50`（6%）恢复到 `10/10`。本审计没有运行逐因素 rollout ablation，因此没有
-声称图像方向、settle、state 或 clipping 中某一个单项独自解释全部成功率差异，
-也没有给这些因素分摊因果权重。
+上述差异是共同确认的根因集合。冻结实验在其 50-episode sample set 上为
+`3/50`（6%）；修复后的验证使用另一组 10 tasks × benchmark state 0，结果为
+`10/10`。两者样本规模与 initial-state 构成不同，因此这里将其准确表述为“官方
+H1 量级已在小规模 parity gate 上恢复”，而不是把 `3/50` 到 `10/10` 当作同一样本
+上的直接提升。本审计没有运行逐因素 rollout ablation，因此没有声称图像方向、
+settle、state 或 clipping 中某一个单项独自解释全部成功率差异，也没有给这些因素
+分摊因果权重。
 
 ## 安全边界
 

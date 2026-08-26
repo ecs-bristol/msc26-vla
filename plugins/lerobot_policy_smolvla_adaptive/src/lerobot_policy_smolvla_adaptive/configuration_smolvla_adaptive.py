@@ -11,7 +11,7 @@ from lerobot.utils.constants import ACTION
 
 _FROZEN_SMOLVLA_REVISION = "6721902bc4d61e50a3bfdb11dfb4cb626f05d102"
 _FROZEN_SMOLVLM2_REVISION = "7b375e1b73b11138ff12fe22c8f2822d8fe03467"
-_ALLOWED_HORIZONS = frozenset({1, 5, 10, 20, 50})
+_ALLOWED_HORIZONS = frozenset({1, 5, 10, 20, 25, 30, 50})
 
 
 @PreTrainedConfig.register_subclass("smolvla_adaptive")
@@ -24,6 +24,7 @@ class SmolVLAAdaptiveConfig(PreTrainedConfig):
     fixed_h: int = 20
     safety_enabled: bool = True
     replan_after_safety_violation: bool = False
+    clip_actions: bool = False
     chunk_size: int = 50
     num_steps: int = 2
     precision: str = "fp16"
@@ -42,9 +43,11 @@ class SmolVLAAdaptiveConfig(PreTrainedConfig):
         if self.base_revision != _FROZEN_SMOLVLA_REVISION:
             raise ValueError("base_revision must equal the frozen SmolVLA revision")
         if type(self.fixed_h) is not int or self.fixed_h not in _ALLOWED_HORIZONS:
-            raise ValueError("fixed_h must be one of {1, 5, 10, 20, 50}")
+            raise ValueError("fixed_h must be one of {1, 5, 10, 20, 25, 30, 50}")
         if self.replan_after_safety_violation and not self.safety_enabled:
             raise ValueError("replan_after_safety_violation requires safety_enabled=True")
+        if self.clip_actions and not self.safety_enabled:
+            raise ValueError("clip_actions requires safety_enabled=True")
         if self.chunk_size != 50:
             raise ValueError("the frozen evaluation protocol requires chunk_size=50")
         if self.num_steps != 2:

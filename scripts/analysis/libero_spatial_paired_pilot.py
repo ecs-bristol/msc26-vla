@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gc
 import hashlib
 import json
 import os
@@ -30,7 +31,7 @@ import yaml
 SMOLVLA_REVISION = "6721902bc4d61e50a3bfdb11dfb4cb626f05d102"
 SMOLVLM2_REVISION = "7b375e1b73b11138ff12fe22c8f2822d8fe03467"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-ALLOWED_HORIZONS = frozenset({1, 5, 10, 20, 50})
+ALLOWED_HORIZONS = frozenset({1, 5, 10, 20, 25, 30, 50})
 SUMMARY_FIELDS = (
     "condition",
     "task_id",
@@ -139,14 +140,16 @@ def _validate_config(config: dict[str, Any]) -> None:
         if not isinstance(condition, dict):
             raise ValueError("each condition must be a mapping")
         if type(condition.get("fixed_h")) is not int or condition["fixed_h"] not in ALLOWED_HORIZONS:
-            raise ValueError("condition fixed_h must be one of 1, 5, 10, 20, 50")
-    if conditions[0].get("safety_enabled") is not False:
-        raise ValueError("Static-H1-original must disable custom safety clipping")
-    if any(condition.get("safety_enabled") is not True for condition in conditions[1:]):
-        raise ValueError("non-baseline paired-pilot conditions require safety_enabled=True")
+            raise ValueError("condition fixed_h must be an allowed execution horizon")
+        if condition.get("clip_actions") is not False:
+            raise ValueError("paired-pilot conditions use native actions without clipping")
+    if any(condition.get("safety_enabled") is not False for condition in conditions[:-1]):
+        raise ValueError("static paired-pilot conditions must be detection-only telemetry")
     adaptive = conditions[-1]
     if adaptive["fixed_h"] != 20 or adaptive.get("replan_after_safety_violation") is not True:
         raise ValueError("Adaptive-H20→H1 must replan after a safety violation")
+    if adaptive.get("safety_enabled") is not True:
+        raise ValueError("Adaptive-H20→H1 requires range-violation detection")
     if any(condition.get("replan_after_safety_violation") is not False for condition in conditions[:-1]):
         raise ValueError("static paired-pilot conditions must not safety-trigger replanning")
 
@@ -737,7 +740,21 @@ class _LocalSmolVLAPilotPolicy:
         return np.asarray(action.detach().cpu().numpy()[0], dtype=np.float32)
 
     def close(self) -> None:
-        del self._policy
+        policy = self._policy
+        if policy is None:
+            return
+        try:
+            reset = getattr(policy, "reset", None)
+            if callable(reset):
+                reset()
+        finally:
+            self._policy = None
+            del policy
+            gc.collect()
+            cuda = getattr(self._torch, "cuda", None)
+            if cuda is not None and cuda.is_available():
+                cuda.synchronize()
+                cuda.empty_cache()
 
 
 def _local_policy_factory(
@@ -767,6 +784,7 @@ def _local_policy_factory(
             fixed_h=condition["fixed_h"],
             safety_enabled=condition["safety_enabled"],
             replan_after_safety_violation=condition["replan_after_safety_violation"],
+            clip_actions=condition["clip_actions"],
             num_steps=2,
             chunk_size=50,
             precision="fp16",

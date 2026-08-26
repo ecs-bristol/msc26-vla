@@ -18,23 +18,29 @@ conditions:
     fixed_h: 1
     safety_enabled: false
     replan_after_safety_violation: false
+    clip_actions: false
   - name: Static-H5
     fixed_h: 5
-    safety_enabled: true
+    safety_enabled: false
     replan_after_safety_violation: false
+    clip_actions: false
   - name: Static-H10
     fixed_h: 10
-    safety_enabled: true
+    safety_enabled: false
     replan_after_safety_violation: false
+    clip_actions: false
   - name: Static-H20
     fixed_h: 20
-    safety_enabled: true
+    safety_enabled: false
     replan_after_safety_violation: false
+    clip_actions: false
   - name: Static-H50
     fixed_h: 50
-    safety_enabled: true
+    safety_enabled: false
     replan_after_safety_violation: false
+    clip_actions: false
   - name: Adaptive-H20→H1
     fixed_h: 20
     safety_enabled: true
     replan_after_safety_violation: true
+    clip_actions: false

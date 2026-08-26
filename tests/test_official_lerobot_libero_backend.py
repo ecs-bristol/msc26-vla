@@ -56,6 +56,9 @@ def test_official_backend_constructs_exact_lerobot_h1_environment(monkeypatch) -
         "control_mode": "relative",
         "hard_reset": True,
     }
+    backend.close()
+    with pytest.raises(RuntimeError, match="backend is closed"):
+        backend.open_episode("libero_spatial", 0, 0, max_steps=280, seed=1000)
 
 
 class _CountingProcessor:

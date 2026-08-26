@@ -23,7 +23,7 @@ TelemetryRecord: TypeAlias = dict[str, TelemetryValue]
 _ACTION_DIM = 7
 _CHUNK_SIZE = 50
 _DEFAULT_HORIZON = 20
-_ALLOWED_HORIZONS = frozenset({1, 5, 10, 20, 50})
+_ALLOWED_HORIZONS = frozenset({1, 5, 10, 20, 25, 30, 50})
 _GRIPPER_INDEX = 6
 
 
@@ -61,12 +61,15 @@ class FixedHActionBuffer:
         horizon: int = _DEFAULT_HORIZON,
         safety_enabled: bool = True,
         replan_after_safety_violation: bool = False,
+        clip_actions: bool = False,
     ) -> None:
         if type(horizon) is not int or horizon not in _ALLOWED_HORIZONS:
             allowed = ", ".join(str(value) for value in sorted(_ALLOWED_HORIZONS))
             raise ValueError(f"horizon must be one of {{{allowed}}}")
         if replan_after_safety_violation and not safety_enabled:
             raise ValueError("replan_after_safety_violation requires safety_enabled=True")
+        if clip_actions and not safety_enabled:
+            raise ValueError("clip_actions requires safety_enabled=True")
         self._predictor = predictor
         self._horizon = horizon
         self._buffer: list[Action] = []
@@ -75,6 +78,7 @@ class FixedHActionBuffer:
         self._model_invocations = 0
         self._safety_enabled = bool(safety_enabled)
         self._replan_after_safety_violation = bool(replan_after_safety_violation)
+        self._clip_actions = bool(clip_actions)
         self._force_next_horizon_one = False
         self._active_horizon = horizon
         self._telemetry: list[TelemetryRecord] = []
@@ -147,9 +151,13 @@ class FixedHActionBuffer:
         chunk_action_index = self._buffer_action_index
         self._buffer_action_index += 1
         range_violation = bool((action < -1.0).any() or (action > 1.0).any())
-        range_clipped = self._safety_enabled and range_violation
+        range_clipped = self._clip_actions and range_violation
 
-        buffer_discarded = range_clipped and self._replan_after_safety_violation
+        buffer_discarded = (
+            self._safety_enabled
+            and range_violation
+            and self._replan_after_safety_violation
+        )
         if range_clipped:
             released_action = np.clip(action, -1.0, 1.0).astype(np.float32, copy=False)
         else:
@@ -175,6 +183,7 @@ class FixedHActionBuffer:
             "model_invocation": chunk_origin,
             "model_invoked": chunk_action_index == 0,
             "safety_enabled": self._safety_enabled,
+            "clip_actions": self._clip_actions,
             "range_violation": range_violation,
             "range_clipped": range_clipped,
             "buffer_discarded": buffer_discarded,

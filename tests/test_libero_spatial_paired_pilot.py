@@ -110,7 +110,11 @@ def test_dry_run_materializes_six_strictly_paired_conditions(tmp_path: Path) -> 
         "Adaptive-H20→H1",
     ]
     assert resolved["conditions"][0]["safety_enabled"] is False
-    assert all(condition["safety_enabled"] for condition in resolved["conditions"][1:])
+    assert all(
+        condition["safety_enabled"] is False for condition in resolved["conditions"][:-1]
+    )
+    assert resolved["conditions"][-1]["safety_enabled"] is True
+    assert all(condition["clip_actions"] is False for condition in resolved["conditions"])
 
     episode_files = list((output_dir / "episodes").rglob("*.json"))
     assert len(episode_files) == 300
@@ -498,3 +502,36 @@ def test_executor_can_select_only_original_h1_without_touching_other_conditions(
     assert untouched["status"] == "planned_dry_run"
     provenance = json.loads((output_dir / "execution_provenance.json").read_text())
     assert provenance["selected_conditions"] == ["Static-H1-original"]
+
+
+def test_local_policy_close_releases_model_and_cuda_cache() -> None:
+    module = _pilot_module()
+    calls: list[str] = []
+
+    class _Policy:
+        def reset(self) -> None:
+            calls.append("reset")
+
+    class _Cuda:
+        @staticmethod
+        def is_available() -> bool:
+            return True
+
+        @staticmethod
+        def synchronize() -> None:
+            calls.append("synchronize")
+
+        @staticmethod
+        def empty_cache() -> None:
+            calls.append("empty_cache")
+
+    adapter = module._LocalSmolVLAPilotPolicy(
+        _Policy(),
+        type("TorchDouble", (), {"cuda": _Cuda()})(),
+    )
+
+    adapter.close()
+    adapter.close()
+
+    assert calls == ["reset", "synchronize", "empty_cache"]
+    assert adapter._policy is None

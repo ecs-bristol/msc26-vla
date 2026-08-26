@@ -114,7 +114,7 @@ def test_factory_parses_frozen_native_and_adaptive_policy_arguments() -> None:
     assert adaptive.replan_after_safety_violation is True
 
 
-@pytest.mark.parametrize("horizon", [1, 5, 10, 20, 50])
+@pytest.mark.parametrize("horizon", [1, 5, 10, 20, 25, 30, 50])
 def test_plugin_config_accepts_the_pilot_static_horizons(horizon: int) -> None:
     assert SmolVLAAdaptiveConfig(fixed_h=horizon).fixed_h == horizon
 
@@ -124,6 +124,19 @@ def test_plugin_config_rejects_adaptive_replan_without_safety() -> None:
         SmolVLAAdaptiveConfig(
             safety_enabled=False, replan_after_safety_violation=True
         )
+
+
+def test_plugin_config_rejects_clipping_without_safety() -> None:
+    with pytest.raises(ValueError, match="clip_actions requires safety_enabled"):
+        SmolVLAAdaptiveConfig(safety_enabled=False, clip_actions=True)
+
+
+@pytest.mark.parametrize("chunk_size", [25, 30])
+def test_plugin_config_does_not_treat_execution_horizon_as_model_chunk_size(
+    chunk_size: int,
+) -> None:
+    with pytest.raises(ValueError, match="requires chunk_size=50"):
+        SmolVLAAdaptiveConfig(fixed_h=chunk_size, chunk_size=chunk_size)
 
 
 def test_plugin_fixes_remote_code_to_false_without_a_cli_config_field() -> None:
@@ -275,7 +288,7 @@ def test_plugin_rejects_invalid_actions_and_clears_buffer(invalid: object, messa
     assert base.select_calls == 0
 
 
-def test_plugin_adaptive_clips_then_forces_one_step_refill_and_reset_clears_both_layers() -> None:
+def test_plugin_adaptive_detection_only_replans_without_modifying_action() -> None:
     too_large = np.array([2.0, 0, 0, 0, 0, 0, -2.0], dtype=np.float32)
     base = FakeBasePolicy([_chunk(first=too_large, fill=0.4), _chunk(fill=-0.4), _chunk(fill=0.6)])
     policy = SmolVLAAdaptivePolicy(
@@ -285,13 +298,16 @@ def test_plugin_adaptive_clips_then_forces_one_step_refill_and_reset_clears_both
         base_postprocessor=RecordingProcessor(),
     )
 
-    clipped = policy.select_action({"step": 0})
+    triggered = policy.select_action({"step": 0})
     recovery = policy.select_action({"step": 1})
     policy.reset()
     after_reset = policy.select_action({"step": 2})
 
-    assert torch.allclose(clipped, torch.tensor([[1, 0, 0, 0, 0, 0, -1]], dtype=torch.float32))
-    assert policy.action_telemetry[1]["range_clipped"] is True
+    assert torch.allclose(
+        triggered, torch.tensor([[2, 0, 0, 0, 0, 0, -2]], dtype=torch.float32)
+    )
+    assert policy.action_telemetry[1]["range_clipped"] is False
+    assert policy.action_telemetry[1]["buffer_discarded"] is True
     assert recovery.shape == (1, 7)
     assert base.predict_calls[1] == {"step": 1}
     assert base.reset_calls == 1

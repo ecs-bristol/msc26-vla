@@ -12,16 +12,17 @@ class ConstantOutOfRangePredictor:
         return np.full((1, 50, 7), 2.0, dtype=np.float32)
 
 
-def test_static_h20_safety_clips_without_discarding_or_changing_refill_boundary() -> None:
+def test_static_h20_records_violation_without_modifying_native_action_or_refill() -> None:
     predictor = ConstantOutOfRangePredictor()
     buffer = FixedHActionBuffer(predictor, safety_enabled=True)
 
     first = buffer.next_action(None)
 
-    assert np.array_equal(first.action, np.ones(7, dtype=np.float32))
+    assert np.array_equal(first.action, np.full(7, 2.0, dtype=np.float32))
     assert first.telemetry["safety_enabled"] is True
     assert first.telemetry["range_violation"] is True
-    assert first.telemetry["range_clipped"] is True
+    assert first.telemetry["clip_actions"] is False
+    assert first.telemetry["range_clipped"] is False
     assert first.telemetry["buffer_discarded"] is False
     assert first.telemetry["actual_horizon"] == 20
     assert first.telemetry["forced_horizon_next"] is None
@@ -35,7 +36,7 @@ def test_static_h20_safety_clips_without_discarding_or_changing_refill_boundary(
     assert refill.telemetry["planned_horizon"] == 20
 
 
-def test_adaptive_h20_safety_clips_discards_and_forces_h1() -> None:
+def test_adaptive_h20_detection_only_discards_and_forces_h1_without_clipping() -> None:
     predictor = ConstantOutOfRangePredictor()
     buffer = FixedHActionBuffer(
         predictor, safety_enabled=True, replan_after_safety_violation=True
@@ -44,13 +45,30 @@ def test_adaptive_h20_safety_clips_discards_and_forces_h1() -> None:
     first = buffer.next_action(None)
     second = buffer.next_action(None)
 
-    assert np.array_equal(first.action, np.ones(7, dtype=np.float32))
-    assert first.telemetry["range_clipped"] is True
+    assert np.array_equal(first.action, np.full(7, 2.0, dtype=np.float32))
+    assert first.telemetry["range_clipped"] is False
     assert first.telemetry["buffer_discarded"] is True
     assert first.telemetry["forced_horizon_next"] == 1
     assert second.telemetry["planned_horizon"] == 1
     assert second.telemetry["actual_horizon"] == 1
     assert predictor.calls == 2
+
+
+def test_clipping_is_an_explicit_action_handling_option_independent_of_replan() -> None:
+    predictor = ConstantOutOfRangePredictor()
+    buffer = FixedHActionBuffer(
+        predictor,
+        safety_enabled=True,
+        clip_actions=True,
+        replan_after_safety_violation=False,
+    )
+
+    release = buffer.next_action(None)
+
+    assert np.array_equal(release.action, np.ones(7, dtype=np.float32))
+    assert release.telemetry["range_clipped"] is True
+    assert release.telemetry["buffer_discarded"] is False
+    assert buffer.buffered_actions == 49
 
 
 def test_safety_disabled_preserves_native_postprocessed_action() -> None:

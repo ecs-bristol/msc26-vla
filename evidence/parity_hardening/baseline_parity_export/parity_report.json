@@ -1,0 +1,340 @@
+{
+  "action_parity": {
+    "comparison": {
+      "max_abs_difference": 0.0,
+      "shape_equal": true
+    },
+    "fixed_noise_sha256": "419f31eabcb8d52aae7561ba1e5a67902839b8d45ebe6849cd6f5585e5993457",
+    "native": {
+      "dtype": "float32",
+      "max": 0.9805959463119507,
+      "min": -1.0609720945358276,
+      "sha256": "d5a52758f88004809e7ef4018fce920a5ddfdf09a295c17278fc93d6baa00a1f",
+      "shape": [
+        1,
+        50,
+        7
+      ]
+    },
+    "range_violations": [
+      {
+        "action_index": 2,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.01462852954864502,
+        "is_gripper": true,
+        "raw_value": -1.014628529548645
+      },
+      {
+        "action_index": 3,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.02937304973602295,
+        "is_gripper": true,
+        "raw_value": -1.029373049736023
+      },
+      {
+        "action_index": 6,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.012869954109191895,
+        "is_gripper": true,
+        "raw_value": -1.012869954109192
+      },
+      {
+        "action_index": 7,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.019150733947753906,
+        "is_gripper": true,
+        "raw_value": -1.019150733947754
+      },
+      {
+        "action_index": 8,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.017054438591003418,
+        "is_gripper": true,
+        "raw_value": -1.0170544385910034
+      },
+      {
+        "action_index": 9,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.0288163423538208,
+        "is_gripper": true,
+        "raw_value": -1.0288163423538208
+      },
+      {
+        "action_index": 15,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.005254387855529785,
+        "is_gripper": true,
+        "raw_value": -1.0052543878555298
+      },
+      {
+        "action_index": 21,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.019521713256835938,
+        "is_gripper": true,
+        "raw_value": -1.019521713256836
+      },
+      {
+        "action_index": 23,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.017919063568115234,
+        "is_gripper": true,
+        "raw_value": -1.0179190635681152
+      },
+      {
+        "action_index": 24,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.0072460174560546875,
+        "is_gripper": true,
+        "raw_value": -1.0072460174560547
+      },
+      {
+        "action_index": 26,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.009772300720214844,
+        "is_gripper": true,
+        "raw_value": -1.0097723007202148
+      },
+      {
+        "action_index": 27,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.06097209453582764,
+        "is_gripper": true,
+        "raw_value": -1.0609720945358276
+      },
+      {
+        "action_index": 28,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.043448686599731445,
+        "is_gripper": true,
+        "raw_value": -1.0434486865997314
+      },
+      {
+        "action_index": 29,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.037238240242004395,
+        "is_gripper": true,
+        "raw_value": -1.0372382402420044
+      },
+      {
+        "action_index": 33,
+        "dimension": 6,
+        "excess_beyond_unit_range": 0.025568604469299316,
+        "is_gripper": true,
+        "raw_value": -1.0255686044692993
+      }
+    ],
+    "wrapper_internal": {
+      "dtype": "float32",
+      "max": 0.9805959463119507,
+      "min": -1.0609720945358276,
+      "sha256": "d5a52758f88004809e7ef4018fce920a5ddfdf09a295c17278fc93d6baa00a1f",
+      "shape": [
+        1,
+        50,
+        7
+      ]
+    }
+  },
+  "actual_path_comparison": {
+    "agentview": {
+      "max_abs_difference": null,
+      "reason": "shape mismatch: (1, 3, 360, 360) != (1, 3, 256, 256)",
+      "shape_equal": false
+    },
+    "state": {
+      "max_abs_difference": 6.269057035446167,
+      "shape_equal": true
+    },
+    "wrist": {
+      "max_abs_difference": null,
+      "reason": "shape mismatch: (1, 3, 360, 360) != (1, 3, 256, 256)",
+      "shape_equal": false
+    }
+  },
+  "custom": {
+    "agentview": {
+      "dtype": "float32",
+      "max": 0.9725490212440491,
+      "min": 0.019607843831181526,
+      "sha256": "31719e23f48799be7b39625badb6227dcb5c3b6b601344fb8d7180510ae8a796",
+      "shape": [
+        1,
+        3,
+        256,
+        256
+      ]
+    },
+    "state": {
+      "dtype": "float32",
+      "max": 1.1756771802902222,
+      "min": -3.1281614303588867,
+      "sha256": "cebc4593262793b2678a96edb485312156c20b2e517b994cc4cd11f2e41202b2",
+      "shape": [
+        1,
+        8
+      ]
+    },
+    "wrist": {
+      "dtype": "float32",
+      "max": 0.9372549057006836,
+      "min": 0.003921568859368563,
+      "sha256": "72d9b17c29358cfc3ea1c9724ba44771df0737c8e9bebd4c287229a6852743d3",
+      "shape": [
+        1,
+        3,
+        256,
+        256
+      ]
+    }
+  },
+  "custom_reset_raw": {
+    "agentview": {
+      "dtype": "uint8",
+      "max": 248.0,
+      "min": 5.0,
+      "sha256": "79be04d10829a4757783b635843c6592ff6560215eeef62b88eaf757f1c5ad91",
+      "shape": [
+        256,
+        256,
+        3
+      ]
+    },
+    "wrist": {
+      "dtype": "uint8",
+      "max": 239.0,
+      "min": 1.0,
+      "sha256": "cac310716d214749f8fa64cb04441f7f9508b6171bc64b5cf9be61cc586dd592",
+      "shape": [
+        256,
+        256,
+        3
+      ]
+    }
+  },
+  "identity": {
+    "custom_camera_size": [
+      256,
+      256
+    ],
+    "custom_settle_steps": 0,
+    "environment_seed": 1000,
+    "initial_state_id": 0,
+    "official_camera_size": [
+      360,
+      360
+    ],
+    "official_settle_steps": 10,
+    "repaired_camera_size": [
+      360,
+      360
+    ],
+    "repaired_settle_steps": 10,
+    "suite": "libero_spatial",
+    "task_id": 0
+  },
+  "official": {
+    "agentview": {
+      "dtype": "float32",
+      "max": 1.0,
+      "min": 0.007843137718737125,
+      "sha256": "2d17410404716066722456cde328367d98935da76df2dfc8b271fc55d729f996",
+      "shape": [
+        1,
+        3,
+        360,
+        360
+      ]
+    },
+    "state": {
+      "dtype": "float32",
+      "max": 3.1408956050872803,
+      "min": -0.21124163269996643,
+      "sha256": "0bb290caae9a79056d91ca260de8a627eea0709b2aa88abdb88dec0211456eda",
+      "shape": [
+        1,
+        8
+      ]
+    },
+    "wrist": {
+      "dtype": "float32",
+      "max": 0.9803921580314636,
+      "min": 0.003921568859368563,
+      "sha256": "fcb361a434ef3cdf7f59632e2532b2ee0901223872754d97aac593146294a623",
+      "shape": [
+        1,
+        3,
+        360,
+        360
+      ]
+    }
+  },
+  "repaired": {
+    "agentview": {
+      "dtype": "float32",
+      "max": 1.0,
+      "min": 0.007843137718737125,
+      "sha256": "2d17410404716066722456cde328367d98935da76df2dfc8b271fc55d729f996",
+      "shape": [
+        1,
+        3,
+        360,
+        360
+      ]
+    },
+    "state": {
+      "dtype": "float32",
+      "max": 3.1408956050872803,
+      "min": -0.21124163269996643,
+      "sha256": "0bb290caae9a79056d91ca260de8a627eea0709b2aa88abdb88dec0211456eda",
+      "shape": [
+        1,
+        8
+      ]
+    },
+    "wrist": {
+      "dtype": "float32",
+      "max": 0.9803921580314636,
+      "min": 0.003921568859368563,
+      "sha256": "fcb361a434ef3cdf7f59632e2532b2ee0901223872754d97aac593146294a623",
+      "shape": [
+        1,
+        3,
+        360,
+        360
+      ]
+    }
+  },
+  "repaired_path_comparison": {
+    "agentview": {
+      "max_abs_difference": 0.0,
+      "shape_equal": true
+    },
+    "state": {
+      "max_abs_difference": 0.0,
+      "shape_equal": true
+    },
+    "wrist": {
+      "max_abs_difference": 0.0,
+      "shape_equal": true
+    }
+  },
+  "same_raw_processor_comparison": {
+    "agentview": {
+      "max_abs_difference": 0.937254898250103,
+      "shape_equal": true
+    },
+    "state": {
+      "max_abs_difference": 6.280732870101929,
+      "shape_equal": true
+    },
+    "wrist": {
+      "max_abs_difference": 0.9098039250820875,
+      "shape_equal": true
+    }
+  },
+  "task": {
+    "custom": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+    "equal": true,
+    "official": "pick up the black bowl between the plate and the ramekin and place it on the plate"
+  }
+}

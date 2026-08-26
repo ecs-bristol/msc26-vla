@@ -54,7 +54,7 @@ def test_fixed_h_twenty_refills_once_and_releases_twenty_actions() -> None:
     assert twenty_first.telemetry["model_invocation"] == 2
 
 
-@pytest.mark.parametrize("horizon", [1, 5, 10, 20, 50])
+@pytest.mark.parametrize("horizon", [1, 5, 10, 20, 25, 30, 50])
 def test_permitted_static_horizons_refill_at_the_configured_boundary(horizon: int) -> None:
     predictor = FakeChunkPredictor([chunk(fill=0.25), chunk(fill=-0.25)])
     buffer = FixedHActionBuffer(predictor, horizon=horizon)
@@ -120,23 +120,23 @@ def test_invalid_chunk_shape_clears_buffer_and_raises_explicit_error() -> None:
     assert buffer.buffered_actions == 0
 
 
-def test_adaptive_h20_clips_discards_and_forces_one_step_replan() -> None:
+def test_adaptive_h20_detection_only_discards_and_forces_one_step_replan() -> None:
     too_large = np.array([2.0, 0, 0, 0, 0, 0, -2.0], dtype=np.float32)
     predictor = FakeChunkPredictor(
         [chunk(first=too_large, fill=0.4), chunk(fill=-0.4), chunk(fill=0.6)]
     )
     buffer = FixedHActionBuffer(predictor, replan_after_safety_violation=True)
 
-    clipped = buffer.next_action("observation-a")
+    triggered = buffer.next_action("observation-a")
     recovery = buffer.next_action("observation-b")
     normal = buffer.next_action("observation-c")
 
-    assert clipped.action.tolist() == pytest.approx([1, 0, 0, 0, 0, 0, -1])
-    assert clipped.telemetry["range_clipped"] is True
-    assert clipped.telemetry["buffer_discarded"] is True
-    assert clipped.telemetry["buffer_size_after"] == 0
-    assert clipped.telemetry["forced_horizon_next"] == 1
-    assert clipped.telemetry["actual_horizon"] == 20
+    assert triggered.action.tolist() == pytest.approx(too_large.tolist())
+    assert triggered.telemetry["range_clipped"] is False
+    assert triggered.telemetry["buffer_discarded"] is True
+    assert triggered.telemetry["buffer_size_after"] == 0
+    assert triggered.telemetry["forced_horizon_next"] == 1
+    assert triggered.telemetry["actual_horizon"] == 20
     assert recovery.telemetry["planned_horizon"] == 1
     assert recovery.telemetry["actual_horizon"] == 1
     assert buffer.buffered_actions == 49
@@ -180,6 +180,7 @@ def test_release_telemetry_is_complete_and_json_serializable() -> None:
         "model_invocation",
         "model_invoked",
         "range_violation",
+        "clip_actions",
         "range_clipped",
         "buffer_discarded",
         "forced_horizon_next",

@@ -125,6 +125,7 @@ class SmolVLAAdaptivePolicy(PreTrainedPolicy):
             horizon=config.fixed_h,
             safety_enabled=config.safety_enabled,
             replan_after_safety_violation=config.replan_after_safety_violation,
+            clip_actions=config.clip_actions,
         )
 
     def get_optim_params(self) -> dict:

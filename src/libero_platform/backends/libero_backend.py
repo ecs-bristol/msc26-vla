@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import gc
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -190,6 +191,7 @@ class OfficialLeRobotLiberoBackend:
 
     def __init__(self) -> None:
         self._runtime = _load_official_lerobot_runtime()
+        self._closed = False
 
     def _resolve_suite(self, suite: str) -> Any:
         try:
@@ -208,6 +210,8 @@ class OfficialLeRobotLiberoBackend:
     def open_episode(
         self, suite: str, task_id: int, initial_state_id: int, max_steps: int, seed: int
     ) -> OfficialLeRobotLiberoEpisode:
+        if self._closed:
+            raise RuntimeError("official LIBERO backend is closed")
         _validate_index("task_id", task_id)
         _validate_index("initial_state_id", initial_state_id)
         if not isinstance(max_steps, int) or isinstance(max_steps, bool) or max_steps < 1:
@@ -241,6 +245,15 @@ class OfficialLeRobotLiberoBackend:
             preprocess_observation=self._runtime.preprocess_observation,
             processor=self._runtime.processor_factory(),
         )
+
+    def close(self) -> None:
+        """Release runtime references before interpreter teardown."""
+
+        if self._closed:
+            return
+        self._closed = True
+        self._runtime = None
+        gc.collect()
 
 
 class OfficialLeRobotLiberoEpisode:
@@ -310,8 +323,19 @@ class OfficialLeRobotLiberoEpisode:
     def close(self) -> None:
         if self._closed:
             return
-        self._env.close()
-        self._closed = True
+        environment = self._env
+        try:
+            environment.close()
+        finally:
+            self.model = None
+            self.data = None
+            self._last_observation = None
+            self._env = None
+            self._processor = None
+            self._preprocess_observation = None
+            self._closed = True
+            del environment
+            gc.collect()
 
     def _observation(self, raw_observation: dict[str, Any]) -> Observation:
         processed = self._preprocess_observation(

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "base_git_sha": "6539536fb30cbd34dcadfca059bdfa7c275bfb4f",
+  "mode": "offline reset-and-close preflight; no policy action selected; no rollout",
+  "command": "timeout 600s python scripts/wsl/check_paired_runtime_shutdown.py --base-snapshot-path <frozen-smolvla-snapshot> --vlm-snapshot-path <frozen-smolvlm2-snapshot> --device cuda",
+  "environment": {
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "HF_DATASETS_OFFLINE": "1",
+    "MUJOCO_GL": "egl"
+  },
+  "result": {
+    "status": "clean_shutdown_ready",
+    "environment_steps_executed": 0,
+    "policy_actions_selected": 0,
+    "reset_settle_steps": 10,
+    "elapsed_s": 214.59,
+    "exit_code": 0,
+    "timed_out": false
+  }
+}
