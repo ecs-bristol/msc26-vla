@@ -66,7 +66,8 @@ SUMMARY_FIELDS = (
     "resolved_config_path",
 )
 _TERMINAL_EPISODE_STATUSES = frozenset({"completed", "failed"})
-_INFERENCE_SEED_DERIVATION = "sha256(libero_spatial|task_id|seed|initial_state_id)[:8] & ((1<<63)-1)"
+_LEGACY_INFERENCE_SEED_NAMESPACE = "libero_spatial"
+_ADAPTIVE_V2_HELD_OUT_NAMESPACE = "adaptive-v2-heldout-v1|libero_spatial"
 
 
 class PilotPolicy(Protocol):
@@ -140,14 +141,16 @@ def _validate_config(config: dict[str, Any]) -> None:
     if not isinstance(conditions, list) or len(conditions) != 6:
         raise ValueError("pilot config must declare the six paired conditions")
     names = [condition.get("name") for condition in conditions if isinstance(condition, dict)]
-    if names != [
+    static_names = [
         "Static-H1-original",
         "Static-H5",
         "Static-H10",
         "Static-H20",
         "Static-H50",
-        "Adaptive-H20→H1",
-    ]:
+    ]
+    legacy_names = [*static_names, "Adaptive-H20→H1"]
+    v2_names = [*static_names, "Adaptive-v2a-H20→H1"]
+    if names not in (legacy_names, v2_names):
         raise ValueError("pilot conditions must include native-equivalent Static-H1-original")
     for condition in conditions:
         if not isinstance(condition, dict):
@@ -159,12 +162,35 @@ def _validate_config(config: dict[str, Any]) -> None:
     if any(condition.get("safety_enabled") is not False for condition in conditions[:-1]):
         raise ValueError("static paired-pilot conditions must be detection-only telemetry")
     adaptive = conditions[-1]
-    if adaptive["fixed_h"] != 20 or adaptive.get("replan_after_safety_violation") is not True:
-        raise ValueError("Adaptive-H20→H1 must replan after a safety violation")
-    if adaptive.get("safety_enabled") is not True:
-        raise ValueError("Adaptive-H20→H1 requires range-violation detection")
-    if any(condition.get("replan_after_safety_violation") is not False for condition in conditions[:-1]):
+    if any(
+        condition.get("replan_after_safety_violation") is not False
+        for condition in conditions[:-1]
+    ):
         raise ValueError("static paired-pilot conditions must not safety-trigger replanning")
+    if any(
+        condition.get("adaptive_v2_trigger", False) is not False
+        for condition in conditions[:-1]
+    ):
+        raise ValueError("static paired-pilot conditions must not use Adaptive-v2a")
+    if names == legacy_names:
+        if adaptive["fixed_h"] != 20 or adaptive.get("replan_after_safety_violation") is not True:
+            raise ValueError("Adaptive-H20→H1 must replan after a safety violation")
+        if adaptive.get("safety_enabled") is not True:
+            raise ValueError("Adaptive-H20→H1 requires range-violation detection")
+        if adaptive.get("adaptive_v2_trigger", False) is not False:
+            raise ValueError("the frozen v1 condition cannot enable Adaptive-v2a")
+    else:
+        if config.get("inference_seed_namespace") != _ADAPTIVE_V2_HELD_OUT_NAMESPACE:
+            raise ValueError("Adaptive-v2a requires the frozen held-out inference seed namespace")
+        if adaptive != {
+            "name": "Adaptive-v2a-H20→H1",
+            "fixed_h": 20,
+            "safety_enabled": True,
+            "replan_after_safety_violation": False,
+            "adaptive_v2_trigger": True,
+            "clip_actions": False,
+        }:
+            raise ValueError("Adaptive-v2a must change only the preregistered trigger logic")
 
 
 def _trials(config: dict[str, Any]) -> list[dict[str, int]]:
@@ -186,13 +212,15 @@ def _trials(config: dict[str, Any]) -> list[dict[str, int]]:
     return trials
 
 
-def _inference_seed(trial: dict[str, int]) -> int:
+def _inference_seed(
+    trial: dict[str, int], namespace: str = _LEGACY_INFERENCE_SEED_NAMESPACE
+) -> int:
     """Derive a condition-independent reproducible inference RNG seed."""
 
     pairing_key = "|".join(
         str(value)
         for value in (
-            "libero_spatial",
+            namespace,
             trial["task_id"],
             trial["seed"],
             trial["initial_state_id"],
@@ -213,16 +241,25 @@ def _set_inference_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
-def _seed_provenance(trials: list[dict[str, int]]) -> list[dict[str, int]]:
+def _seed_provenance(
+    trials: list[dict[str, int]], namespace: str = _LEGACY_INFERENCE_SEED_NAMESPACE
+) -> list[dict[str, int]]:
     return [
         {
             "task_id": trial["task_id"],
             "initial_state_id": trial["initial_state_id"],
             "environment_seed": trial["seed"],
-            "inference_seed": _inference_seed(trial),
+            "inference_seed": _inference_seed(trial, namespace),
         }
         for trial in trials
     ]
+
+
+def _inference_seed_derivation(namespace: str) -> str:
+    return (
+        f"sha256({namespace}|task_id|seed|initial_state_id)[:8] "
+        "& ((1<<63)-1)"
+    )
 
 
 def _action_trace_sha256(actions: list[np.ndarray]) -> str:
@@ -296,6 +333,9 @@ def materialize_dry_run(
         _write_json(resolved_path, config)
     sha = _git_sha(PROJECT_ROOT)
     trials = _trials(config)
+    inference_seed_namespace = config.get(
+        "inference_seed_namespace", _LEGACY_INFERENCE_SEED_NAMESPACE
+    )
     manifest = {
         "schema_version": 1,
         "suite": config["suite"],
@@ -304,6 +344,11 @@ def materialize_dry_run(
         "seed_strategy": "seed = configured seed + initial_state_id; every condition reuses this exact manifest",
         "trials": trials,
     }
+    if "inference_seed_namespace" in config:
+        manifest["inference_seed_namespace"] = inference_seed_namespace
+        manifest["inference_seed_records"] = _seed_provenance(
+            trials, inference_seed_namespace
+        )
     manifest_path = output_dir / "paired_manifest.json"
     if manifest_path.exists() and _read_json(manifest_path) != manifest:
         raise ValueError("existing paired_manifest.json does not match the requested dry run")
@@ -329,8 +374,11 @@ def materialize_dry_run(
         "batch_size": 1,
         "episode_cap": 280,
         "environment_seed_source": "paired_manifest.trials[].seed",
-        "inference_seed_derivation": _INFERENCE_SEED_DERIVATION,
-        "pairing_seeds": _seed_provenance(trials),
+        "inference_seed_namespace": inference_seed_namespace,
+        "inference_seed_derivation": _inference_seed_derivation(
+            inference_seed_namespace
+        ),
+        "pairing_seeds": _seed_provenance(trials, inference_seed_namespace),
     }
     _write_json(output_dir / "provenance.json", provenance)
 
@@ -345,7 +393,7 @@ def materialize_dry_run(
                 "condition_config": condition,
                 **trial,
                 "environment_seed": trial["seed"],
-                "inference_seed": _inference_seed(trial),
+                "inference_seed": _inference_seed(trial, inference_seed_namespace),
                 "success_at_280": None,
                 "success_step": None,
                 "executed_env_steps": None,
@@ -367,6 +415,7 @@ def materialize_dry_run(
                 "range_clips": None,
                 "buffer_discards": None,
                 "mean_actual_horizon": None,
+                "adaptive_v2_trigger_events": None,
                 "action_trace_sha256": None,
                 "termination_reason": "not_started_dry_run",
                 "git_sha": sha,
@@ -439,6 +488,16 @@ def _read_execution_inputs(output_dir: Path) -> tuple[dict[str, Any], list[dict[
         raise ValueError("paired manifest suite does not match resolved config")
     if manifest.get("pairing_key") != ["task_id", "seed", "initial_state_id"]:
         raise ValueError("paired manifest must use task_id, seed, initial_state_id pairing")
+    inference_seed_namespace = config.get(
+        "inference_seed_namespace", _LEGACY_INFERENCE_SEED_NAMESPACE
+    )
+    if "inference_seed_namespace" in config:
+        if manifest.get("inference_seed_namespace") != inference_seed_namespace:
+            raise ValueError("paired manifest inference seed namespace mismatch")
+        if manifest.get("inference_seed_records") != _seed_provenance(
+            _trials(config), inference_seed_namespace
+        ):
+            raise ValueError("paired manifest held-out inference seeds do not match config")
     trials = manifest.get("trials")
     if not isinstance(trials, list) or any(not isinstance(trial, dict) for trial in trials):
         raise ValueError("paired manifest trials must be a list of objects")
@@ -611,6 +670,102 @@ def _episode_telemetry_snapshot(policy: PilotPolicy) -> EpisodeTelemetrySnapshot
     )
 
 
+def _adaptive_v2_trigger_event(
+    release: dict[str, object],
+    *,
+    trial: dict[str, int],
+    inference_seed: int,
+    env_step: int,
+) -> dict[str, object]:
+    """Build a complete, per-event preregistered trigger artifact."""
+
+    if release.get("adaptive_v2_triggered") is not True:
+        raise ValueError("Adaptive-v2a event builder requires a triggered release")
+    dimensions = [int(value) for value in release["trigger_violation_dimensions"]]
+    raw_values = [float(value) for value in release["adaptive_v2_trigger_raw_values"]]
+    bounds = [float(value) for value in release["adaptive_v2_trigger_bounds"]]
+    excesses = [float(value) for value in release["adaptive_v2_trigger_excess"]]
+    severities = [float(value) for value in release["adaptive_v2_trigger_severity"]]
+    persistence = [
+        int(value) for value in release["adaptive_v2_trigger_persistence_counts"]
+    ]
+    if not dimensions or any(dimension == 6 for dimension in dimensions):
+        raise RuntimeError("Adaptive-v2a trigger dimensions must be non-gripper")
+    lengths = {
+        len(dimensions),
+        len(raw_values),
+        len(bounds),
+        len(excesses),
+        len(severities),
+        len(persistence),
+    }
+    if len(lengths) != 1:
+        raise RuntimeError("Adaptive-v2a per-dimension trigger telemetry is incomplete")
+    violations = [
+        {
+            "dimension": dimension,
+            "raw_value": raw_value,
+            "bound": bound,
+            "excess": excess,
+            "severity": severity,
+            "persistence_count": count,
+        }
+        for dimension, raw_value, bound, excess, severity, count in zip(
+            dimensions,
+            raw_values,
+            bounds,
+            excesses,
+            severities,
+            persistence,
+            strict=True,
+        )
+    ]
+    event = {
+        "schema_version": 1,
+        "task_id": trial["task_id"],
+        "initial_state_id": trial["initial_state_id"],
+        "seed": trial["seed"],
+        "environment_seed": trial["seed"],
+        "inference_seed": inference_seed,
+        "model_call_index": int(release["model_invocation"]),
+        "env_step": env_step,
+        "evaluation_order": "trigger_evaluated_before_env_step",
+        "dimensions": dimensions,
+        "raw_values": raw_values,
+        "bounds": bounds,
+        "excess": excesses,
+        "severity": severities,
+        "persistence_counts": persistence,
+        "violations": violations,
+        "discarded_actions": int(
+            release["adaptive_v2_trigger_tail_discarded_actions"]
+        ),
+        "buffer_entries_cleared": int(
+            release["adaptive_v2_buffer_entries_cleared"]
+        ),
+        "horizon_before": int(release["adaptive_v2_horizon_before"]),
+        "horizon_after": int(release["adaptive_v2_horizon_after"]),
+        "recovery_horizon": int(release["adaptive_v2_recovery_horizon"]),
+        "state_before": str(release["adaptive_v2_state_before"]),
+        "state_after": str(release["adaptive_v2_state_after"]),
+        "immediate_dimensions": [
+            int(value) for value in release["adaptive_v2_immediate_dimensions"]
+        ],
+        "persistent_dimensions": [
+            int(value) for value in release["adaptive_v2_persistent_dimensions"]
+        ],
+        "cooldown_h20_actions": int(release["adaptive_v2_cooldown_h20_actions"]),
+    }
+    required = {
+        "task_id", "initial_state_id", "seed", "model_call_index", "env_step",
+        "dimensions", "raw_values", "bounds", "excess", "severity",
+        "discarded_actions", "horizon_before", "horizon_after", "recovery_horizon",
+    }
+    if not required <= event.keys():
+        raise RuntimeError("Adaptive-v2a trigger event schema is incomplete")
+    return event
+
+
 def _run_episode(
     *,
     output_dir: Path,
@@ -623,7 +778,10 @@ def _run_episode(
 ) -> dict[str, object]:
     """Run one manifest-selected environment episode and return a terminal record."""
 
-    inference_seed = _inference_seed(trial)
+    inference_seed_namespace = config.get(
+        "inference_seed_namespace", _LEGACY_INFERENCE_SEED_NAMESPACE
+    )
+    inference_seed = _inference_seed(trial, inference_seed_namespace)
     inference_seed_setter(inference_seed)
     episode = backend.open_episode(
         config["suite"],
@@ -638,6 +796,7 @@ def _run_episode(
     success_step: int | None = None
     telemetry_snapshot: EpisodeTelemetrySnapshot | None = None
     action_trace: list[np.ndarray] = []
+    adaptive_v2_trigger_events: list[dict[str, object]] = []
     termination_reason = "max_steps"
     status = "completed"
     try:
@@ -645,11 +804,36 @@ def _run_episode(
         policy.reset()
         telemetry_snapshot = _episode_telemetry_snapshot(policy)
         for step_id in range(1, config["episode_cap"] + 1):
+            telemetry_before_action = len(policy.telemetry)
             action = np.asarray(policy.select_action(observation), dtype=np.float32)
             if action.shape != (7,):
                 raise ValueError(f"policy action must have shape (7,), got {action.shape}")
+            action_records = tuple(policy.telemetry)[telemetry_before_action:]
+            if condition.get("adaptive_v2_trigger", False):
+                releases = [
+                    record for record in action_records
+                    if record.get("event") == "action_release"
+                ]
+                if (
+                    len(releases) != 1
+                    or releases[0].get("adaptive_v2_enabled") is not True
+                ):
+                    raise RuntimeError(
+                        "Adaptive-v2a must persist exactly one pre-step release record"
+                    )
+                if releases[0].get("adaptive_v2_triggered") is True:
+                    adaptive_v2_trigger_events.append(
+                        _adaptive_v2_trigger_event(
+                            releases[0],
+                            trial=trial,
+                            inference_seed=inference_seed,
+                            env_step=step_id,
+                        )
+                    )
             action_trace.append(action.copy())
             steps = step_id
+            # Adaptive-v2a trigger evaluation and event construction above are
+            # deliberately complete before this environment mutation boundary.
             step = episode.step(action)
             observation = step.observation
             if step.success:
@@ -709,6 +893,7 @@ def _run_episode(
         "wall_time_to_terminal_s": time.perf_counter() - started_at,
         "model_inference_time_s": inference_seconds,
         **metrics,
+        "adaptive_v2_trigger_events": adaptive_v2_trigger_events,
         "action_trace_sha256": _action_trace_sha256(action_trace),
         "termination_reason": termination_reason,
         "git_sha": _git_sha(PROJECT_ROOT),
@@ -747,6 +932,9 @@ def execute_pilot(
         if condition["name"] in selected_condition_names
     ]
     manifest_path = output_dir / "paired_manifest.json"
+    inference_seed_namespace = config.get(
+        "inference_seed_namespace", _LEGACY_INFERENCE_SEED_NAMESPACE
+    )
     _write_json(
         output_dir / "execution_provenance.json",
         {
@@ -764,8 +952,13 @@ def execute_pilot(
             "base_snapshot_path": config["model"]["base_snapshot_path"],
             "vlm_snapshot_path": config["model"]["vlm_snapshot_path"],
             "environment_seed_source": "paired_manifest.trials[].seed",
-            "inference_seed_derivation": _INFERENCE_SEED_DERIVATION,
-            "pairing_seeds": _seed_provenance(selected_trials),
+            "inference_seed_namespace": inference_seed_namespace,
+            "inference_seed_derivation": _inference_seed_derivation(
+                inference_seed_namespace
+            ),
+            "pairing_seeds": _seed_provenance(
+                selected_trials, inference_seed_namespace
+            ),
         },
     )
     backend = backend_factory()
@@ -909,6 +1102,7 @@ def _local_policy_factory(
             fixed_h=condition["fixed_h"],
             safety_enabled=condition["safety_enabled"],
             replan_after_safety_violation=condition["replan_after_safety_violation"],
+            adaptive_v2_trigger=condition.get("adaptive_v2_trigger", False),
             clip_actions=condition["clip_actions"],
             num_steps=2,
             chunk_size=50,

@@ -17,6 +17,7 @@ import torch
 
 from lerobot.policies.pretrained import PreTrainedPolicy
 
+from libero_platform.policies.adaptive_v2_trigger import AdaptiveV2ActionBuffer
 from libero_platform.policies.fixed_h_action_buffer import FixedHActionBuffer
 
 from .configuration_smolvla_adaptive import SmolVLAAdaptiveConfig
@@ -120,13 +121,18 @@ class SmolVLAAdaptivePolicy(PreTrainedPolicy):
         self._chunk_predictor = _PostprocessedChunkPredictor(
             self._base_policy, self._base_preprocessor, self._base_postprocessor
         )
-        self._buffer = FixedHActionBuffer(
-            self._chunk_predictor,
-            horizon=config.fixed_h,
-            safety_enabled=config.safety_enabled,
-            replan_after_safety_violation=config.replan_after_safety_violation,
-            clip_actions=config.clip_actions,
-        )
+        if config.adaptive_v2_trigger:
+            self._buffer = AdaptiveV2ActionBuffer(self._chunk_predictor)
+        else:
+            # The existing v1/static path is intentionally unchanged and
+            # remains the default for every historical resolved config.
+            self._buffer = FixedHActionBuffer(
+                self._chunk_predictor,
+                horizon=config.fixed_h,
+                safety_enabled=config.safety_enabled,
+                replan_after_safety_violation=config.replan_after_safety_violation,
+                clip_actions=config.clip_actions,
+            )
 
     def get_optim_params(self) -> dict:
         raise RuntimeError("smolvla_adaptive is an inference-only policy")

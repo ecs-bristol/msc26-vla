@@ -131,6 +131,32 @@ def test_plugin_config_rejects_clipping_without_safety() -> None:
         SmolVLAAdaptiveConfig(safety_enabled=False, clip_actions=True)
 
 
+def test_plugin_config_preregisters_v2a_without_changing_v1_defaults() -> None:
+    default = SmolVLAAdaptiveConfig()
+    v2 = SmolVLAAdaptiveConfig(adaptive_v2_trigger=True)
+
+    assert default.adaptive_v2_trigger is False
+    assert default.replan_after_safety_violation is False
+    assert v2.fixed_h == 20
+    assert v2.chunk_size == 50
+    assert v2.clip_actions is False
+    assert v2.replan_after_safety_violation is False
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"adaptive_v2_trigger": True, "safety_enabled": False},
+        {"adaptive_v2_trigger": True, "fixed_h": 10},
+        {"adaptive_v2_trigger": True, "clip_actions": True},
+        {"adaptive_v2_trigger": True, "replan_after_safety_violation": True},
+    ],
+)
+def test_plugin_config_rejects_v2a_protocol_confounders(kwargs: dict[str, object]) -> None:
+    with pytest.raises(ValueError):
+        SmolVLAAdaptiveConfig(**kwargs)
+
+
 @pytest.mark.parametrize("chunk_size", [25, 30])
 def test_plugin_config_does_not_treat_execution_horizon_as_model_chunk_size(
     chunk_size: int,
@@ -313,3 +339,28 @@ def test_plugin_adaptive_detection_only_replans_without_modifying_action() -> No
     assert base.reset_calls == 1
     assert torch.allclose(after_reset, torch.full((1, 7), 0.6))
     assert json.loads(json.dumps(policy.action_telemetry))[-1]["event"] == "action_release"
+
+
+def test_plugin_v2a_uses_separate_trigger_path_and_preserves_native_action() -> None:
+    severe = np.array([1.2, 0, 0, 0, 0, 0, -1.4], dtype=np.float32)
+    base = FakeBasePolicy([_chunk(first=severe), _chunk(), _chunk()])
+    policy = SmolVLAAdaptivePolicy(
+        SmolVLAAdaptiveConfig(adaptive_v2_trigger=True),
+        base_policy=base,
+        base_preprocessor=RecordingProcessor(),
+        base_postprocessor=RecordingProcessor(),
+    )
+
+    triggered = policy.select_action({"step": 0})
+    fallback = policy.select_action({"step": 1})
+
+    torch.testing.assert_close(
+        triggered, torch.from_numpy(severe).unsqueeze(0), rtol=0.0, atol=0.0
+    )
+    releases = [record for record in policy.action_telemetry if record["event"] == "action_release"]
+    assert releases[0]["adaptive_v2_triggered"] is True
+    assert releases[0]["trigger_violation_dimensions"] == [0]
+    assert releases[0]["range_violation_dimensions"] == [0, 6]
+    assert releases[0]["range_clipped"] is False
+    assert releases[1]["planned_horizon"] == 1
+    assert fallback.shape == (1, 7)

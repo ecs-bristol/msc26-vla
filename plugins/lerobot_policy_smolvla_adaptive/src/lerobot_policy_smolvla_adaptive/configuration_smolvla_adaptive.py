@@ -24,6 +24,7 @@ class SmolVLAAdaptiveConfig(PreTrainedConfig):
     fixed_h: int = 20
     safety_enabled: bool = True
     replan_after_safety_violation: bool = False
+    adaptive_v2_trigger: bool = False
     clip_actions: bool = False
     chunk_size: int = 50
     num_steps: int = 2
@@ -46,6 +47,14 @@ class SmolVLAAdaptiveConfig(PreTrainedConfig):
             raise ValueError("fixed_h must be one of {1, 5, 10, 20, 25, 30, 50}")
         if self.replan_after_safety_violation and not self.safety_enabled:
             raise ValueError("replan_after_safety_violation requires safety_enabled=True")
+        if self.adaptive_v2_trigger and not self.safety_enabled:
+            raise ValueError("adaptive_v2_trigger requires safety_enabled=True")
+        if self.adaptive_v2_trigger and self.replan_after_safety_violation:
+            raise ValueError("Adaptive-v2a and the frozen v1 trigger are mutually exclusive")
+        if self.adaptive_v2_trigger and self.fixed_h != 20:
+            raise ValueError("Adaptive-v2a requires default/max execution horizon H20")
+        if self.adaptive_v2_trigger and self.clip_actions:
+            raise ValueError("Adaptive-v2a executes native actions without clipping")
         if self.clip_actions and not self.safety_enabled:
             raise ValueError("clip_actions requires safety_enabled=True")
         if self.chunk_size != 50:

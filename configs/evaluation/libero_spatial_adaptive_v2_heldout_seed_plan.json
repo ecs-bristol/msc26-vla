@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "suite": "libero_spatial",
+  "pairing_key": [
+    "task_id",
+    "environment_seed",
+    "initial_state_id",
+    "inference_seed"
+  ],
+  "task_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  "initial_state_ids": [0, 1, 2, 3, 4],
+  "environment_seed_by_initial_state_id": "1000 + initial_state_id",
+  "inference_seed_namespace": "adaptive-v2-heldout-v1|libero_spatial",
+  "inference_seed_derivation": "sha256(namespace|task_id|environment_seed|initial_state_id)[:8] & ((1<<63)-1)",
+  "legacy_namespace": "libero_spatial",
+  "required_non_overlap": "All 50 held-out inference seeds must be disjoint from the 50 legacy inference seeds before any execution.",
+  "condition_pairing": [
+    "Static-H20",
+    "Adaptive-v2a-H20→H1"
+  ],
+  "same_seed_requirement": "Both conditions must use the identical held-out inference seed for each pairing key.",
+  "outcome_blinding": "The seed namespace and derivation are frozen before held-out outcome labels exist."
+}
