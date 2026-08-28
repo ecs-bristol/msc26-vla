@@ -64,7 +64,7 @@ class Int4WeightOnlyLinear(nn.Module):
 
         weight = weight.view(out_features, -1, group_size)
         scale = weight.abs().amax(dim=-1, keepdim=True).clamp_min(1e-6) / 7.0
-        quantized = torch.clamp(torch.round(weight / scale), -8, 7).to(torch.int8)
+        quantized = torch.clamp(torch.round(weight / scale), -7, 7).to(torch.int8)
         quantized_unsigned = (quantized + 8).to(torch.uint8).view(out_features, -1)
 
         even = quantized_unsigned[:, 0::2]

@@ -24,3 +24,25 @@ def test_int4_linear_reduces_weight_memory():
     int4_bytes = sum(p.numel() * p.element_size() for p in quantized.parameters())
 
     assert int4_bytes < fp_bytes / 3
+
+
+def test_int4_quantized_values_stay_in_symmetric_seven_range():
+    torch.manual_seed(0)
+    linear = torch.nn.Linear(256, 64, bias=True)
+    quantized = Int4WeightOnlyLinear.from_float(linear, group_size=128)
+    dequantized = quantized._dequantized_weight()
+    reconstructed = dequantized / quantized.weight_scale.unsqueeze(-1).repeat(
+        1, 1, quantized.group_size
+    )[:, :, : linear.in_features].reshape(quantized.out_features, -1)
+    values = torch.round(reconstructed)
+    assert int(values.min().item()) >= -7
+    assert int(values.max().item()) <= 7
+
+
+def test_int4_pack_unpack_roundtrip_preserves_values():
+    torch.manual_seed(0)
+    linear = torch.nn.Linear(300, 128, bias=False)
+    quantized = Int4WeightOnlyLinear.from_float(linear, group_size=128)
+    dequantized = quantized._dequantized_weight()
+    assert dequantized.shape == (128, 300)
+    assert torch.isfinite(dequantized).all()

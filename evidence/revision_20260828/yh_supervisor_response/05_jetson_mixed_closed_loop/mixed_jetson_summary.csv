@@ -1,0 +1,2 @@
+config,num_steps,n_action_steps,chunk_size,episodes,success_count,success_pct,wilson_ci_low,wilson_ci_high,episode_time_mean_s,episode_time_p95_s,inference_mean_ms,inference_p95_ms,round_trip_mean_ms,round_trip_p95_ms,prediction_requests,stored_parameter_mb,peak_allocated_mb,checkpoint,revision,run_id
+mixed_v4c4t8,2,20,20,50,33,66.0,52.2,77.6,38.9,NA,1012.5,1023.6,1045.9,1056.0,423,787.5,959.0,HuggingFaceVLA/smolvla_libero,6721902bc4d61e50a3bfdb11dfb4cb626f05d102,libero_spatial_jetson_remote_na20_20260825T172401Z

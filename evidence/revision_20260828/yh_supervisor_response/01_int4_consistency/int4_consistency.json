@@ -1,0 +1,17 @@
+{
+  "checkpoint": "HuggingFaceVLA/smolvla_libero",
+  "revision": "6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+  "old_range": [-8, 7],
+  "new_range": [-7, 7],
+  "mixed": {
+    "total_int4_values": 96731136,
+    "old_minus8_count": 0,
+    "modules_with_minus8": {}
+  },
+  "full_backbone_int4": {
+    "total_int4_values": 427032576,
+    "old_minus8_count": 0,
+    "modules_with_minus8": {}
+  },
+  "mixed_closed_loop_rerun_required": false
+}

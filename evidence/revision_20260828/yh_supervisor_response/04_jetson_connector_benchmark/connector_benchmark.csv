@@ -1,0 +1,3 @@
+engine_id,input_shape,output_shape,precision,engine_size_mib,streams,warmup,iters,data_transfer_included,cuda_graph,latency_mean_ms,latency_median_ms,latency_p95_ms,latency_std_ms,throughput_qps,throughput_definition,tensorrt_version,l4t_version
+smolvla_connector_256,1x256x768,1x16x960,fp16,22.55,1,100,1000,false,false,0.858,0.7781,0.9812,0.1743,1038.76,sequential_queries_over_synchronized_wall_time,10.11.0,R36.4.4
+smolvla_connector_1024,1x1024x768,1x64x960,fp16,22.55,1,100,1000,false,false,1.102,1.0444,1.3763,0.2594,833.80,sequential_queries_over_synchronized_wall_time,10.11.0,R36.4.4

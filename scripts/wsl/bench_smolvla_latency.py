@@ -18,6 +18,7 @@ import argparse
 import json
 import statistics
 import time
+from pathlib import Path
 
 import torch
 
@@ -44,9 +45,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--text-bits", type=int, default=None, choices=(4, 8, 16))
     parser.add_argument("--num-steps", type=int, default=10)
     parser.add_argument("--n-action-steps", type=int, default=1)
+    parser.add_argument("--chunk-size", type=int, default=50)
     parser.add_argument("--warmup", type=int, default=5)
     parser.add_argument("--iters", type=int, default=50)
     parser.add_argument("--seed", type=int, default=1000)
+    parser.add_argument("--output-dir", type=Path, default=Path("results/pc_policy_latency_sync"))
     parser.add_argument(
         "--probe",
         action="store_true",
@@ -97,6 +100,12 @@ def main() -> None:
     policy = SmolVLAInt4Policy(config)
     policy.to(device)
     policy.eval()
+    inner_policy = getattr(policy, "inner", policy)
+    actual_chunk_size = int(inner_policy.config.chunk_size)
+    if actual_chunk_size != args.chunk_size:
+        raise SystemExit(
+            f"chunk_size mismatch: expected {args.chunk_size}, got {actual_chunk_size}"
+        )
 
     param_bytes = sum(p.numel() * p.element_size() for p in policy.parameters())
     print(f"Loaded on {device}; use_amp={policy.config.use_amp}", flush=True)
@@ -119,24 +128,39 @@ def main() -> None:
         torch.cuda.reset_peak_memory_stats()
     latencies_ms: list[float] = []
     for _ in range(args.iters):
+        if device == "cuda":
+            torch.cuda.synchronize()
         start = time.perf_counter()
         with torch.inference_mode():
             policy.select_action(batch)
+        if device == "cuda":
+            torch.cuda.synchronize()
         latencies_ms.append((time.perf_counter() - start) * 1000.0)
 
-    latencies_ms.sort()
+    latencies_sorted = sorted(latencies_ms)
     peak_mb = torch.cuda.max_memory_allocated() / 1e6 if device == "cuda" else None
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    raw_path = args.output_dir / f"{args.quant_method}_{args.quant_scope}_latency.jsonl"
+    with raw_path.open("w", encoding="utf-8") as handle:
+        for value in latencies_ms:
+            handle.write(json.dumps({"latency_ms": value}) + "\n")
     result = {
         "quant_method": args.quant_method,
         "quant_scope": args.quant_scope,
         "num_steps": args.num_steps,
         "n_action_steps": args.n_action_steps,
+        "chunk_size": actual_chunk_size,
         "device": device,
         "iters": args.iters,
         "mean_ms": round(statistics.mean(latencies_ms), 2),
-        "p95_ms": round(latencies_ms[int(len(latencies_ms) * 0.95) - 1], 2),
+        "median_ms": round(statistics.median(latencies_ms), 2),
+        "p95_ms": round(latencies_sorted[int(len(latencies_sorted) * 0.95) - 1], 2),
+        "std_ms": round(statistics.pstdev(latencies_ms), 2),
+        "min_ms": round(min(latencies_ms), 2),
+        "max_ms": round(max(latencies_ms), 2),
         "peak_allocated_mb": peak_mb,
         "param_bytes_mb": round(param_bytes / 1e6, 1),
+        "timing_method": "perf_counter_with_cuda_synchronize",
     }
     print(json.dumps(result, indent=2))
 
