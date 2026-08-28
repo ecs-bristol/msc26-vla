@@ -1,0 +1,7 @@
+cohort,condition,display_order,mean_model_calls,median_model_calls,total_model_calls
+parity-corrected development,Static-H1,1,162.48,122.0,8124
+parity-corrected development,Static-H10,2,17.48,12.5,874
+parity-corrected development,Static-H20,3,8.66,6.0,433
+parity-corrected development,Adaptive-v1 H20→H1,4,9.08,7.0,454
+untouched held-out confirmatory,Static-H20,1,8.32,6.0,416
+untouched held-out confirmatory,Adaptive-v2a H20→H1,2,8.36,6.0,418

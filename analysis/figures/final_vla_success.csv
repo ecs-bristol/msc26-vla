@@ -1,0 +1,7 @@
+cohort,condition,display_order,successes,episodes,success_rate,wilson95_low,wilson95_high
+parity-corrected development,Static-H1,1,33,50,0.66,0.521538260502326,0.7756305077749992
+parity-corrected development,Static-H10,2,30,50,0.60,0.4618143774758936,0.7239161026974346
+parity-corrected development,Static-H20,3,32,50,0.64,0.501410168761127,0.7586125034815325
+parity-corrected development,Adaptive-v1 H20→H1,4,31,50,0.62,0.4815044693099298,0.7413721068980641
+untouched held-out confirmatory,Static-H20,1,33,50,0.66,0.521538260502326,0.7756305077749992
+untouched held-out confirmatory,Adaptive-v2a H20→H1,2,33,50,0.66,0.521538260502326,0.7756305077749992

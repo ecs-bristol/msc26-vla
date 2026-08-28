@@ -1,0 +1,7 @@
+cohort,condition,display_order,mean_wall_time_s,median_wall_time_s,total_wall_time_s
+parity-corrected development,Static-H1,1,248.8154270924,190.92835164849976,12440.77135462
+parity-corrected development,Static-H10,2,61.39959663257998,47.711044088999984,3069.979831628999
+parity-corrected development,Static-H20,3,54.56900583576002,42.518831918999695,2728.450291788001
+parity-corrected development,Adaptive-v1 H20→H1,4,55.42974813791998,43.61741950750002,2771.487406895999
+untouched held-out confirmatory,Static-H20,1,50.872430275559964,41.22612922549956,2543.621513777998
+untouched held-out confirmatory,Adaptive-v2a H20→H1,2,53.5578852923,43.927574043500044,2677.894264615

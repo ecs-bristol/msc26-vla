@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "freeze_name": "final-vla-results",
+  "repository_base_commit": "a9afdc0b4feee120f5c3c71f22d84c691ed85ba6",
+  "generation_policy": {
+    "read_only_source_results": true,
+    "model_loaded": false,
+    "environment_created": false,
+    "rollout_executed": false,
+    "algorithm_modified": false,
+    "existing_result_modified": false,
+    "cross_cohort_pooling": false
+  },
+  "model_protocol": {
+    "checkpoint": "HuggingFaceVLA/smolvla_libero",
+    "checkpoint_revision": "6721902bc4d61e50a3bfdb11dfb4cb626f05d102",
+    "vlm_checkpoint": "HuggingFaceTB/SmolVLM2-500M-Instruct",
+    "vlm_revision": "7b375e1b73b11138ff12fe22c8f2822d8fe03467",
+    "suite": "libero_spatial",
+    "task_count": 10,
+    "benchmark_states_per_task": 5,
+    "episodes_per_condition": 50,
+    "episode_cap": 280,
+    "chunk_size": 50,
+    "num_steps": 2,
+    "official_backend_and_preprocessing": true,
+    "native_action": true,
+    "clip_actions": false,
+    "local_files_only": true,
+    "offline_snapshots": true
+  },
+  "cohorts": {
+    "parity_corrected_development": {
+      "role": "development",
+      "result_git_sha": "b5cbf91a7c1a47ac48b7d30ed318ecd2ea252d1a",
+      "manifest_sha256": "934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2",
+      "pairing_keys": 50,
+      "task_clusters": 10,
+      "conditions": ["Static-H1", "Static-H10", "Static-H20", "Adaptive-v1-H20→H1"],
+      "sources": [
+        {
+          "condition": "Static-H1",
+          "result_directory": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827",
+          "summary_csv_sha256": "4b748e8af38478d58ef7b8ede182ef48ea230a160e4a151032fb16a5e088adab",
+          "analysis_path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/analysis/static_h1_50_diagnostic.json",
+          "analysis_sha256": "c208e5c9dc62cb4293d22ef6bd46d5dadeea9699e72a4b00d4e11f6fa7a0135c"
+        },
+        {
+          "condition": "Static-H10",
+          "result_directory": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827",
+          "summary_csv_sha256": "34626c33f9ee0b94c3c76005d5c6fe91adf87686ce0e1238fe46506977add45d",
+          "analysis_path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/analysis/static_h10_vs_h1_validation.json",
+          "analysis_sha256": "ad8d9b548af901cdd9d940fd625e7c6d129b446db0813534b2872a1575bfa35d"
+        },
+        {
+          "condition": "Static-H20 and Adaptive-v1-H20→H1",
+          "result_directory": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827",
+          "summary_csv_sha256": "a8e845e391c2ee3280acbbfde28510d97f206d05cb30f8fa45016f2bec526b1c",
+          "analysis_path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/analysis/four_condition_paired_analysis.json",
+          "analysis_sha256": "958f14c368e58ecb3a147cf2bdd791a64f01e7b06ae9180b53df318429ca17d2"
+        }
+      ]
+    },
+    "untouched_heldout_confirmatory": {
+      "role": "confirmatory",
+      "result_git_sha": "a9afdc0b4feee120f5c3c71f22d84c691ed85ba6",
+      "manifest_sha256": "2156db1ca5fe906e3f1a7ebb76d6ff62f1521456a6e1550c4aab2737e65fc357",
+      "pairing_keys": 50,
+      "task_clusters": 10,
+      "inference_seeds_disjoint_from_all_development_and_smoke_sets": true,
+      "conditions": ["Static-H20", "Adaptive-v2a-H20→H1"],
+      "result_directory": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828",
+      "summary_csv_sha256": "e7aa53cc58addedf2b3e5817190e5a5b2ae3fb320da94a65da32d6d70e8d6ac9",
+      "preregistered_analysis_path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/analysis/adaptive_v2a_formal_analysis.json",
+      "preregistered_analysis_sha256": "b65ab054a9292ce9cffe5f1a296c12e777379d62a641464033848c42f1eff40a",
+      "independent_validation_path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/analysis/adaptive_v2a_formal_validation.json",
+      "independent_validation_sha256": "5aa9aa842914b02a21e0b18ae404468fe37748990a7d44250690613ff8c6379c",
+      "schedule_sha256": "ef538e7b03b40f4c5702d2be714c83367f237cd9b4a30e09873f00c2619076f3"
+    }
+  },
+  "excluded_results": [
+    {
+      "result_directory": "/home/xinrui_shen/vla/runs/pilot-final-preflight-deterministic-20260825",
+      "git_sha": "e870c38eb025b942dca13e04de73c6cd595c4821",
+      "observed_success_range": "0%-8%",
+      "exclusion_reason": "evaluation pipeline parity errors",
+      "allowed_use": "diagnostic case only",
+      "included_in_performance_tables": false,
+      "included_in_figures": false,
+      "included_in_paired_statistics": false
+    }
+  ],
+  "frozen_method_files": {
+    "configs/evaluation/libero_spatial_adaptive_v2_formal_heldout.yaml": "56298944ce88e7fafff096f9419453e1829209bd42b0063c3246767aab1c68a5",
+    "configs/evaluation/libero_spatial_adaptive_v2_formal_schedule.json": "ef538e7b03b40f4c5702d2be714c83367f237cd9b4a30e09873f00c2619076f3",
+    "docs/ADAPTIVE_V2_PREREG.md": "4a1a5bd3f517c981caefb9eb725119611370b961b73723f5699269a44896536d",
+    "docs/ADAPTIVE_V2_FORMAL_HELDOUT_PREREG.md": "ebfe715cae35257676c05589315e042aed836df654535056ff79c77b18c114e3"
+  },
+  "generated_artifacts": {
+    "docs/FINAL_VLA_EXPERIMENT_REPORT.md": "6cd69d0276932d5c06ed84a97820a5d73380f5584c68f52a7c2b84cb922b1b03",
+    "docs/FINAL_VLA_RESULTS_TABLE.md": "a36ae96d05525875c8984458bb210013c5d10546a6cdbac74a7f010bb1ee7744",
+    "analysis/final_vla_results.csv": "f48a53d4c42c9e18740b7e820016bd8e9e7a0cedba640e69d6c8eac12346b70b",
+    "analysis/final_vla_statistics.json": "1a4c9a4fefd446aae357a66b921f6df52c0a1397d5f8dff657f7f246d17b64a0",
+    "analysis/figures/final_vla_success.csv": "dce30c523bdab1478ead291197fb54c87bed0fd9ba770d7b6bb27887a5f70f52",
+    "analysis/figures/final_vla_model_calls.csv": "4e5202b77740fbd7e9a971d39faa4db5a24b81a0c8282902ff9ac49fb7adaa3d",
+    "analysis/figures/final_vla_wall_time.csv": "4253e0139e8ea8b0e58fff26b70eaffa0a9339964c9baca834a7d39a8f919d81",
+    "scripts/analysis/plot_final_vla_results.py": "c3dd767631722ef4387878c4c2c0579f38ff54dcd88c165bfa9c9065f4357cc5",
+    "scripts/analysis/check_final_vla_results.py": "76374366cdfa27724d1fdbbb7aa8d746f4d9fd131603ba21b1682b701b42378c",
+    "analysis/figures/generated/final_vla_success.svg": "7434fcabd0ca53158c305d825271023eedb3b20c97b2687598da39f275e89963",
+    "analysis/figures/generated/final_vla_model_calls.svg": "553e91ab0e3b3e4076fc77dfb95131ae1277c046bbc19d608bcc6b253d06092e",
+    "analysis/figures/generated/final_vla_wall_time.svg": "a26ebdac520131dae60a3017ddc5021448c854c07305c0a08e41117a954f26b3",
+    "analysis/figures/generated/final_vla_success.png": "5a0d678c4489db569653c654ac4db38e35d4dfc81137f74fd01f789c539476c0",
+    "analysis/figures/generated/final_vla_model_calls.png": "1204f422aa82f828dee2573f0b92412d01030b1753af176566060251ce927916",
+    "analysis/figures/generated/final_vla_wall_time.png": "a759869bb826b478728779e6df007ebcd3527147075df9472210641a5d4208a5"
+  },
+  "self_hash_note": "This manifest intentionally does not contain its own SHA-256. Compute it after checkout with sha256sum analysis/final_reproducibility_manifest.json."
+}

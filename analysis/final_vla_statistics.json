@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "freeze_commit": "a9afdc0b4feee120f5c3c71f22d84c691ed85ba6",
+  "cohort_separation": {
+    "strict": true,
+    "cross_cohort_pairing_or_pooling": false,
+    "development": {
+      "name": "parity-corrected development cohort",
+      "git_sha": "b5cbf91a7c1a47ac48b7d30ed318ecd2ea252d1a",
+      "manifest_sha256": "934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2",
+      "pairing_keys": 50,
+      "task_clusters": 10
+    },
+    "confirmatory": {
+      "name": "untouched held-out confirmatory cohort",
+      "git_sha": "a9afdc0b4feee120f5c3c71f22d84c691ed85ba6",
+      "manifest_sha256": "2156db1ca5fe906e3f1a7ebb76d6ff62f1521456a6e1550c4aab2737e65fc357",
+      "pairing_keys": 50,
+      "task_clusters": 10,
+      "inference_seeds_disjoint_from_development": true
+    }
+  },
+  "condition_results": [
+    {
+      "cohort": "development",
+      "condition": "Static-H1",
+      "successes": 33,
+      "episodes": 50,
+      "success_rate": 0.66,
+      "wilson_95_ci": [0.521538260502326, 0.7756305077749992],
+      "model_calls_mean": 162.48,
+      "model_calls_median": 122.0,
+      "inference_time_mean_s": 137.6510526573202,
+      "inference_time_median_s": 90.23071680399153,
+      "wall_time_mean_s": 248.8154270924,
+      "wall_time_median_s": 190.92835164849976,
+      "chunk_utilization_episode_mean": 0.02,
+      "chunk_utilization_aggregate": 0.02,
+      "trigger_events": 0
+    },
+    {
+      "cohort": "development",
+      "condition": "Static-H10",
+      "successes": 30,
+      "episodes": 50,
+      "success_rate": 0.60,
+      "wilson_95_ci": [0.4618143774758936, 0.7239161026974346],
+      "model_calls_mean": 17.48,
+      "model_calls_median": 12.5,
+      "inference_time_mean_s": 9.841249106839944,
+      "inference_time_median_s": 7.345041164999657,
+      "wall_time_mean_s": 61.39959663257998,
+      "wall_time_median_s": 47.711044088999984,
+      "chunk_utilization_episode_mean": 0.19444266511266511,
+      "chunk_utilization_aggregate": 0.19677345537757437,
+      "trigger_events": 0
+    },
+    {
+      "cohort": "development",
+      "condition": "Static-H20",
+      "successes": 32,
+      "episodes": 50,
+      "success_rate": 0.64,
+      "wilson_95_ci": [0.501410168761127, 0.7586125034815325],
+      "model_calls_mean": 8.66,
+      "model_calls_median": 6.0,
+      "inference_time_mean_s": 5.740784678299987,
+      "inference_time_median_s": 4.365880092000225,
+      "wall_time_mean_s": 54.56900583576002,
+      "wall_time_median_s": 42.518831918999695,
+      "chunk_utilization_episode_mean": 0.3771526406926407,
+      "chunk_utilization_aggregate": 0.38498845265588916,
+      "trigger_events": 0
+    },
+    {
+      "cohort": "development",
+      "condition": "Adaptive-v1-H20→H1",
+      "successes": 31,
+      "episodes": 50,
+      "success_rate": 0.62,
+      "wilson_95_ci": [0.4815044693099298, 0.7413721068980641],
+      "model_calls_mean": 9.08,
+      "model_calls_median": 7.0,
+      "inference_time_mean_s": 5.942283194379924,
+      "inference_time_median_s": 4.638611967998713,
+      "wall_time_mean_s": 55.42974813791998,
+      "wall_time_median_s": 43.61741950750002,
+      "chunk_utilization_episode_mean": 0.3703554978354978,
+      "chunk_utilization_aggregate": 0.37572687224669604,
+      "trigger_events": 7,
+      "triggered_episodes": 6,
+      "rescues": 0,
+      "losses": 1,
+      "no_change_trigger_events": 6
+    },
+    {
+      "cohort": "confirmatory",
+      "condition": "Static-H20",
+      "successes": 33,
+      "episodes": 50,
+      "success_rate": 0.66,
+      "wilson_95_ci": [0.521538260502326, 0.7756305077749992],
+      "model_calls_mean": 8.32,
+      "model_calls_median": 6.0,
+      "inference_time_mean_s": 5.5583157979399855,
+      "inference_time_median_s": 4.053747751999708,
+      "wall_time_mean_s": 50.872430275559964,
+      "wall_time_median_s": 41.22612922549956,
+      "chunk_utilization_episode_mean": 0.3817295238095238,
+      "chunk_utilization_aggregate": 0.38798076923076924,
+      "trigger_events": 0
+    },
+    {
+      "cohort": "confirmatory",
+      "condition": "Adaptive-v2a-H20→H1",
+      "successes": 33,
+      "episodes": 50,
+      "success_rate": 0.66,
+      "wilson_95_ci": [0.521538260502326, 0.7756305077749992],
+      "model_calls_mean": 8.36,
+      "model_calls_median": 6.0,
+      "inference_time_mean_s": 5.6760197874001825,
+      "inference_time_median_s": 4.082810471998982,
+      "wall_time_mean_s": 53.5578852923,
+      "wall_time_median_s": 43.927574043500044,
+      "chunk_utilization_episode_mean": 0.3807295238095238,
+      "chunk_utilization_aggregate": 0.3861244019138756,
+      "trigger_events": 1,
+      "complete_trigger_state_chains": 1,
+      "rescues": 0,
+      "losses": 0,
+      "no_change_trigger_events": 1
+    }
+  ],
+  "paired_comparisons": {
+    "development": [
+      {
+        "comparison": "Static-H10 minus Static-H1",
+        "flip_table": {"both_success": 27, "first_only": 3, "second_only": 6, "both_fail": 14},
+        "success_rate_difference": -0.06,
+        "task_cluster_bootstrap_95_ci": [-0.16, 0.04],
+        "mcnemar_exact_two_sided_p": 0.5078125,
+        "model_calls_difference": {"mean": -145.0, "median": -105.0, "task_cluster_bootstrap_95_ci": [-167.78, -123.13950000000013]}
+      },
+      {
+        "comparison": "Static-H20 minus Static-H1",
+        "flip_table": {"both_success": 26, "first_only": 6, "second_only": 7, "both_fail": 11},
+        "success_rate_difference": -0.02,
+        "task_cluster_bootstrap_95_ci": [-0.16, 0.14],
+        "mcnemar_exact_two_sided_p": 1.0,
+        "model_calls_difference": {"mean": -153.82, "median": -112.5, "task_cluster_bootstrap_95_ci": [-175.86, -132.46]},
+        "inference_time_s_difference": {"mean": -131.91026797902023, "median": -85.78002092049496, "task_cluster_bootstrap_95_ci": [-164.12758712563576, -104.82737472472309]},
+        "wall_time_s_difference": {"mean": -194.24642125663996, "median": -138.4993669214998, "task_cluster_bootstrap_95_ci": [-230.43879107633992, -159.33475387892997]}
+      },
+      {
+        "comparison": "Static-H20 minus Static-H10",
+        "flip_table": {"both_success": 25, "first_only": 7, "second_only": 5, "both_fail": 13},
+        "success_rate_difference": 0.04,
+        "task_cluster_bootstrap_95_ci": [-0.12000000000000001, 0.2],
+        "mcnemar_exact_two_sided_p": 0.7744140625,
+        "model_calls_difference": {"mean": -8.82, "median": -6.0, "task_cluster_bootstrap_95_ci": [-10.64, -7.0]},
+        "inference_time_s_difference": {"mean": -4.100464428539956, "median": -2.849859956999609, "task_cluster_bootstrap_95_ci": [-5.217156793839904, -2.9771421056998157]},
+        "wall_time_s_difference": {"mean": -6.830590796819961, "median": -5.386317925000242, "task_cluster_bootstrap_95_ci": [-14.551448929436983, 1.1376926434600376]}
+      },
+      {
+        "comparison": "Adaptive-v1-H20→H1 minus Static-H20",
+        "flip_table": {"both_success": 31, "first_only": 0, "second_only": 1, "both_fail": 18},
+        "success_rate_difference": -0.02,
+        "task_cluster_bootstrap_95_ci": [-0.060000000000000005, 0.0],
+        "mcnemar_exact_two_sided_p": 1.0,
+        "model_calls_difference": {"mean": 0.42, "median": 0.0, "task_cluster_bootstrap_95_ci": [0.08, 0.9]},
+        "inference_time_s_difference": {"mean": 0.20149851607993696, "median": 0.051107052500356076, "task_cluster_bootstrap_95_ci": [0.012640597139807131, 0.46038882817988447]},
+        "wall_time_s_difference": {"mean": 0.8607423021599607, "median": 0.13422681699967143, "task_cluster_bootstrap_95_ci": [-0.7713348981910741, 3.0039345116734637]},
+        "trigger_effects": {"trigger_events": 7, "rescues": 0, "losses": 1, "no_change": 6},
+        "descriptively_dominated_by_static_h20": true
+      }
+    ],
+    "confirmatory": [
+      {
+        "comparison": "Adaptive-v2a-H20→H1 minus Static-H20",
+        "flip_table": {"both_success": 33, "first_only": 0, "second_only": 0, "both_fail": 17},
+        "success_rate_difference": 0.0,
+        "task_cluster_bootstrap_95_ci": [0.0, 0.0],
+        "mcnemar_exact_two_sided_p": 1.0,
+        "model_calls_difference": {"mean": 0.04, "task_cluster_bootstrap_95_ci": [0.0, 0.12]},
+        "inference_time_s_difference": {"mean": 0.11770398946019668, "task_cluster_bootstrap_95_ci": [-0.05335339733984256, 0.2877670541802945]},
+        "wall_time_s_difference": {"mean": 2.685455016740034, "task_cluster_bootstrap_95_ci": [1.1128550273200108, 4.537309455160067]},
+        "trigger_effects": {"trigger_events": 1, "complete_state_chains": 1, "rescues": 0, "losses": 0, "no_change": 1},
+        "preregistered_decision": "no demonstrated value for the added calls"
+      }
+    ]
+  },
+  "bootstrap": {
+    "unit": "task_id cluster",
+    "task_clusters": 10,
+    "episodes_per_condition": 50,
+    "interval": "percentile 95%",
+    "development_replicates": 200000,
+    "confirmatory_replicates": 100000,
+    "confirmatory_rng_seed": 20260828
+  },
+  "exclusions": [
+    {
+      "path": "/home/xinrui_shen/vla/runs/pilot-final-preflight-deterministic-20260825",
+      "git_sha": "e870c38eb025b942dca13e04de73c6cd595c4821",
+      "reported_range": "0%-8%",
+      "reason": "pre-parity evaluator pipeline errors",
+      "allowed_use": "evaluation-pipeline error diagnosis only",
+      "included_in_final_performance_results": false
+    }
+  ],
+  "limitations": [
+    "Only 10 task clusters are available.",
+    "Each condition contains 50 episodes, so success-effect confidence intervals remain wide.",
+    "Near-equal success is descriptive and is not a formal non-inferiority claim.",
+    "Adaptive-v2a produced only one held-out trigger, limiting conclusions about rare-trigger mechanisms.",
+    "Wall time is system-sensitive even though execution order was balanced in the confirmatory cohort."
+  ]
+}
