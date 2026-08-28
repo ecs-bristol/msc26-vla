@@ -106,3 +106,37 @@ If the pilot passes the descriptive gates, confirm once on a second untouched na
 Dry-run is the evaluator default. Real environment execution requires the explicit `--execute` flag. The external mechanism-smoke launcher asserts the branch/commit, clean worktree, frozen artifacts, offline snapshots, single selected condition, held-out seed non-overlap, resume boundaries and a nonblocking file lock. It writes only under `/home/xinrui_shen/vla/runs/adaptive-v2-prereg/`.
 
 No smoke or pilot rollout is launched as part of this preregistration.
+
+## Post-smoke trigger-coverage development check
+
+The state-0 mechanism smoke completed with zero detector triggers and is therefore
+`ADAPTIVE_V2A_SMOKE_MECHANISM_PARTIAL_PASS`. Its 10/10 descriptive success count
+must not influence trigger parameters. The v2a trigger, thresholds, cooldown and
+state machine remain frozen.
+
+A separate development-only coverage check reuses the legacy `libero_spatial`
+inference namespace and selects every frozen Adaptive-v1 pairing key with either
+a dimension 0–5 range violation or a v1 trigger. Selection is performed behind an
+outcome-field firewall: access to `success_at_280`, `success_step`, or
+`termination_reason` raises immediately. Six keys qualify. They are not held-out
+and cannot contribute to a formal success comparison.
+
+The coverage verdict is fixed before execution:
+
+- at least one real detector trigger with valid per-event telemetry and a complete
+  `H20 → pre-execution trigger → H1 → full H20 cooldown/recovery` chain yields
+  `V2A_TRIGGER_COVERAGE_PASS`;
+- if all six candidates complete with zero triggers, the verdict is
+  `V2A_TRIGGER_INACTIVE` and thresholds must not be lowered as a remedy;
+- any telemetry, action-handling or accounting inconsistency is a validation
+  failure rather than a mechanism pass.
+
+## Replacement formal confirmatory seeds
+
+The 10 inference seeds observed in the state-0 smoke are excluded from any future
+formal confirmation. A new 50-seed namespace,
+`adaptive-v2-confirmatory-v1|libero_spatial`, is frozen explicitly in
+`configs/evaluation/libero_spatial_adaptive_v2_confirmatory_seed_manifest.json`.
+Its 50 seeds are unique and disjoint from all 50 legacy seeds and all 50 seeds in
+the earlier `adaptive-v2-heldout-v1|libero_spatial` namespace. Preparing these
+seeds does not authorize a formal rollout.

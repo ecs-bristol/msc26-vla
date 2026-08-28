@@ -1,0 +1,103 @@
+{
+  "candidate_count": 6,
+  "forbidden_selection_fields": [
+    "success_at_280",
+    "success_step",
+    "termination_reason"
+  ],
+  "formal_evaluation": false,
+  "pairing_keys": [
+    {
+      "initial_state_id": 2,
+      "seed": 1002,
+      "task_id": 0
+    },
+    {
+      "initial_state_id": 1,
+      "seed": 1001,
+      "task_id": 1
+    },
+    {
+      "initial_state_id": 1,
+      "seed": 1001,
+      "task_id": 5
+    },
+    {
+      "initial_state_id": 3,
+      "seed": 1003,
+      "task_id": 5
+    },
+    {
+      "initial_state_id": 0,
+      "seed": 1000,
+      "task_id": 6
+    },
+    {
+      "initial_state_id": 2,
+      "seed": 1002,
+      "task_id": 6
+    }
+  ],
+  "schema_version": 1,
+  "selection_evidence": [
+    {
+      "inference_seed": 2375001413206966694,
+      "initial_state_id": 2,
+      "non_gripper_dimension_counts": {"0": 0, "1": 0, "2": 1, "3": 0, "4": 0, "5": 0},
+      "non_gripper_violation_count": 1,
+      "seed": 1002,
+      "task_id": 0,
+      "v1_trigger_count": 1
+    },
+    {
+      "inference_seed": 785292248529111346,
+      "initial_state_id": 1,
+      "non_gripper_dimension_counts": {"0": 0, "1": 0, "2": 1, "3": 0, "4": 0, "5": 0},
+      "non_gripper_violation_count": 1,
+      "seed": 1001,
+      "task_id": 1,
+      "v1_trigger_count": 1
+    },
+    {
+      "inference_seed": 9089024622675674847,
+      "initial_state_id": 1,
+      "non_gripper_dimension_counts": {"0": 0, "1": 0, "2": 1, "3": 0, "4": 0, "5": 0},
+      "non_gripper_violation_count": 1,
+      "seed": 1001,
+      "task_id": 5,
+      "v1_trigger_count": 1
+    },
+    {
+      "inference_seed": 6050195505808188584,
+      "initial_state_id": 3,
+      "non_gripper_dimension_counts": {"0": 0, "1": 0, "2": 1, "3": 0, "4": 0, "5": 0},
+      "non_gripper_violation_count": 1,
+      "seed": 1003,
+      "task_id": 5,
+      "v1_trigger_count": 1
+    },
+    {
+      "inference_seed": 6997229937442983994,
+      "initial_state_id": 0,
+      "non_gripper_dimension_counts": {"0": 1, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0},
+      "non_gripper_violation_count": 1,
+      "seed": 1000,
+      "task_id": 6,
+      "v1_trigger_count": 1
+    },
+    {
+      "inference_seed": 589902366963284891,
+      "initial_state_id": 2,
+      "non_gripper_dimension_counts": {"0": 2, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0},
+      "non_gripper_violation_count": 2,
+      "seed": 1002,
+      "task_id": 6,
+      "v1_trigger_count": 2
+    }
+  ],
+  "selection_role": "trigger_coverage_development",
+  "selection_rule": "all completed frozen-v1 episodes with any dimension-0..5 range violation or trigger_range_violations > 0",
+  "source_condition": "Adaptive-H20→H1",
+  "source_dir": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827",
+  "source_manifest_sha256": "934a4887e2ddea7703d43db727b3c66416652b3cd3806e77ed0a526bca1d44f2"
+}

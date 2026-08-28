@@ -180,8 +180,19 @@ def _validate_config(config: dict[str, Any]) -> None:
         if adaptive.get("adaptive_v2_trigger", False) is not False:
             raise ValueError("the frozen v1 condition cannot enable Adaptive-v2a")
     else:
-        if config.get("inference_seed_namespace") != _ADAPTIVE_V2_HELD_OUT_NAMESPACE:
-            raise ValueError("Adaptive-v2a requires the frozen held-out inference seed namespace")
+        development_coverage = config.get("development_trigger_coverage", False)
+        if type(development_coverage) is not bool:
+            raise ValueError("development_trigger_coverage must be a boolean")
+        expected_namespace = (
+            _LEGACY_INFERENCE_SEED_NAMESPACE
+            if development_coverage
+            else _ADAPTIVE_V2_HELD_OUT_NAMESPACE
+        )
+        if config.get("inference_seed_namespace") != expected_namespace:
+            raise ValueError(
+                "Adaptive-v2a inference seed namespace does not match its "
+                "held-out/development role"
+            )
         if adaptive != {
             "name": "Adaptive-v2a-H20→H1",
             "fixed_h": 20,
@@ -533,6 +544,33 @@ def _selected_trials(
         if episodes_per_task is not None:
             task_trials = task_trials[:episodes_per_task]
         selected.extend(task_trials)
+    return selected
+
+
+def _load_pairing_key_filter(path: Path) -> set[tuple[int, int, int]]:
+    """Read an explicit, outcome-free execution subset from a committed artifact."""
+
+    payload = _read_json(path.resolve())
+    if payload.get("selection_role") != "trigger_coverage_development":
+        raise ValueError("pairing-key filter must be marked trigger-coverage development")
+    raw_keys = payload.get("pairing_keys")
+    if not isinstance(raw_keys, list) or not raw_keys:
+        raise ValueError("pairing-key filter must contain a non-empty pairing_keys list")
+    required = {"task_id", "seed", "initial_state_id"}
+    forbidden = {"success_at_280", "success_step", "termination_reason"}
+    selected: set[tuple[int, int, int]] = set()
+    for item in raw_keys:
+        if not isinstance(item, dict) or set(item) != required:
+            extras = set(item) - required if isinstance(item, dict) else set()
+            if extras & forbidden:
+                raise ValueError("outcome fields are forbidden in a pairing-key filter")
+            raise ValueError("each pairing-key filter item must contain exactly the key fields")
+        values = tuple(item[field] for field in ("task_id", "seed", "initial_state_id"))
+        if any(type(value) is not int or value < 0 for value in values):
+            raise ValueError("pairing-key filter values must be non-negative integers")
+        selected.add(values)
+    if len(selected) != len(raw_keys):
+        raise ValueError("pairing-key filter contains duplicate keys")
     return selected
 
 
@@ -909,6 +947,8 @@ def execute_pilot(
     task_ids: set[int] | None = None,
     episodes_per_task: int | None = None,
     condition_names: set[str] | None = None,
+    pairing_keys: set[tuple[int, int, int]] | None = None,
+    pairing_key_filter_path: Path | None = None,
     inference_seed_setter: Callable[[int], None] = _set_inference_seed,
 ) -> dict[str, int]:
     """Execute only planned pairs, atomically persisting each terminal result.
@@ -919,7 +959,25 @@ def execute_pilot(
 
     output_dir = output_dir.resolve()
     config, trials = _read_execution_inputs(output_dir)
+    if pairing_keys is not None and config.get("development_trigger_coverage") is not True:
+        raise ValueError("pairing-key filters are restricted to development trigger coverage")
+    if (pairing_keys is None) != (pairing_key_filter_path is None):
+        raise ValueError("pairing keys and their immutable filter path must be provided together")
     selected_trials = _selected_trials(trials, task_ids, episodes_per_task)
+    if pairing_keys is not None:
+        selected_trials = [
+            trial
+            for trial in selected_trials
+            if (trial["task_id"], trial["seed"], trial["initial_state_id"])
+            in pairing_keys
+        ]
+        observed = {
+            (trial["task_id"], trial["seed"], trial["initial_state_id"])
+            for trial in selected_trials
+        }
+        if observed != pairing_keys:
+            missing = sorted(pairing_keys - observed)
+            raise ValueError(f"pairing-key filter is not a subset of the manifest: {missing}")
     available_conditions = {condition["name"] for condition in config["conditions"]}
     selected_condition_names = (
         available_conditions if condition_names is None else condition_names
@@ -927,6 +985,8 @@ def execute_pilot(
     if not selected_condition_names or not selected_condition_names <= available_conditions:
         unknown = sorted(selected_condition_names - available_conditions)
         raise ValueError(f"unknown or empty condition selection: {unknown}")
+    if pairing_keys is not None and selected_condition_names != {"Adaptive-v2a-H20→H1"}:
+        raise ValueError("development pairing-key filters may execute only Adaptive-v2a")
     selected_conditions = [
         condition for condition in config["conditions"]
         if condition["name"] in selected_condition_names
@@ -948,6 +1008,16 @@ def execute_pilot(
             "selected_task_ids": sorted({trial["task_id"] for trial in selected_trials}),
             "selected_episodes_per_task": episodes_per_task,
             "selected_conditions": [condition["name"] for condition in selected_conditions],
+            "pairing_key_filter_path": (
+                str(pairing_key_filter_path.resolve())
+                if pairing_key_filter_path is not None
+                else None
+            ),
+            "pairing_key_filter_sha256": (
+                hashlib.sha256(pairing_key_filter_path.read_bytes()).hexdigest()
+                if pairing_key_filter_path is not None
+                else None
+            ),
             "local_files_only": config["model"]["local_files_only"],
             "base_snapshot_path": config["model"]["base_snapshot_path"],
             "vlm_snapshot_path": config["model"]["vlm_snapshot_path"],
@@ -1144,6 +1214,11 @@ def main() -> None:
     parser.add_argument("--task-id", type=int, action="append")
     parser.add_argument("--episodes-per-task", type=int)
     parser.add_argument("--condition", action="append")
+    parser.add_argument(
+        "--pairing-key-file",
+        type=Path,
+        help="outcome-free development subset; execution only",
+    )
     args = parser.parse_args()
     if args.dry_run and args.execute:
         raise SystemExit("--dry-run and --execute are mutually exclusive")
@@ -1168,6 +1243,11 @@ def main() -> None:
             raise SystemExit("--vlm-snapshot-path must match resolved_config.json")
         if args.initial_state_source != "benchmark":
             raise SystemExit("official paired-pilot backend requires benchmark initial states")
+        pairing_keys = (
+            _load_pairing_key_filter(args.pairing_key_file)
+            if args.pairing_key_file is not None
+            else None
+        )
         # Do not re-materialize here. --execute has one permitted source of
         # trial identity: the manifest already present in output_dir.
         result = execute_pilot(
@@ -1177,6 +1257,8 @@ def main() -> None:
             task_ids=set(args.task_id) if args.task_id else None,
             episodes_per_task=args.episodes_per_task,
             condition_names=set(args.condition) if args.condition else None,
+            pairing_keys=pairing_keys,
+            pairing_key_filter_path=args.pairing_key_file,
         )
     print(json.dumps(result, sort_keys=True))
 
