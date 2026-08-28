@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "role": "formal_heldout_serial_schedule",
+  "parallel_execution_allowed": false,
+  "phases": [
+    {"phase": 1, "block": "A", "condition": "Static-H20"},
+    {"phase": 2, "block": "A", "condition": "Adaptive-v2a-H20→H1"},
+    {"phase": 3, "block": "B", "condition": "Adaptive-v2a-H20→H1"},
+    {"phase": 4, "block": "B", "condition": "Static-H20"}
+  ],
+  "resume_rule": "Within each phase, skip immutable completed episodes; do not enter a later phase until the current phase has 25 completed episodes.",
+  "analysis_unlock": "Analysis may inspect success fields only after all 100 paired episodes are completed and the pairing gate passes."
+}

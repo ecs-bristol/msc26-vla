@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "role": "preregistered_formal_analysis",
+  "conditions": ["Static-H20", "Adaptive-v2a-H20→H1"],
+  "pair_count": 50,
+  "outcome_unlock": "Only after all 100 episode JSON files are status=completed and all pairing/protocol/accounting gates pass.",
+  "success_analysis": {
+    "flip_table": ["both_success", "adaptive_only", "static_only", "both_fail"],
+    "paired_effect": "mean(Adaptive success - Static success)",
+    "task_cluster_bootstrap": {
+      "clusters": "task_id",
+      "replicates": 100000,
+      "rng_seed": 20260828,
+      "interval": "two-sided percentile 95%"
+    },
+    "mcnemar": "two-sided exact binomial test on adaptive_only vs static_only"
+  },
+  "paired_resource_differences": [
+    "model_invocations",
+    "model_inference_time_s",
+    "wall_time_to_terminal_s"
+  ],
+  "trigger_analysis": "Report total triggers and every trigger as rescue, loss, or no_flip using its pairing's frozen outcomes.",
+  "decision_rule": {
+    "required_rescue": "adaptive_only >= 1",
+    "net_rescue": "adaptive_only > static_only",
+    "evidence": "Every claimed rescue has valid complete trigger evidence and deterministic paired seed provenance.",
+    "failure_conclusion": "no demonstrated value for the added calls"
+  },
+  "rule_mutation_after_results_allowed": false
+}

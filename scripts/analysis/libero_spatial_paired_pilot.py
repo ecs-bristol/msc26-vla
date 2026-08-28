@@ -68,6 +68,7 @@ SUMMARY_FIELDS = (
 _TERMINAL_EPISODE_STATUSES = frozenset({"completed", "failed"})
 _LEGACY_INFERENCE_SEED_NAMESPACE = "libero_spatial"
 _ADAPTIVE_V2_HELD_OUT_NAMESPACE = "adaptive-v2-heldout-v1|libero_spatial"
+_ADAPTIVE_V2_CONFIRMATORY_NAMESPACE = "adaptive-v2-confirmatory-v1|libero_spatial"
 
 
 class PilotPolicy(Protocol):
@@ -122,6 +123,9 @@ def _snapshot_path(value: str, revision: str, field: str) -> str:
 def _validate_config(config: dict[str, Any]) -> None:
     model = config.get("model")
     conditions = config.get("conditions")
+    formal_confirmatory = config.get("formal_adaptive_v2_confirmatory", False)
+    if type(formal_confirmatory) is not bool:
+        raise ValueError("formal_adaptive_v2_confirmatory must be a boolean")
     if config.get("suite") != "libero_spatial" or config.get("task_ids") != list(range(10)):
         raise ValueError("pilot config must cover the ten libero_spatial tasks")
     if config.get("episodes_per_task") != 5:
@@ -138,7 +142,38 @@ def _validate_config(config: dict[str, Any]) -> None:
         or model.get("chunk_size") != 50
     ):
         raise ValueError("pilot config must retain the frozen local SmolVLA protocol")
-    if not isinstance(conditions, list) or len(conditions) != 6:
+    if not isinstance(conditions, list):
+        raise ValueError("pilot config conditions must be a list")
+    if formal_confirmatory:
+        expected_conditions = [
+            {
+                "name": "Static-H20",
+                "fixed_h": 20,
+                "safety_enabled": True,
+                "replan_after_safety_violation": False,
+                "adaptive_v2_trigger": False,
+                "clip_actions": False,
+            },
+            {
+                "name": "Adaptive-v2a-H20→H1",
+                "fixed_h": 20,
+                "safety_enabled": True,
+                "replan_after_safety_violation": False,
+                "adaptive_v2_trigger": True,
+                "clip_actions": False,
+            },
+        ]
+        if conditions != expected_conditions:
+            raise ValueError(
+                "formal Adaptive-v2a evaluation must contain only matched "
+                "Static-H20 and Adaptive-v2a conditions"
+            )
+        if config.get("development_trigger_coverage", False) is not False:
+            raise ValueError("formal evaluation cannot be marked development coverage")
+        if config.get("inference_seed_namespace") != _ADAPTIVE_V2_CONFIRMATORY_NAMESPACE:
+            raise ValueError("formal Adaptive-v2a evaluation requires confirmatory seeds")
+        return
+    if len(conditions) != 6:
         raise ValueError("pilot config must declare the six paired conditions")
     names = [condition.get("name") for condition in conditions if isinstance(condition, dict)]
     static_names = [
@@ -551,8 +586,11 @@ def _load_pairing_key_filter(path: Path) -> set[tuple[int, int, int]]:
     """Read an explicit, outcome-free execution subset from a committed artifact."""
 
     payload = _read_json(path.resolve())
-    if payload.get("selection_role") != "trigger_coverage_development":
-        raise ValueError("pairing-key filter must be marked trigger-coverage development")
+    if payload.get("selection_role") not in {
+        "trigger_coverage_development",
+        "formal_heldout_block",
+    }:
+        raise ValueError("pairing-key filter has an unsupported selection role")
     raw_keys = payload.get("pairing_keys")
     if not isinstance(raw_keys, list) or not raw_keys:
         raise ValueError("pairing-key filter must contain a non-empty pairing_keys list")
@@ -959,10 +997,19 @@ def execute_pilot(
 
     output_dir = output_dir.resolve()
     config, trials = _read_execution_inputs(output_dir)
-    if pairing_keys is not None and config.get("development_trigger_coverage") is not True:
-        raise ValueError("pairing-key filters are restricted to development trigger coverage")
     if (pairing_keys is None) != (pairing_key_filter_path is None):
         raise ValueError("pairing keys and their immutable filter path must be provided together")
+    filter_role = None
+    if pairing_key_filter_path is not None:
+        filter_role = _read_json(pairing_key_filter_path.resolve()).get("selection_role")
+        if filter_role == "trigger_coverage_development":
+            if config.get("development_trigger_coverage") is not True:
+                raise ValueError("development filter requires development trigger coverage")
+        elif filter_role == "formal_heldout_block":
+            if config.get("formal_adaptive_v2_confirmatory") is not True:
+                raise ValueError("formal block filter requires formal confirmatory config")
+        else:
+            raise ValueError("pairing-key filter role is invalid")
     selected_trials = _selected_trials(trials, task_ids, episodes_per_task)
     if pairing_keys is not None:
         selected_trials = [
@@ -985,8 +1032,10 @@ def execute_pilot(
     if not selected_condition_names or not selected_condition_names <= available_conditions:
         unknown = sorted(selected_condition_names - available_conditions)
         raise ValueError(f"unknown or empty condition selection: {unknown}")
-    if pairing_keys is not None and selected_condition_names != {"Adaptive-v2a-H20→H1"}:
+    if filter_role == "trigger_coverage_development" and selected_condition_names != {"Adaptive-v2a-H20→H1"}:
         raise ValueError("development pairing-key filters may execute only Adaptive-v2a")
+    if filter_role == "formal_heldout_block" and len(selected_condition_names) != 1:
+        raise ValueError("each formal held-out phase must execute exactly one condition")
     selected_conditions = [
         condition for condition in config["conditions"]
         if condition["name"] in selected_condition_names
@@ -1018,6 +1067,7 @@ def execute_pilot(
                 if pairing_key_filter_path is not None
                 else None
             ),
+            "pairing_key_filter_role": filter_role,
             "local_files_only": config["model"]["local_files_only"],
             "base_snapshot_path": config["model"]["base_snapshot_path"],
             "vlm_snapshot_path": config["model"]["vlm_snapshot_path"],
