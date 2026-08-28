@@ -1,0 +1,7 @@
+cohort,condition,episodes,successes,success_at_280,wilson95_low,wilson95_high,mean_model_invocations
+development,Static-H1,50,33,0.66,0.521538260502,0.775630507775,162.48
+development,Static-H10,50,30,0.6,0.461814377476,0.723916102697,17.48
+development,Static-H20,50,32,0.64,0.501410168761,0.758612503482,8.66
+development,Adaptive-v1-H20→H1,50,31,0.62,0.48150446931,0.741372106898,9.08
+confirmatory,Static-H20,50,33,0.66,0.521538260502,0.775630507775,8.32
+confirmatory,Adaptive-v2a-H20→H1,50,33,0.66,0.521538260502,0.775630507775,8.36

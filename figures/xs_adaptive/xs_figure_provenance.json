@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "quantitative_inputs_only": [
+    {
+      "path": "analysis/final_vla_results.csv",
+      "sha256": "f48a53d4c42c9e18740b7e820016bd8e9e7a0cedba640e69d6c8eac12346b70b"
+    },
+    {
+      "path": "analysis/final_vla_statistics.json",
+      "sha256": "1a4c9a4fefd446aae357a66b921f6df52c0a1397d5f8dff657f7f246d17b64a0"
+    }
+  ],
+  "method_diagram_inputs": [
+    {
+      "path": "docs/ADAPTIVE_V2_PREREG.md",
+      "sha256": "4a1a5bd3f517c981caefb9eb725119611370b961b73723f5699269a44896536d"
+    },
+    {
+      "path": "docs/ADAPTIVE_V2_FORMAL_HELDOUT_PREREG.md",
+      "sha256": "ebfe715cae35257676c05589315e042aed836df654535056ff79c77b18c114e3"
+    },
+    {
+      "path": "src/libero_platform/policies/fixed_h_action_buffer.py",
+      "sha256": "19f9178d61f2e29b3a3efbe763bf37852b3e4b1c8da16ee1c9f71dd70ff4be6e"
+    },
+    {
+      "path": "src/libero_platform/policies/adaptive_v2_trigger.py",
+      "sha256": "bc76bb4fd1feda1df8f4f87184e5c4d5ea81d0fd12b8f3b17b6b274182943afb"
+    },
+    {
+      "path": "configs/evaluation/libero_spatial_adaptive_v2_formal_heldout.yaml",
+      "sha256": "56298944ce88e7fafff096f9419453e1829209bd42b0063c3246767aab1c68a5"
+    }
+  ],
+  "constraints": {
+    "cohorts_separate": true,
+    "cross_cohort_pooling": false,
+    "early_parity_results_excluded": true,
+    "prediction_chunk_C": 50,
+    "clip_actions": false,
+    "native_actions_unchanged": true,
+    "tradeoff_y_axis": [
+      0.0,
+      1.0
+    ],
+    "tradeoff_x_axis": "logarithmic full data range",
+    "png_dpi": 300,
+    "palette": "Okabe-Ito"
+  },
+  "outputs": [
+    {
+      "path": "xs_adaptive_mechanism.pdf",
+      "sha256": "dbbd55b187c45b4a9fcb5ded6823393d0ffd69c8d9c179dcbcf48adb66e75a9f"
+    },
+    {
+      "path": "xs_success_compute_tradeoff.pdf",
+      "sha256": "f66a77ff9975b02de2c6ac98e0e01203a5a0bb95d02e1c4f31a5cc72f97a71b4"
+    },
+    {
+      "path": "xs_success_compute_tradeoff.png",
+      "sha256": "608227cb0e9fafd6a378f084bf951911a12fe5dce690a20cf4be9fb2063db0ae"
+    },
+    {
+      "path": "xs_success_compute_source.csv",
+      "sha256": "4e6515da5b57ac56667e8f31035d1910174edac3da13ea9268a3503ed719aefa"
+    }
+  ]
+}

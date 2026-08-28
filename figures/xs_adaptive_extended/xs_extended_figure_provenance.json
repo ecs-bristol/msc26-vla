@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "frozen_data_only": true,
+  "model_loaded": false,
+  "rollout_executed": false,
+  "palette": "Okabe-Ito",
+  "png_dpi": 300,
+  "inputs": [
+    {
+      "path": "figures/xs_adaptive_extended/source/xs_episode_metrics.csv",
+      "sha256": "e4444a0ca1162e0c987402bd9c425326b27109bf0bea6a307423f95168db2113"
+    },
+    {
+      "path": "figures/xs_adaptive_extended/source/xs_frozen_source_manifest.json",
+      "sha256": "d9b06338d361368a98cbc121ab75fb947ac1b4f71d5c4ef9a0845216403ec909"
+    },
+    {
+      "path": "figures/xs_adaptive_extended/source/xs_h1_h20_task_state_outcomes.csv",
+      "sha256": "e4c6679cbcf5a54ee00d3434d940140ee7b1dcdc2468e970fd34ff345e9c744e"
+    },
+    {
+      "path": "figures/xs_adaptive_extended/source/xs_parity_validation.csv",
+      "sha256": "586a893145b3ef7f2705699c39493d0f94a1cb5e5e41198abb9fe5d590b3b3f8"
+    },
+    {
+      "path": "figures/xs_adaptive_extended/source/xs_trigger_casebook.csv",
+      "sha256": "e755862271de6a4206b3460ad07748ddf71472f40df1f53bb1c308c8fab1224c"
+    },
+    {
+      "path": "figures/xs_adaptive_extended/source/xs_variable_chunk_v2.csv",
+      "sha256": "59377c80db7d541ef223bfe471c7eef153c58891f17e6143663dd9d2972607d3"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "xs_action_lifecycle_accounting.pdf",
+      "sha256": "f1e5651c565945cb28a2fe10484c2bce164979a61d944882948283bbad4e0421"
+    },
+    {
+      "path": "xs_action_lifecycle_accounting.png",
+      "sha256": "ee7bca98ecb994c62a488c15ca8f9760366bb13112cc3f52bb49486477ca49e4"
+    },
+    {
+      "path": "xs_task_state_outcome_heatmap.pdf",
+      "sha256": "e62a3e52bec5aa3cba875412390c6d0ea0c631eaa12964ec01043e4bcbd704cf"
+    },
+    {
+      "path": "xs_task_state_outcome_heatmap.png",
+      "sha256": "a042eb0f25bb77b42a84d8bfed383e2058d06749d1f5b8424a90ac0fa72b6ddf"
+    },
+    {
+      "path": "xs_action_accounting_stacked.pdf",
+      "sha256": "2deea38dc19a3119630650cdcceb7108c6aa0b3eb615865a3fbb0ba42c9d63cb"
+    },
+    {
+      "path": "xs_action_accounting_stacked.png",
+      "sha256": "f8ec038f906c329d79f0c93b00bf5451456185f2ec0b0819edd0e564d83a6095"
+    }
+  ]
+}

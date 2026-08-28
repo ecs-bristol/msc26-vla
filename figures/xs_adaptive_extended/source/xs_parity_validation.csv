@@ -1,0 +1,7 @@
+check,parity_error,official_or_repaired,validation
+environment input,256x256,360x360,official processor path
+image orientation,height flip only,height and width flip,observation hashes equal
+reset settle,0 no-op steps,10 no-op steps,official reset sequence
+robot state,normalized quaternion; force w>=0,official quaternion-to-axis-angle,state hash equal; max diff 0
+action handling,"clip to [-1,1]",native action; clipping off,chunk hash equal; max diff 0
+hash gate,not available,"agentview, wrist, state and action SHA256",all exact

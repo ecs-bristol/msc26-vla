@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "selection_role": "formal_heldout_block",
+  "formal_evaluation": false,
+  "usage": "non-formal mechanism-coverage replay after outcome inspection",
+  "source_run": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828",
+  "source_git_sha": "a9afdc0b4feee120f5c3c71f22d84c691ed85ba6",
+  "verified_trigger_env_step": 222,
+  "pairing_keys": [
+    {
+      "task_id": 0,
+      "seed": 1001,
+      "initial_state_id": 1
+    }
+  ]
+}

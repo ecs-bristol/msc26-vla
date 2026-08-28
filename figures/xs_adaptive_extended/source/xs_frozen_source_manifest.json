@@ -1,0 +1,1276 @@
+{
+  "schema_version": 1,
+  "read_only_sources": true,
+  "model_loaded": false,
+  "environment_created": false,
+  "rollout_executed": false,
+  "cohort_pooling": false,
+  "inputs": [
+    {
+      "path": "/mnt/d/VLA/msc26-vla/analysis/final_vla_results.csv",
+      "sha256": "f48a53d4c42c9e18740b7e820016bd8e9e7a0cedba640e69d6c8eac12346b70b"
+    },
+    {
+      "path": "/mnt/d/VLA/msc26-vla/analysis/final_vla_statistics.json",
+      "sha256": "1a4c9a4fefd446aae357a66b921f6df52c0a1397d5f8dff657f7f246d17b64a0"
+    },
+    {
+      "path": "/mnt/d/VLA/msc26-vla/docs/BASELINE_PARITY_AUDIT.md",
+      "sha256": "aa6ddf7909b61e61308dcd3998ec54ca4977d56f48688c299414c32dc9af695c"
+    },
+    {
+      "path": "/mnt/d/VLA/msc26-vla/docs/PARITY_HARDENING.md",
+      "sha256": "d4865e9521bc3f419a38b36492ae386fc5e45268ee225ad576e240173aaa14b9"
+    },
+    {
+      "path": "/mnt/d/VLA/msc26-vla/docs/ADAPTIVE_V2_PREREG.md",
+      "sha256": "4a1a5bd3f517c981caefb9eb725119611370b961b73723f5699269a44896536d"
+    },
+    {
+      "path": "/mnt/d/VLA/msc26-vla/docs/ADAPTIVE_V2_FORMAL_HELDOUT_PREREG.md",
+      "sha256": "ebfe715cae35257676c05589315e042aed836df654535056ff79c77b18c114e3"
+    },
+    {
+      "path": "/mnt/d/VLA/msc26-vla/src/libero_platform/policies/fixed_h_action_buffer.py",
+      "sha256": "19f9178d61f2e29b3a3efbe763bf37852b3e4b1c8da16ee1c9f71dd70ff4be6e"
+    },
+    {
+      "path": "/mnt/d/VLA/msc26-vla/src/libero_platform/policies/adaptive_v2_trigger.py",
+      "sha256": "bc76bb4fd1feda1df8f4f87184e5c4d5ea81d0fd12b8f3b17b6b274182943afb"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/analysis/four_condition_paired_analysis.json",
+      "sha256": "958f14c368e58ecb3a147cf2bdd791a64f01e7b06ae9180b53df318429ca17d2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/analysis/adaptive_v2a_formal_analysis.json",
+      "sha256": "b65ab054a9292ce9cffe5f1a296c12e777379d62a641464033848c42f1eff40a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/variable-chunk-feasibility-v2-b5cbf91-20260827/variable_chunk_v2_report.json",
+      "sha256": "559f9d4a4c998513a218fa81061ce2d914994f3710efd7dd16865dace69b922c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_00_seed_1000_state_0.json",
+      "sha256": "2bd2a9810c379614baf12d2d89967382ec2187c3405e17c9f94dd599d3cd6a1c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_00_seed_1001_state_1.json",
+      "sha256": "3c9145521259fa4d8db2ce44665e1e5da04183ff424737f4e645fd3c694fb96a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_00_seed_1002_state_2.json",
+      "sha256": "732b9f957a6e1f9aa3e1e865089bd13115f37881102c2bae6209bc755ac877f7"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_00_seed_1003_state_3.json",
+      "sha256": "3995a1624b487ec3b53d0cce77daf67f2ef5ae5251cb2a3b9de17e0347f77c8e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_00_seed_1004_state_4.json",
+      "sha256": "8e1cd365a439d6d0e96808d469424d1ab9e36cc7abb936d1c1a54c0513fe7c16"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_01_seed_1000_state_0.json",
+      "sha256": "4619a602ffd73353a1d0b0d9cf8f05962fa7a2767f43a25498c5b3e7a5bcb039"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_01_seed_1001_state_1.json",
+      "sha256": "bbe40165a3cd7cf0241e710b798fd1b64addac506bf91e39ccc679a1b1df5dac"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_01_seed_1002_state_2.json",
+      "sha256": "f71ba7a721f4605eeba384faab2ce5f9401fcf112720d839e04a869b1a066dbd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_01_seed_1003_state_3.json",
+      "sha256": "64fb188ef749ee77d84c535c36358c75678df8dda39d35c4b5b31aa33e53ec4d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_01_seed_1004_state_4.json",
+      "sha256": "fb860418bae272a10b49e4799be946a70bd6f534ba355d19a6c44728df39ccec"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_02_seed_1000_state_0.json",
+      "sha256": "7912d674bcb2215c66bedee4612cd293f529a00e6eb6965fe771861109d804df"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_02_seed_1001_state_1.json",
+      "sha256": "c53045c1bf8cca27d1f5f87bc2a08b7ff196c1b98316ba1a62998f0c55f7e546"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_02_seed_1002_state_2.json",
+      "sha256": "f44b1c6e1b000b331f63a2dbc0c865d6dbd296562ae105c35bad3818c1a45ce7"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_02_seed_1003_state_3.json",
+      "sha256": "e4fa0db41a5bd87810f903f16419f6a150edd913f6107357a265e0f69d33ec3e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_02_seed_1004_state_4.json",
+      "sha256": "57d5261c243e1daea1c1bee55c9c33557895babcea2de96a275a3ed7ab9e5ea3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_03_seed_1000_state_0.json",
+      "sha256": "f7bf743fb0c852e9cbe8a7a28720476cadffe282be7a3c232a6435dd286af53b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_03_seed_1001_state_1.json",
+      "sha256": "ff325b68a8c8edb8d375838718d1aea7b9cd0066ff62f71a8efab31af242244d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_03_seed_1002_state_2.json",
+      "sha256": "c9d766c874ce0955bad8a827ed77da843705fa603aed42241846132c006172d5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_03_seed_1003_state_3.json",
+      "sha256": "51344b121f35b5a42e6a1f70f1466a825841102df3b919f4abb5f1c398603b32"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_03_seed_1004_state_4.json",
+      "sha256": "51252e1ff086cd5f0d0ff2adc5fd81c82d3943f7d46aa088392cbaf5266a5e02"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_04_seed_1000_state_0.json",
+      "sha256": "8820b49acd89508ec56367eee323ff89345813a87269efb42d700f5a248b1ea5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_04_seed_1001_state_1.json",
+      "sha256": "c0a883eb1ab70831577d0ac85a9d648ded4542bc84e0362c51550a7374ef99ed"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_04_seed_1002_state_2.json",
+      "sha256": "186851b23316f4ba7e664203d35c5cc8aa211ac3d906ba7d695a86a932e9f73b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_04_seed_1003_state_3.json",
+      "sha256": "49fa919bf7a4da8bc4e7f970278d8095aed185388a493d59b484dd7d0ccfb50a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_04_seed_1004_state_4.json",
+      "sha256": "9a9c6055eb29e44d7698cbdc97ca06d482142004e48af25b5b01a087836617b2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_05_seed_1000_state_0.json",
+      "sha256": "6da6ba735e8071207ddcb8b2aee7e051af0709c9f62d85465d12ba1f251aa7d1"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_05_seed_1001_state_1.json",
+      "sha256": "cc0090e1787eadaf8cc50d4421fe5d89e9e822b40016eabbadc62a8766ed7795"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_05_seed_1002_state_2.json",
+      "sha256": "a962d82c3b5e8bb1a2ad3cdea719c11b89cb5a636c55e51e2a8bb2b2f2f5288e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_05_seed_1003_state_3.json",
+      "sha256": "ebaee1dc3b61cb5e8c7484e2051ce23dd043ec161a9199025ce730072b19babe"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_05_seed_1004_state_4.json",
+      "sha256": "83a98f6c9ac54a875ab4892e02f89abf7bc5ed642001827c5d7455e05dd1e457"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_06_seed_1000_state_0.json",
+      "sha256": "e5320756a1a331a038c8cf5f7f432c31ad7fd7167535da27b0a917aca4e01cb7"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_06_seed_1001_state_1.json",
+      "sha256": "c5a8705af0cc3268648f3c8334e0de872cfa2de70d9983cb71387ef2404cf668"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_06_seed_1002_state_2.json",
+      "sha256": "969a23cc6e0ccdb90ad7c858d6fa5a9ad4db6d74f34ff027f15f06faf40cde7c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_06_seed_1003_state_3.json",
+      "sha256": "3bbecbbd0ed530cf0b12edbcf82d76b4fd568c90dfdbd26f1d2cd99a1674a5d4"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_06_seed_1004_state_4.json",
+      "sha256": "ea54d44de73df91b84705558c4af5c2586bb7dfdbcffdd856a17d675e034d7f9"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_07_seed_1000_state_0.json",
+      "sha256": "c7be67567b3589dfcd2c08103c36c9429cf3a7cd06a292f910123b5581025e01"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_07_seed_1001_state_1.json",
+      "sha256": "f3c7d4a8a40ae2c9cf7f0ed704b66ea3ee504ab51a3634e28eae5eb62aa90bdb"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_07_seed_1002_state_2.json",
+      "sha256": "731320dbeaee4ceecfa58ae7a943049be9c43fe9184700ef64ab3c8b68323646"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_07_seed_1003_state_3.json",
+      "sha256": "3d9faa7c9fae3d7bd2541eca25657cebc0a22a48938bdaf11ebcea6afa1c765e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_07_seed_1004_state_4.json",
+      "sha256": "dabd9862b2d54bc278f16f374fd28f73d14f7a35a0b361776a5dd1e124c817bf"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_08_seed_1000_state_0.json",
+      "sha256": "53209448d14c6b20c4c77496995932c21792519c4274ed7eba111c3aa6dd3ded"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_08_seed_1001_state_1.json",
+      "sha256": "3a5718c20bd195dcf1000a4c5448205b06408984d4fc6772950302f70107d7f2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_08_seed_1002_state_2.json",
+      "sha256": "fdee32e54a1005d05df025affadb8c3cd59dd99420bed2dadab76843cf4249b9"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_08_seed_1003_state_3.json",
+      "sha256": "276fb6136a46781c52dbbf526c91a166a9dcc72c26981db237c7e4b554290e6a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_08_seed_1004_state_4.json",
+      "sha256": "50b682761967e1117d222dc23be729893c8c3bf9d7199ddfa1f02dc2606e9e57"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_09_seed_1000_state_0.json",
+      "sha256": "9830ced4e0afdc4256c6400cc141276f309f2a170a0281bc9e4b3095db9e9b28"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_09_seed_1001_state_1.json",
+      "sha256": "e2854bd17875c741f42380ea79f072b3b37534dc4cf9223e62137a7c12833a8f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_09_seed_1002_state_2.json",
+      "sha256": "85d020e0dac03a0cba8ac5da80f272cfa9afe19f807b377c173020c36f7ace60"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_09_seed_1003_state_3.json",
+      "sha256": "3d58562cff78673fe372c495cd439b23c2353c5073861f6748ff03467aa04b2e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h1-original-50-b5cbf91-20260827/episodes/static-h1-original/task_09_seed_1004_state_4.json",
+      "sha256": "50ac80225257b14c5de06d28e1032a57dda3c72be595217f3adf30712057ae28"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_00_seed_1000_state_0.json",
+      "sha256": "262d2186b72f0b48a0293b268feba5f4205713cd8d7f2a2577926db18afda6a2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_00_seed_1001_state_1.json",
+      "sha256": "38c94d54847d355971d58dfea3cb55bc28f645d26305e209b765ca3b7ae60b6c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_00_seed_1002_state_2.json",
+      "sha256": "e7887aeec1117563cab30dcf5226189113728267f9cc59ae46340c2224a82346"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_00_seed_1003_state_3.json",
+      "sha256": "ff14c24ec4b1415ba23f360498edb97e597b2478400ce3e28b4fa1800f04b6eb"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_00_seed_1004_state_4.json",
+      "sha256": "102ce367e0ee9eb34f63237c864947d579d85df601ec16ad2072922ea6734e53"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_01_seed_1000_state_0.json",
+      "sha256": "a6e7a42063fb362c9bcaf8256ad4f058781a732b49a1ec1fb8f3934752a4a10a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_01_seed_1001_state_1.json",
+      "sha256": "69071ba8eeb97d761d126be3e760bdb8bb399127dfcb021d0ba9f79203bd572b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_01_seed_1002_state_2.json",
+      "sha256": "018377083a67486ab821f3116b95b5b6071919a537c3634efdc0e98323ad72b6"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_01_seed_1003_state_3.json",
+      "sha256": "8e660f6001fc57579ba1b5eac62c9450c1f73c139e64b0ca48cc16c32b1e7b17"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_01_seed_1004_state_4.json",
+      "sha256": "3c78a627337a5b42907cd7c783ea87426d3bf9085a70b9238699f86724a0783b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_02_seed_1000_state_0.json",
+      "sha256": "fdcbf05ce588a348651723d912ebe1dc61ba8366e62f9949263fbe2106b95493"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_02_seed_1001_state_1.json",
+      "sha256": "4165f1caceea5869e171a7e7749bae5e2dc3388e3e35ea9083288bfc5899da66"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_02_seed_1002_state_2.json",
+      "sha256": "562a2795b53592bda1d615d3fb7919f23e402c61f74b4ad6e73fa446ce8f137f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_02_seed_1003_state_3.json",
+      "sha256": "e864221bdb17282d3bba491a69c9b281902639970eb284f41fd1f9ba56e72a66"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_02_seed_1004_state_4.json",
+      "sha256": "a413a342e4a795a561c84149cefd6c998e30edd03d85405c4b9da9bc5cc7d598"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_03_seed_1000_state_0.json",
+      "sha256": "b80f277afb80072f8b2a2c5c6f407384a07bede28ccf759e06f1c821ba04a463"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_03_seed_1001_state_1.json",
+      "sha256": "5900c47bbd7fe9addbc860c4d7425c8de552df605c8116b91798f16cbb2b71d1"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_03_seed_1002_state_2.json",
+      "sha256": "2c4b9b5816bf61bb47dc9dab76721838acf6ba174be134d89f60b669d36ed1c2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_03_seed_1003_state_3.json",
+      "sha256": "f6612ad7b4bedc3e3f9079b368120f6d3f79c13e8f5874adc855095936653b03"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_03_seed_1004_state_4.json",
+      "sha256": "61180bf27a8ea9ac2187a3dab0a4c893a2e7a3c1ae89941e65baf131ea67d7f3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_04_seed_1000_state_0.json",
+      "sha256": "d11606f823d148951c0d5248838eaadd07ce90b73b5bce0c2dded5c3a01f380b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_04_seed_1001_state_1.json",
+      "sha256": "877e5aa653fe42a28f21711485596421b1547cde48876ae31c22e40c4d1aa8cc"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_04_seed_1002_state_2.json",
+      "sha256": "b444e33ed8a78d8d6d8f2d7cd36da5b93a9e63c6db31ed97a386dcba7e5b9876"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_04_seed_1003_state_3.json",
+      "sha256": "9fb0f0bf818d553d2f3e11d23fe12d3e8ff9a9928fc5d48345ad84561ba194d2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_04_seed_1004_state_4.json",
+      "sha256": "feb85372016be38e9d1862e88426af2ae5c6e5ef7ad279ee579ff26b18f81925"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_05_seed_1000_state_0.json",
+      "sha256": "54534b91187899419d9a00a9dd4e7008fc5f8a8efa3010e6772297351a488830"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_05_seed_1001_state_1.json",
+      "sha256": "67cca1d71022c4008252753d9479c20d11c106409713c45e694675661407e63f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_05_seed_1002_state_2.json",
+      "sha256": "f3ced8812779968de426043be7e54ab1b24c067af292e72d977bfe25f31645ed"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_05_seed_1003_state_3.json",
+      "sha256": "669a5df306e85c33cf59a9344a3056653b905dad922e0c3d2441a4712127f34c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_05_seed_1004_state_4.json",
+      "sha256": "34412e1a37e6aa24f683cf1c6577abf6ec528a9d50e4195455843e59c15b7816"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_06_seed_1000_state_0.json",
+      "sha256": "722f1ab830e0db5e37ee34641481d90577399a29ce750da8743b0dbb61631073"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_06_seed_1001_state_1.json",
+      "sha256": "46139d9fffc46cde55f6285aceda742a6877c104620d48b340ab8a2c814f9941"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_06_seed_1002_state_2.json",
+      "sha256": "e84e04f26887022bb348ff10204e62c38e51d0a04921322fc4ffd2db61439cbe"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_06_seed_1003_state_3.json",
+      "sha256": "66bb9a50dbb4e56fa612bc620805865381862ceade90d7be4ff4b047c6ea233d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_06_seed_1004_state_4.json",
+      "sha256": "cfce636aa67ab7d29fc2ee43b6aed7bc3b17d6d6e9a8c82bcf8d383e65a78f6b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_07_seed_1000_state_0.json",
+      "sha256": "4cb5da7ffb55ef8237c4e81c4d69ca67e8dcd311b62cc471f8b159fa0dcbb377"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_07_seed_1001_state_1.json",
+      "sha256": "c3f2b9d2de32e34c48230d83f9e8c16ac80c3081ecbb47273579a582fe8e0690"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_07_seed_1002_state_2.json",
+      "sha256": "974d248c71629e262cafbdb6a0f5f24b2e480626bff9ddcc76e3bb2e4ef5e1d5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_07_seed_1003_state_3.json",
+      "sha256": "7eee5dd6664446c1420255fcc89729c07165db6b092a14f4891dac90d3dca3b4"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_07_seed_1004_state_4.json",
+      "sha256": "6d68331b33a4f2218e41fa6c20896a75c6cfdba0368be4574e24bcabb9ae4a8c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_08_seed_1000_state_0.json",
+      "sha256": "fe701b3411329d163510aae7f961b37dc8482bce1554195e4fdb26ce857daf79"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_08_seed_1001_state_1.json",
+      "sha256": "2ea10c72681a09c9257bf28b92222512d8f9af882b3f2e2f3b0c9a008228ac20"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_08_seed_1002_state_2.json",
+      "sha256": "1066c9086e1f10f4fc685f125953c140121ac41b7c7207d6ffb6e5a62d263382"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_08_seed_1003_state_3.json",
+      "sha256": "63f1fa528b01fd7f32b9778fe5a1d3de2b51733d4554ca0b2048a34a316700b9"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_08_seed_1004_state_4.json",
+      "sha256": "192fb8fa8834715d24bad9f9ad938090b1e5559cb68d9c8da0053b94099babcd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_09_seed_1000_state_0.json",
+      "sha256": "06cad4e80f23d20de37e5091bf9d4e6fcccfe09ef4fe00e192bf3774ecd94a25"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_09_seed_1001_state_1.json",
+      "sha256": "e42dd7dcdc4a7de6640107fd202beccc80a0502e87425d853b6f22d5693348cb"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_09_seed_1002_state_2.json",
+      "sha256": "42d0aba0619e03fe2d729baf9a351e87f83f65c0208c0fba71cdc9832bd3a0eb"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_09_seed_1003_state_3.json",
+      "sha256": "614c91ef2a9e5aa859406e9cea039f0a028a9b428e9e76869704a6f4d803d1c8"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/static-h10-50-b5cbf91-20260827/episodes/static-h10/task_09_seed_1004_state_4.json",
+      "sha256": "e1ce77423ef8179dffd6a29c6cb12c940b9b49c5b873575aa488b359eedb31a3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_00_seed_1000_state_0.json",
+      "sha256": "64044ba54b3a71445a92937d11db1b538c02800f364b05548718f463191df1f1"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_00_seed_1001_state_1.json",
+      "sha256": "7dfacd5469cc4f37f1aa7b747e2aad5515353556ac10a1895bc2c8f6235a159a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_00_seed_1002_state_2.json",
+      "sha256": "0de2c96bb2d9fda226a16d3b8894bb154c4c1992831482ca6e73ac8f6ca5a2a3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_00_seed_1003_state_3.json",
+      "sha256": "57d74994d2daa061292120348a4ac16af4d08369a381b9b69dd647d719f35e2f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_00_seed_1004_state_4.json",
+      "sha256": "33c0382b2f09c17621fc550f73ddc3f84c270aedc93269a0048fc23764e68666"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_01_seed_1000_state_0.json",
+      "sha256": "044a9fb5f6b66315865110911998214803b7fcc6a1a2b7f645d6f12e579f4e18"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_01_seed_1001_state_1.json",
+      "sha256": "d3c22fcd22fa65c7ab7772bb1164c6ee59f2831d56bb953e2745e027671d246d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_01_seed_1002_state_2.json",
+      "sha256": "613a354485c18ff3717687c2b5288e776efa924c88070b996d5a636ae07654f5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_01_seed_1003_state_3.json",
+      "sha256": "b9dce9bcf3910a2d1b7dbd92d00016eea2305b2a3b58cf460cccd73e180664af"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_01_seed_1004_state_4.json",
+      "sha256": "ba7d465a807485fedf9dc450193b9cfcd243677d7b82f2bdcd3d782c197c658d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_02_seed_1000_state_0.json",
+      "sha256": "2291b2a8917b32b69137611c2a7fce8311f596b352f90defd0373fec6ab0e8be"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_02_seed_1001_state_1.json",
+      "sha256": "fcc320eacdee6454437d076d8b419c128b996008bf50299ff569deda49ef8125"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_02_seed_1002_state_2.json",
+      "sha256": "0b5c6399a91bcaad6cde1555337c1a29af642ea26b1ebbeac1f2ab0027fb54c0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_02_seed_1003_state_3.json",
+      "sha256": "32260098ec6db26d11d5343cb9be374661ecb34473862264108191c9b02f300a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_02_seed_1004_state_4.json",
+      "sha256": "31c961963ee6d097d937fe05f050a815610952ae78b73b8795209805a5fa3bfd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_03_seed_1000_state_0.json",
+      "sha256": "644e354768866c0c85088c326eb2a179c14bbc6128da2711400561b01c5313d4"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_03_seed_1001_state_1.json",
+      "sha256": "ebabad25bbd9f47f640f210fb4159cc58a4aed0fe8affff1d697f0581e4f9751"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_03_seed_1002_state_2.json",
+      "sha256": "7e265d24d65ee4d077385d27241c84c1cbfa0a6f6856eac010c5d2cbd4a29615"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_03_seed_1003_state_3.json",
+      "sha256": "d0025f2fdfc937d521fd2367dc75137d9ff2c94fb897cf39285778fd24d61909"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_03_seed_1004_state_4.json",
+      "sha256": "4ecc244a21487f98421a2031b96fff5df66f825af34add22df10020ce2210e9b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_04_seed_1000_state_0.json",
+      "sha256": "2192f255e2032650c4e5fe0ae039c3b5103baff51e8ddf9029c3222c480d1f3f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_04_seed_1001_state_1.json",
+      "sha256": "646c4dd621931ca1347163806c25c978771f0f7630a7b277b25811c9e6d76b88"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_04_seed_1002_state_2.json",
+      "sha256": "f25dc4ebf9fa0485aae648c82ad9a81aa7e4cb7127929f46a09fda5056c690b1"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_04_seed_1003_state_3.json",
+      "sha256": "dfdb6d984601862820769465d13c5f58c2d0ca736f9c7ac9a144302ccfc8ad1e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_04_seed_1004_state_4.json",
+      "sha256": "f58bb07cc6250d32fbedb11fd7784e5339e53d1432438c6fcc929f5542127647"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_05_seed_1000_state_0.json",
+      "sha256": "4f7163809adde9c69b1c7c2a76dfb7db2c72e94d955a070bdbc5e9b90fa8c20c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_05_seed_1001_state_1.json",
+      "sha256": "024db71747f7287892c2c0f3723053d9635c906b72a4c06c5f174e9c4063f873"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_05_seed_1002_state_2.json",
+      "sha256": "58aef0947b75dceb469e699b672b004f50798c117c0c175a728c487ad63ac468"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_05_seed_1003_state_3.json",
+      "sha256": "c7321e14f8efd2757886d9250755321eb4de2a7ebab23cf76b16f5bee500dbf8"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_05_seed_1004_state_4.json",
+      "sha256": "596ea5ffa028b8b32ded5027fd738c9c83a8fb48af1851b83045ce6bb356720a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_06_seed_1000_state_0.json",
+      "sha256": "427899096d94b9a76a24d4b7eaf72d312f374ed2fc352330953895b286fa87dd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_06_seed_1001_state_1.json",
+      "sha256": "7094e16c0c7206e81a9191ed03348433a4c61ebf35bb30b0a0801bae9e40fffd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_06_seed_1002_state_2.json",
+      "sha256": "1c4640f1771995c5c0daed73acf521d247856ba156774ffbc371fb1b5c8b30f9"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_06_seed_1003_state_3.json",
+      "sha256": "6348d46ee40e9f44df1370262234a49f55abaf338dd2dee1a3fe2f41948747d8"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_06_seed_1004_state_4.json",
+      "sha256": "8973d46d79028ea680def0446c7fcddf2a1254ffc705ca984b66e885b028a7b0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_07_seed_1000_state_0.json",
+      "sha256": "b1f75c3d21837884aa12ab65d1b40e1b8127953d558db84ffdc96d20e6fb665e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_07_seed_1001_state_1.json",
+      "sha256": "aba7fa0eb6095c704ef6190c4a289aa3c9859406eababeb2de030227d5c4b2cd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_07_seed_1002_state_2.json",
+      "sha256": "b043a631eb2f71cb4db0e8574c52fd227c7eae0412700c448f21d6c4428a7e12"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_07_seed_1003_state_3.json",
+      "sha256": "57140c058c9af05be93c112f77d7ebceef2d7c978e900c3321278dc2540f56fc"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_07_seed_1004_state_4.json",
+      "sha256": "2812897cf0b9daafd1edf5da7f597a7ab6d41e779fc3fe00a20dfeaf0c2baa37"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_08_seed_1000_state_0.json",
+      "sha256": "6d6458b0a80ba302fe0d106f542f44f5fb6b50fd46724b15bec8dc3aac225b9d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_08_seed_1001_state_1.json",
+      "sha256": "a80b2c32109542f945433ef4a03f0337e0a1621a981973b25d2e35d0743b7a52"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_08_seed_1002_state_2.json",
+      "sha256": "8fb69ad7b06baa374fbf5cdd3ee57d5fc64a4a6111ef3e38df116845ca2d6a41"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_08_seed_1003_state_3.json",
+      "sha256": "46702a5ec9c829ec2c9957e9af3afdabf0a8a1ca0a640a934b6f650d114eb3f5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_08_seed_1004_state_4.json",
+      "sha256": "59cdd0f69cf6631b1ecb182b060fe7e4f7d6d838bfde70462440537a86a81ebd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_09_seed_1000_state_0.json",
+      "sha256": "34a11199ddf1217a790aed020f20be364a2022b79f7eb5cf9e03acf4e1d61353"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_09_seed_1001_state_1.json",
+      "sha256": "7a56cd3df8cc544479f20c17cf4845b0a0a583f1b80f6732b3481ca58ac41446"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_09_seed_1002_state_2.json",
+      "sha256": "11d627337bafa31b785b517adef21bc2f2dec250f51417e5922e0a1b557a3a66"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_09_seed_1003_state_3.json",
+      "sha256": "374ce0174853e5e594f504bc38f9b0665b084f7ccc8a359b905c99bacd9d7077"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/static-h20/task_09_seed_1004_state_4.json",
+      "sha256": "d91bc1155a1a00258d281c7ab77566580a69587babf86eac2ec148464e436e90"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_00_seed_1000_state_0.json",
+      "sha256": "563233c2e8e10b55284dd1d130b80fd2d2f5182e1550252f3eed4efb761ea8bb"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_00_seed_1001_state_1.json",
+      "sha256": "268952a647f307fe60687b30827268e9fa899c1417ead66d7fdd7c854e3f1e06"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_00_seed_1002_state_2.json",
+      "sha256": "5c821eb58c9a680920b34bacb621d376ef9dbd231ee3b66f39621c2b6674bf75"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_00_seed_1003_state_3.json",
+      "sha256": "a0627deb78e0a88a0523d01c57164b08b5c49bc74a94a0145300c53753841262"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_00_seed_1004_state_4.json",
+      "sha256": "79164660115448dd892269af912502e3948b587134bb73549268dc075cd72952"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_01_seed_1000_state_0.json",
+      "sha256": "cd8e83f9ce365a4a4506c80931ce148190892c9755a960fc3342858fa8031c5c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_01_seed_1001_state_1.json",
+      "sha256": "45e55452f13dbdc20f8a52f164665ddffd987fdf0f36e05af628d40bdaad375c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_01_seed_1002_state_2.json",
+      "sha256": "29925cd973c69aaa01feb464abd05afeb9b18280060139a38d9d54b9c14b1213"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_01_seed_1003_state_3.json",
+      "sha256": "34890f09d5d4c14fc2934900adcd92e5c0e5bfdcf60d4ff5588e6055c45a4e11"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_01_seed_1004_state_4.json",
+      "sha256": "10c56c63a689544eff8a13e86b38a8e0d1441739b11d7546fb72b51e593dba8c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_02_seed_1000_state_0.json",
+      "sha256": "543552503433f1d43350355b2b0858d6c7755d8fa7a5a277a73992859c4c0227"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_02_seed_1001_state_1.json",
+      "sha256": "f361883ca2940d94638c1ccaa957d34cdfc2233f68cff54321389c5719109e39"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_02_seed_1002_state_2.json",
+      "sha256": "fdce4a76c189915ced10d58481c7ff1880637b6680ba12791957999f2156629f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_02_seed_1003_state_3.json",
+      "sha256": "2555f1ee3fd6b189374f28c06b62c2746eccfe519a41da74da1540be21f08bbf"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_02_seed_1004_state_4.json",
+      "sha256": "45c4333eda22ec7e2de38a8f848e07e2275cca4a78caf70dfa40e8389261888e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_03_seed_1000_state_0.json",
+      "sha256": "bf6e31b217d6babac2ce08d78267f801abe1eba24e0ef163e5a6f6910fb2ab49"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_03_seed_1001_state_1.json",
+      "sha256": "c8ff0a54c0dd89bebf1e1ff28692c260a162b0e1a747bdf7f1cd07623c348bb5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_03_seed_1002_state_2.json",
+      "sha256": "69727a79427d3e2764ff22366d70b02d2e1cb5946558889d35dcef013c12fa3e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_03_seed_1003_state_3.json",
+      "sha256": "67aec930a45859659353c3df372e021c2512553505b807959427305dfd21d590"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_03_seed_1004_state_4.json",
+      "sha256": "31d18b6f19cdb3a59d418f7f801f061eda587c69e09202d318561a5bc9409a2c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_04_seed_1000_state_0.json",
+      "sha256": "ff2fd98ec4538dcdc4c9ccec5b62fb7507762e4880ff832a7c9337419afdf034"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_04_seed_1001_state_1.json",
+      "sha256": "c711d849fd7a81e91372935d09ef613638f6116f0e8bc4bc0d54e09c8650958a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_04_seed_1002_state_2.json",
+      "sha256": "2c01e66ef1baa6aa5ad046a4d175d3d0ba6688f7ee57fefeb336816e9ae4b329"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_04_seed_1003_state_3.json",
+      "sha256": "9eda758b2b68cdd7136e9c96b882f773c059ef5f02bdcd4a885f460d64e14d36"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_04_seed_1004_state_4.json",
+      "sha256": "7d8f1fd7d0e3860742ffb08c408a29565e1f703119aba3f5ecec55e832c9ad63"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_05_seed_1000_state_0.json",
+      "sha256": "508eba8796acb17e6b93fdee280c689cdbd0d4f9c197bce9ca29d00a90b0d14b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_05_seed_1001_state_1.json",
+      "sha256": "3b1ac6b237a37152d172f58ce72950d21057ee28ed6cc03a485a0e0dffcb8ccd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_05_seed_1002_state_2.json",
+      "sha256": "7317df17e9b13851f87186f83321f7ffab13523bf1ddb74ca115c0297c8bc481"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_05_seed_1003_state_3.json",
+      "sha256": "6eb22a4f6b3b60ea3343bc02ee1299e68f83499f35f8789fbdfdb3c24c0a1f3a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_05_seed_1004_state_4.json",
+      "sha256": "cc9c19d276c1493bb2a47f2aa0b475437a2149190528f54dfcd92918c2ed28c1"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_06_seed_1000_state_0.json",
+      "sha256": "ce19a1911b3f2f1489ef7149d9d2d2da069696af5eee1bcf9bb98d89d3b340d4"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_06_seed_1001_state_1.json",
+      "sha256": "e9ef777262c036a764dcbc74e3cc248e356e962f2f6f4350cbda6da0569ee72f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_06_seed_1002_state_2.json",
+      "sha256": "c215c77d4521db81716f70cd89d424d573daab86a9e54b990aef27524ec2242c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_06_seed_1003_state_3.json",
+      "sha256": "e259ee5cff6301c3248b7caaea72d2dfcef183faa8c849beda2b1ffc0c511607"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_06_seed_1004_state_4.json",
+      "sha256": "21c11971d5ed5fa4cd3c739904ca34bdc154e9a6d382173a1e9d6d01e52d3091"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_07_seed_1000_state_0.json",
+      "sha256": "bb7ea05fea808982b56f05ae89f3c6dea0293ead0a85af2f357307f3343f5aa3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_07_seed_1001_state_1.json",
+      "sha256": "a8f9c9c26454693675b8b43f56b5100823c16117bf2d3e8f614f89b2d327e03e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_07_seed_1002_state_2.json",
+      "sha256": "ab22a87a86ab6226b5e5ed15438f778f1be95957bf89c327e79f97d341f3fabe"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_07_seed_1003_state_3.json",
+      "sha256": "4c26b3c9241c00c64d136ccc4041759b53fd39e67fd81ae6baa4e75d3e0b25a5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_07_seed_1004_state_4.json",
+      "sha256": "4e38bc9ae4ed26b31e3e6d441ff591334b44ae26d6baa17d737eeabf2822e4c0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_08_seed_1000_state_0.json",
+      "sha256": "4aef7328e069e6193c6a7f79c2b1410d20ceb563a778b2e2e0973aab9f542253"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_08_seed_1001_state_1.json",
+      "sha256": "f0a07c5081d10ab4268681f2934c3d0323d41b991f61ab0822a80e55786e86dd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_08_seed_1002_state_2.json",
+      "sha256": "362a082ce28b599e2207a0a03ff4411cb0c7f786bb6133cdcae86ceb5f3c4b37"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_08_seed_1003_state_3.json",
+      "sha256": "56934c31ba7d46071e952502294e60501a3bf5d419fcc4ebac75a0bf7247227d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_08_seed_1004_state_4.json",
+      "sha256": "e04d326569dcba47c258e05fe492c35edbf5be49bd50ac8acf799943b0b5aa08"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_09_seed_1000_state_0.json",
+      "sha256": "f015a6bcf0de3f0dce046a1c355ae0791f172ec20def32665ccb9b44a376f32c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_09_seed_1001_state_1.json",
+      "sha256": "5d59a5af2bca73372d5a3f5bc3faa3c2be1701ac6a28569ff4f0d6a2eac48ec0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_09_seed_1002_state_2.json",
+      "sha256": "ba8f7b26c53a5e1191af91678f4493cfbcf1af530d724ad857fa01b985c3c840"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_09_seed_1003_state_3.json",
+      "sha256": "7f952c3b278101063dea2d67d92f797bfec2ee098d3a3e390dc4411c7cf58b18"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/parity-hardening/h20-paired-100-b5cbf91-20260827/episodes/adaptive-h20-to-h1/task_09_seed_1004_state_4.json",
+      "sha256": "66b703b8d26836e94556dc9f5e5986b477e896f7f0e7699e1c714d12ccb95c0f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_00_seed_1000_state_0.json",
+      "sha256": "ab2160b13296c7b927153af2bbc15421acf30f426de233e1ad1c8246952afedb"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_00_seed_1001_state_1.json",
+      "sha256": "3b91268d89b1f4ac11efc79f0cc815b06860be7153c8cb70089b8b37181485ed"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_00_seed_1002_state_2.json",
+      "sha256": "d90213fb2f08024e3dea34ae4b53b05ec9579d2b89fd50519d9fbbeea67ae99c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_00_seed_1003_state_3.json",
+      "sha256": "0e6b20c0de1d1b151434b41a56469dafd5955b06764fb9a64a99bc53dc26be0a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_00_seed_1004_state_4.json",
+      "sha256": "4ba20b1bfba800085048c457214ef6bd50bb442f24c99b85bece0a3fb5ac276c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_01_seed_1000_state_0.json",
+      "sha256": "a7642bef738bdb73a12d1bb491b377a951d4f0dd3f8377f86fbc19e3fcf3dce8"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_01_seed_1001_state_1.json",
+      "sha256": "7985a5478b80a98517816ca6c58e06b9b89033ce51f6d4bc15a05910ed9db0f0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_01_seed_1002_state_2.json",
+      "sha256": "6d1c788f44948709fb8bdd4f8f955cb56916006af373c32baa9d82c37a8227ae"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_01_seed_1003_state_3.json",
+      "sha256": "d8e30e6c534092f06a7d16e196635549601ce9eadbca07d97d1db8bf7d22c1b2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_01_seed_1004_state_4.json",
+      "sha256": "ebf9cc7cc9288a391c2e168c155054dba26e4ff5b502203ed13f4a059e522188"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_02_seed_1000_state_0.json",
+      "sha256": "3f10f8fccd2ea581d388cac324cb7585864427f270f1eaade26279024b6b5b4c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_02_seed_1001_state_1.json",
+      "sha256": "4519176d6751806982bc287cf9ec7cce8aa0158084a0ca8a6e1b78c03b4fdf14"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_02_seed_1002_state_2.json",
+      "sha256": "c145de2f6188afd59f52ea506e751c6aaa6faa79b71b7a4327735d82b7439fa0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_02_seed_1003_state_3.json",
+      "sha256": "67d9526befa92a5e924df3d28f202613d3b161799d7d3e8da80634dbeb6522c7"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_02_seed_1004_state_4.json",
+      "sha256": "a7bd4c9561e914804ae174d2c2758e418f2caa97f694f29cd8a55313e173e455"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_03_seed_1000_state_0.json",
+      "sha256": "53067bbdc38c1168dfd3e23f5732a4307cea873a27a8da32398de5056db36a11"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_03_seed_1001_state_1.json",
+      "sha256": "65ff82d640cfe5c2fb323fc57e43e310ff6d5f52719f3d8b0c71d06b09f344b0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_03_seed_1002_state_2.json",
+      "sha256": "b4ff0482e0367e6bf9b90fcb06b5f3f1ba6d876df2f109f3e18ab58279660c9c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_03_seed_1003_state_3.json",
+      "sha256": "ec9981f2a5380dda2f7ca48de570849256cd32937929db1e70df81dacbadf7f6"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_03_seed_1004_state_4.json",
+      "sha256": "a60b2ac31b782350a65af29b3eda372d677d4ddea760238af207510ed6c9d1e0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_04_seed_1000_state_0.json",
+      "sha256": "3f13c88584a1c7e59fb38ac1c3c24487561ec9a735c8979a194b994a5508a817"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_04_seed_1001_state_1.json",
+      "sha256": "b8382dca6216cc3fa895d25ab4e79a9fd92e81616234e1da39140bcb3621483c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_04_seed_1002_state_2.json",
+      "sha256": "79be3d88e36b176fdef3e8acc5b9bc24dadf3ce4e7d2cbb0d3d7dfc8e5b6199e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_04_seed_1003_state_3.json",
+      "sha256": "59d436efbafc210c4623478afffa1830c633caaf0297a991c9914ff1d4259588"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_04_seed_1004_state_4.json",
+      "sha256": "2d9c288432e407d306a5009e78afe2c83ddbf1244f2bba66c68783bb5966191c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_05_seed_1000_state_0.json",
+      "sha256": "a447462b866f6096f5f4d0646697e4a991d681bffaf3542f8fc2eee655ec7a0a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_05_seed_1001_state_1.json",
+      "sha256": "1fe1e491161c279d050eb197a31e4d88dd3bf1bd2aaaf418449543403be70900"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_05_seed_1002_state_2.json",
+      "sha256": "40c0a322e5cdf974053ca8c38e775e377d5f5d732a1a0ba529445be137b82d6d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_05_seed_1003_state_3.json",
+      "sha256": "22ddc165164a860ba9ea450dd2ddbe680439969e6c9f0b077c921aec535c9338"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_05_seed_1004_state_4.json",
+      "sha256": "1fae7ea5fae3c4c8fdc34fbb4905a477e661bbee05aa96045fd5466a900c905a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_06_seed_1000_state_0.json",
+      "sha256": "54ec119eb8965852714df575f1c9992956e9160738226cda2c0399cae4b4e488"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_06_seed_1001_state_1.json",
+      "sha256": "00c080df1b8797305ea8b4fef92c022ac5132d77f6d3759c5dc744257322dcc9"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_06_seed_1002_state_2.json",
+      "sha256": "f89a726a009fd4d6451fbff4596f68c409c59f95b01cb9d97c5e2fcebc67598f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_06_seed_1003_state_3.json",
+      "sha256": "f0a9e733d2a3b39b5338ac9c4b3133deaadb9b545311439841231fbeaa99f4db"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_06_seed_1004_state_4.json",
+      "sha256": "cae21e35b916a530e2007519775856f4231916c652ddacbbd9f025c5c4eedc44"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_07_seed_1000_state_0.json",
+      "sha256": "4055657b6bf498fc573a4e02d0ddd1568bc92632345568fc2c6cf101ce9204ab"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_07_seed_1001_state_1.json",
+      "sha256": "2d8a675cfcf934374a6310aceda004f406b85accf1d7e66e0ff3847254d38fe6"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_07_seed_1002_state_2.json",
+      "sha256": "75cccb73248aa4ffa4cf4828ae8a6acdcb81540ffd040ded2f1fb3dcfa4ef350"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_07_seed_1003_state_3.json",
+      "sha256": "b096afda7d6d1c79a2d23da25b9db32eb1b83f1c1578ade1690131f595b90b76"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_07_seed_1004_state_4.json",
+      "sha256": "d5a9a6af3cb516bd24d8aa6a8a1fecdda182f85e1d9a473556a08269e4f0e2c8"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_08_seed_1000_state_0.json",
+      "sha256": "f90099db5a38537828e5853580ca2bd2d75a184fa8ace867ca4d69fab4056aaa"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_08_seed_1001_state_1.json",
+      "sha256": "5d21ee30790923ffc39fc8b11fb49820775f399afc57ec001035e56ed3b7ac3a"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_08_seed_1002_state_2.json",
+      "sha256": "badef328fed24bce0266951259be0267dcc516450eb1eeb5527d04bdc9b63f6c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_08_seed_1003_state_3.json",
+      "sha256": "08d738b936b79ca1cf8201310cf0028e0b63aff70ebad4a40838d934bae0ba67"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_08_seed_1004_state_4.json",
+      "sha256": "75af03f9d4ccefec551d997a6454d744e05755e0f4634c435035f6c2ca8c0bc6"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_09_seed_1000_state_0.json",
+      "sha256": "191d1dda82715818be226a4a5fd5d529967bdac6ae38e22cb319d57768d9468d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_09_seed_1001_state_1.json",
+      "sha256": "002223744aa69cfd165bfb4e51f9c284f63226a514607ce82e0b8043df8039f9"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_09_seed_1002_state_2.json",
+      "sha256": "36195fa300100bbb645f1f0180cb34e6118c702500a39349deb2c07a5774b7b3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_09_seed_1003_state_3.json",
+      "sha256": "c44ec83c125496086444d3421b0b7064e7c19ec0da969bb253ff21358cbd67c5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/static-h20/task_09_seed_1004_state_4.json",
+      "sha256": "f793a4c80c5400f784babb0ad7354f9f7400f3c225949f3c89abd4abb20c7c73"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_00_seed_1000_state_0.json",
+      "sha256": "d9cc7a09a2a744652bb29a22083b1083cfe407df5f0d491c798e9bc515df0016"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_00_seed_1001_state_1.json",
+      "sha256": "6223dada12d809f3a30c5a2b60bb17fcefc204093705e934dd84ab89cdb880f0"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_00_seed_1002_state_2.json",
+      "sha256": "fdddf55dd9a0aa6fedcc5c82989a7045a6bdbf4ec70876d533e230c81c44bc5b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_00_seed_1003_state_3.json",
+      "sha256": "fae56aea0d3a85ecac02e182f9d70b2a3e985ef7911070eb78c7a60896acf29e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_00_seed_1004_state_4.json",
+      "sha256": "f5a367cb33ddf69d63088efea36c275efb33ed6f2a782a4ce32de8c7c0d25ace"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_01_seed_1000_state_0.json",
+      "sha256": "8e1bae4e1b5dfb2b444784fbdaef7ec8fa02f55c978faa4abed645e21b5ebc7f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_01_seed_1001_state_1.json",
+      "sha256": "0bdf1ee7a452a29162246eeb3e714a4ed434eae06aca4e714dc17a4865ff5636"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_01_seed_1002_state_2.json",
+      "sha256": "b9339e7535629853d90a777d5d1561df3221b09d094dd15a52ee6ae6a7c4a9b6"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_01_seed_1003_state_3.json",
+      "sha256": "18bad301b4dabcdaee39154f358898224b4dd97ee353264e4392180282e828d3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_01_seed_1004_state_4.json",
+      "sha256": "f6cadcfa6611701a851d7c958f4a23ece5e77df997504a8e58a75d7a73f8e703"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_02_seed_1000_state_0.json",
+      "sha256": "fe3343f2bb1314d68f6e9687cce0b55fa38a391c3f17db96982927402a215418"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_02_seed_1001_state_1.json",
+      "sha256": "d021e69a6ef1c6729a823f09fd404d59f48f70e61ec7969c63d8243f29ea023d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_02_seed_1002_state_2.json",
+      "sha256": "b7633b40c00fc6afa8a78fdbe0637d8f9c530ad4a4cdc622792d360611bda642"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_02_seed_1003_state_3.json",
+      "sha256": "0605b7e4f8db46adb775a9fbedb27e2c0cf7d57f6a9b4a458a9db38186a39186"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_02_seed_1004_state_4.json",
+      "sha256": "3417ee4b83417176c4b2afb10d4768ccb3036982bc2965613f21ab678219ee7f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_03_seed_1000_state_0.json",
+      "sha256": "86fc9c029a17e9be6af560e39da46c363da9637e4722acca673172cfe15a311c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_03_seed_1001_state_1.json",
+      "sha256": "e21cc87814aa871ed87df9952af51f27683c943602a5060b842a426ab8f9d6e2"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_03_seed_1002_state_2.json",
+      "sha256": "2627fb189d72effc2951d69b05e3e434cea0336c4dbc74d4b8570daeddb77a1e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_03_seed_1003_state_3.json",
+      "sha256": "cf979e8aa3f52f106db37681f40e83fea9e64f835c6f439883a5ee2f397efa0c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_03_seed_1004_state_4.json",
+      "sha256": "675ee0768395dc4d3793a6124c8de437d18acbfc547ecd79f793e87e9af373b7"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_04_seed_1000_state_0.json",
+      "sha256": "5e3f2adff912750c0d57f198af5b41538faafc40e1c0ccfc66c5882aeddbc3fa"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_04_seed_1001_state_1.json",
+      "sha256": "0ba73b2b1134d7d6959cb6cf5ee440648042886556d5d1e21a5d4d02b21f541b"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_04_seed_1002_state_2.json",
+      "sha256": "3867b52c602e98ccfc42a5026e5d41c71d09eec7ee307030dbb52f66c627627d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_04_seed_1003_state_3.json",
+      "sha256": "7bd97f23de33468d29c86ca8427520c7b0bf3960c00bd2552f4328adbd4b1cfd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_04_seed_1004_state_4.json",
+      "sha256": "f2d9b57fc877890cc04eb6c25865a99a73515544290f7b745d1ec759cff01362"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_05_seed_1000_state_0.json",
+      "sha256": "13a2a98c0df17c5633ed09e12c1f0befe3d6a290f650caff68b88975f771fc5d"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_05_seed_1001_state_1.json",
+      "sha256": "1a8531c9e2bd013736551d4bd380ff6f63e98ca8b7e362d6b73cd3f931c48fd3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_05_seed_1002_state_2.json",
+      "sha256": "691b42f22c9d58396b099745775962ef75717cf42598a6891cf805cc885a51ef"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_05_seed_1003_state_3.json",
+      "sha256": "5a707779f06b9fcf929eaa9c1c3455c95070dc30c0620fdc775fd96dd8f8cf28"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_05_seed_1004_state_4.json",
+      "sha256": "e63e286a46bc3a8cdbadc0169f18086500814151c0558d11da17107d9982134f"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_06_seed_1000_state_0.json",
+      "sha256": "071073983c8b00b9561c0b457182da5030a5315adf0249a10b8e973b59cd07df"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_06_seed_1001_state_1.json",
+      "sha256": "550f9e2ac924e986d0d7a2e2b286553aaf93929504b559ea6ccf6f40745263df"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_06_seed_1002_state_2.json",
+      "sha256": "5cac7c9f01e27eefc83a075c8c7747588372e62b370945e0bc8fa5a487cd4075"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_06_seed_1003_state_3.json",
+      "sha256": "e58bb713aa90a095108bbbcb28b0eda170cab70662837f8e8f47b350d272bced"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_06_seed_1004_state_4.json",
+      "sha256": "ecef80c5b711525e3b77def79aadb5a62fd87e18a4915ef1408accb65e74bfd3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_07_seed_1000_state_0.json",
+      "sha256": "efef6aa5ba44b56b3491ab51d2c2f76edd3fab46d15e9ecf46e0cbd98533e6da"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_07_seed_1001_state_1.json",
+      "sha256": "e5ff62f39b37212417ce903a7ae1971e7e2085669aeaf5356e3790ca652abfd5"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_07_seed_1002_state_2.json",
+      "sha256": "879043d0a0e0ecc8dfb05f9bfa1d32930ddfca191d2ec90a2594e5e43708b035"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_07_seed_1003_state_3.json",
+      "sha256": "0089d1f70fe40644b417559676b91228c48b7479cbb84403f6365e6f6f95d2ef"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_07_seed_1004_state_4.json",
+      "sha256": "a23cf2411ce78c50171b1f36b4a790ff1556ed2fe3e1561deff9cb6dcdd530bd"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_08_seed_1000_state_0.json",
+      "sha256": "4ab16eda5f1c9f3e4afb1f270fc9f9fe00c2b3153034c0b964495bc186a10095"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_08_seed_1001_state_1.json",
+      "sha256": "9b1d6780e8bbf5a6ed404ce08fe7f8dac1cf731c4631f28198785ffa5d882300"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_08_seed_1002_state_2.json",
+      "sha256": "5ba6fbbc6389846f8a51134680621f43eb993d27149fe0c65773d81080a89021"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_08_seed_1003_state_3.json",
+      "sha256": "12ae92b2debad375c8ee81e7b8cbfbb51a02009cc5f57291f434fa3e06cfe74e"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_08_seed_1004_state_4.json",
+      "sha256": "4b149e61986abfb35847c592de701354bb4737400dc10902bb80947e842e6305"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_09_seed_1000_state_0.json",
+      "sha256": "fac3299a37a0936ce693533b21c87186ef3ba10909a5e2f598955b07e2c3ecb3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_09_seed_1001_state_1.json",
+      "sha256": "4f727877085cbeb9a1748cc81f999bcaf5359474c353706621e4d8eedf9dccd3"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_09_seed_1002_state_2.json",
+      "sha256": "9e24481e547bf1a0fcf9aaf94bc4919375a981838231baa5e5146c49465d6792"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_09_seed_1003_state_3.json",
+      "sha256": "b9c77961e635b2af867333311bba6ba721376a200900ff14f5ffbc53c922894c"
+    },
+    {
+      "path": "/home/xinrui_shen/vla/runs/adaptive-v2-prereg/adaptive-v2a-formal-heldout-100-a9afdc0-20260828/episodes/adaptive-v2a-h20-to-h1/task_09_seed_1004_state_4.json",
+      "sha256": "938c7f693e013b768c717622c2f668c5a1e91e3d2f7857bd892e2c1b2eec7983"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "xs_episode_metrics.csv",
+      "sha256": "e4444a0ca1162e0c987402bd9c425326b27109bf0bea6a307423f95168db2113"
+    },
+    {
+      "path": "xs_h1_h20_task_state_outcomes.csv",
+      "sha256": "e4c6679cbcf5a54ee00d3434d940140ee7b1dcdc2468e970fd34ff345e9c744e"
+    },
+    {
+      "path": "xs_parity_validation.csv",
+      "sha256": "586a893145b3ef7f2705699c39493d0f94a1cb5e5e41198abb9fe5d590b3b3f8"
+    },
+    {
+      "path": "xs_trigger_casebook.csv",
+      "sha256": "e755862271de6a4206b3460ad07748ddf71472f40df1f53bb1c308c8fab1224c"
+    },
+    {
+      "path": "xs_variable_chunk_v2.csv",
+      "sha256": "59377c80db7d541ef223bfe471c7eef153c58891f17e6143663dd9d2972607d3"
+    }
+  ]
+}

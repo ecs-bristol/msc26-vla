@@ -1,0 +1,9 @@
+cohort,mechanism,case_id,task_id,initial_state_id,environment_seed,env_step,dimensions,severity,excess,persistence,discarded_actions,state_chain,effect,evidence_status
+development,Adaptive-v1,1,0,2,1002,22,2,NA-v1,0.009992361068725586,none,18,H20-trigger-H1-H20,no_flip,exact
+development,Adaptive-v1,2,1,1,1001,37,2,NA-v1,0.002629876136779785,none,3,H20-trigger-H1-H20,loss,exact
+development,Adaptive-v1,3,5,1,1001,21,2,NA-v1,0.00864863395690918,none,19,H20-trigger-H1-H20,no_flip,exact
+development,Adaptive-v1,4,5,3,1003,22,2,NA-v1,0.0060710906982421875,none,18,H20-trigger-H1-H20,no_flip,exact
+development,Adaptive-v1,5,6,0,1000,21,0,NA-v1,0.024742484092712402,none,19,H20-trigger-H1-H20,no_flip,exact
+development,Adaptive-v1,6,6,2,1002,20|21,0,NA-v1,not_persisted_per_event; both triggers are dimension 0; episode_max_excess=0.027587413787841797; exactly one or both may attain it,none,0|19,H20-trigger-H1-H20,no_flip,ambiguous_from_aggregate_telemetry
+development,Adaptive-v1,7,6,2,1002,22,0,NA-v1,not_persisted_per_event; both triggers are dimension 0; episode_max_excess=0.027587413787841797; exactly one or both may attain it,none,0|19,H20-trigger-H1-H20,no_flip,ambiguous_from_aggregate_telemetry
+held-out,Adaptive-v2a,1,0,1,1001,222,2,0.035369277,0.070738554,2,18,H20-trigger-H1-H20-cooldown,no_flip,exact

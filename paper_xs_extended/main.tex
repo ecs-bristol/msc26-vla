@@ -1,0 +1,268 @@
+% ============================================================
+%  University of Bristol — EEME Group Project Report
+%  LaTeX / Overleaf template
+%
+%  Conforms to "Final report format (group projects)" specification:
+%    - single column, A4, margins >= 20 mm
+%    - main text >= 11 pt, figures/tables/references >= 9 pt
+%    - page numbers centred in footer, title page = page 1
+%    - numbered sections/subsections, figures, equations
+%    - references in a standard numeric style (IEEE here)
+%
+%  Compile: pdfLaTeX + Biber
+%    (Overleaf usually auto-detects. If not: Menu -> Settings ->
+%     Compiler = pdfLaTeX, Bibliography = biber, then recompile.)
+%
+%  NOTE on citation style: the school spec literally names
+%  Vancouver or Harvard. IEEE is a standard numeric style and uses
+%  the same "cite by [number]" system as Vancouver, so it is very
+%  likely acceptable — confirm with your unit if you want to be
+%  certain. To switch to plain Vancouver-style numbering, change
+%  "style=ieee" below to "style=numeric".
+% ============================================================
+
+\documentclass[11pt,a4paper]{article}
+
+% ---- Encoding and fonts (Times-like, matches IEEE look) ----
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+
+% ---- Layout: single column, A4, margins >= 20 mm ----
+% 1 inch = 25.4 mm, matches the Word template (>= 20 mm required).
+\usepackage[a4paper,margin=1in]{geometry}
+
+% ---- Page numbers: centred in footer, title page is page 1 ----
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% ---- Figures, tables, captions (captions >= 9 pt) ----
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{xcolor}
+\captionsetup{font=small,labelsep=period}   % "Fig. 1." / "Table 1."
+\captionsetup[figure]{name=Fig.}
+\captionsetup[table]{name=Table}
+
+% Codex review markup. Set \codexreviewfalse for a clean final rendering.
+\newif\ifcodexreview
+\codexreviewtrue
+\ifcodexreview
+  \newenvironment{codexadded}{\begingroup\color{red}}{\endgroup}
+  \newcommand{\codexfiguretag}{\textcolor{red}{\textbf{[Codex-added figure for review]}}\space}
+  \newcommand{\codexcaptionsetup}{%
+    \captionsetup{labelfont={color=red},textfont={color=red}}}
+\else
+  \newenvironment{codexadded}{}{}
+  \newcommand{\codexfiguretag}{}
+  \newcommand{\codexcaptionsetup}{}
+\fi
+
+% ---- Maths ----
+\usepackage{amsmath}
+
+% ---- References: IEEE (numeric, listed in citation order) ----
+\usepackage[backend=biber,style=ieee,sorting=none]{biblatex}
+\addbibresource{references.bib}
+\renewcommand*{\bibfont}{\small}            % reference text >= 9 pt
+
+% ---- PDF metadata / links ----
+\usepackage[hidelinks]{hyperref}
+
+% ============================================================
+%  EDIT THESE ONCE
+% ============================================================
+\newcommand{\projecttitle}{Optimizing Deep Learning on Edge}
+\newcommand{\studentnames}{Student Name 1, Student Name 2, \ldots}
+\newcommand{\supervisorname}{[Dr. Zhiqiang Que]}
+\newcommand{\reportyear}{\the\year}         % or replace with e.g. {2026}
+
+\hypersetup{
+  pdftitle={\projecttitle},
+  pdfauthor={\studentnames},
+}
+
+\begin{document}
+
+% ============================================================
+% PAGE 1 — TITLE PAGE (all information must fit on this page)
+% ============================================================
+\begin{center}
+  {\LARGE\bfseries\projecttitle}
+
+  \vspace{0.6cm}
+
+  {\large\studentnames}
+\end{center}
+
+\vspace{0.6cm}
+
+{\large\bfseries Summary}\par
+\medskip
+\noindent
+% Replace the paragraph below with your own 150--250 word executive
+% summary (context, motivation, main methods, main results, main
+% findings). It must be self-contained, suitable for a non-specialist,
+% and must not cite references or refer to later sections.
+[Insert your 150--250 word executive summary here.]
+
+\vspace{1.2cm}
+
+\begin{center}
+  Supervised by \supervisorname
+
+  \vspace{0.4cm}
+  School of Electrical, Electronic, and Mechanical Engineering
+
+  \vspace{0.2cm}
+  University of Bristol
+
+  \vspace{0.2cm}
+  \reportyear
+\end{center}
+
+\clearpage
+
+% ============================================================
+% PAGE 2 — DECLARATION AND COPYRIGHT (this page only)
+%   Keep the wording; replace the placeholders.
+% ============================================================
+\begin{center}
+  {\Large\bfseries Declaration}
+\end{center}
+
+\medskip
+\noindent
+This project report is submitted towards an application for a degree at the University of Bristol. The report is based upon independent work by the candidates. All contributions from others have been acknowledged and the supervisor is identified on the front page. The views expressed within the report are those of the authors and not of the University of Bristol.
+
+\medskip
+\noindent
+We hereby assert our right to be identified as the authors of this report. We give permission to the University of Bristol Library to add this report to its stock and to make it available for consultation in the library, and for inter-library lending for use in another library. It may be copied in full or in part for any bona fide library or research worker on the understanding that users are made aware of their obligations under copyright legislation.
+
+\medskip
+\noindent
+We hereby declare that the above statements are true.
+
+\vspace{1cm}
+\noindent
+Student signature 1: \hrulefill \quad Student signature 2: \hrulefill
+
+\vspace{1.6cm}
+\noindent
+\copyright\ Copyright, \studentnames, \reportyear
+
+\medskip
+\noindent
+Certification of ownership of the copyright in a dissertation presented as part of and in accordance with the requirements for the relevant degree at the University of Bristol.
+
+\medskip
+\noindent
+This report is the property of the University of Bristol Library and may only be used with due regard to the author's. Bibliographical references may be noted but no part may be copied for use or quotation in any published work without prior permission of the author's. In addition, due acknowledgement for any use must be made.
+
+\clearpage
+
+% ============================================================
+% PAGE 3 — WORK ALLOCATION (this page only, one page)
+% ============================================================
+\begin{center}
+  {\Large\bfseries Work Allocation}
+\end{center}
+
+\medskip
+\noindent
+The individual contributions of the VLA subgroup are summarised below.
+
+\noindent
+Initials: YH, Yuhang Huang; YZ, Yueheng Zhang;
+XS, Xinrui Shen.
+
+\begin{center}
+  \small
+  \setlength{\tabcolsep}{5pt}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{@{}p{0.72\textwidth}p{0.18\textwidth}@{}}
+    \toprule
+    VLA contribution & Contributor(s) \\
+    \midrule
+    SmolVLA deployment, experimental coordination, and reproducible
+    evaluation environment
+      & YH \\
+
+    PC-local runtime-parameter optimisation, including refinement depth,
+    execution horizon, and prediction horizon
+      & YH \\
+
+    \
+    Task-aware action-execution strategy selection, failure recovery, RGB-based target verification, and the independent LIBERO Object evaluation
+      & YZ \\
+
+    LIBERO simulation and replay pipeline, PC--Jetson communication, and
+    experiment logging
+      & YH \\
+
+    Component-wise quantisation, Jetson on-board validation, TensorRT,
+    CUDA Graphs, and incremental ablation
+      & YH \\
+
+    Evaluation metrics, result aggregation, deployment-bottleneck analysis,
+    and reporting support
+      & YH, YZ, XS \\
+
+    VLA manuscript preparation, result interpretation, and final review
+      & YH, YZ, XS \\
+    \bottomrule
+  \end{tabular}
+\end{center}
+
+\medskip
+
+\noindent
+We confirm that the information on this page accurately describes our
+individual contributions to the VLA component of the project.
+
+\vspace{1cm}
+\noindent
+Student signature 1: \hrulefill \quad Student signature 2: \hrulefill\quad Student signature 3: \hrulefill
+
+\clearpage
+
+% ============================================================
+% PAGE 4 — CONTENTS (only the contents list)
+% ============================================================
+\tableofcontents
+
+\clearpage
+
+% ============================================================
+% MAIN BODY — starts on the page after the Contents
+%   Number all sections/subsections. Put contributor initials in
+%   parentheses at the end of headings, e.g. (ABC), so the Contents
+%   shows who wrote each part.
+% ============================================================
+
+\section{Overall Introduction}
+
+\newpage
+\input{vla/mainbody.tex}
+\newpage
+\input{yolo/mainbody.tex}
+\newpage
+\input{agent/mainbody.tex}
+\newpage
+
+
+\section{Overall Conclusion}
+
+
+
+
+% ---- References: IEEE numeric, listed in citation order ----
+\section{References}
+\printbibliography[heading=none]
+% Each entry in the list must be cited at least once in the report.
+
+\end{document}
