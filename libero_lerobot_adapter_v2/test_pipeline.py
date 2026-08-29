@@ -1,4 +1,5 @@
 import argparse
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,7 +9,7 @@ from interactive_grasp import (
     accuracy_strategies, adaptive_strategies, append_history, build_candidates, infer_object,
     build_strategy_routes, effective_batch_size, fallback_strategy, named_strategy, normalize,
     read_duration, read_task_successes,
-    select_target, select_tasks_by_ids, success_rate,
+    select_target, select_tasks_by_ids, success_rate, wilson_interval,
 )
 from inspect_libero_dataset import validate_sample
 from visual_detector import box_iou, non_max_suppression, normalize_label, target_detected, target_prompts
@@ -142,6 +143,53 @@ class PipelineTests(unittest.TestCase):
             routes, evidence = build_strategy_routes(root, tasks)
             self.assertEqual(routes, {0: "smooth", 1: "native"})
             self.assertTrue(evidence[1]["fallback"])
+
+    def test_router_deduplicates_same_seed_task_records(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            payload = (
+                '{"suite":"libero_object","seed":42,"stages":['
+                '{"name":"native","tasks":[{"task_id":0,"successes":1,"attempts":3}]},'
+                '{"name":"smooth","tasks":[{"task_id":0,"successes":3,"attempts":3}]}]}'
+            )
+            for name in ("first", "duplicate"):
+                run = root / name
+                run.mkdir()
+                (run / "suite_summary.json").write_text(payload, encoding="utf-8")
+            routes, evidence = build_strategy_routes(root, [(0, "pick soup", "soup")])
+            self.assertEqual(routes[0], "smooth")
+            self.assertEqual(evidence[0]["history"]["native"]["attempts"], 3)
+            self.assertEqual(evidence[0]["history"]["smooth"]["attempts"], 3)
+            self.assertEqual(evidence[0]["duplicate_records_ignored"], 2)
+
+    def test_router_excludes_the_evaluation_seed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for seed, native_successes, smooth_successes in ((42, 1, 3), (43, 3, 1)):
+                run = root / f"seed_{seed}"
+                run.mkdir()
+                payload = {
+                    "suite": "libero_object", "seed": seed,
+                    "stages": [
+                        {"name": "native", "tasks": [
+                            {"task_id": 0, "successes": native_successes, "attempts": 3}]},
+                        {"name": "smooth", "tasks": [
+                            {"task_id": 0, "successes": smooth_successes, "attempts": 3}]},
+                    ],
+                }
+                (run / "suite_summary.json").write_text(
+                    json.dumps(payload), encoding="utf-8")
+            routes, evidence = build_strategy_routes(
+                root, [(0, "pick soup", "soup")], exclude_seed=43)
+            self.assertEqual(routes[0], "smooth")
+            self.assertEqual(evidence[0]["history"]["native"]["attempts"], 3)
+            self.assertEqual(evidence[0]["excluded_evaluation_seed"], 43)
+
+    def test_wilson_interval_matches_reported_aggregates(self):
+        self.assertEqual(wilson_interval(22, 30), [55.6, 85.8])
+        self.assertEqual(wilson_interval(24, 30), [62.7, 90.5])
+        self.assertEqual(wilson_interval(16, 21), [54.9, 89.4])
+        self.assertEqual(wilson_interval(0, 0), [0.0, 0.0])
 
     def test_visual_target_confirmation(self):
         detections = [{"label": "orange juice", "score": 0.81, "box": [1, 2, 3, 4]}]

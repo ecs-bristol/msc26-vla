@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import random
 import re
 import sys
@@ -172,6 +173,26 @@ def success_rate(successes: list[bool]) -> float:
     return round(100.0 * sum(successes) / len(successes), 2) if successes else 0.0
 
 
+def wilson_interval(successes: int, attempts: int, z: float = 1.96) -> list[float]:
+    """Return a percentage Wilson interval for a binomial success count."""
+    if attempts <= 0 or not 0 <= successes <= attempts:
+        return [0.0, 0.0]
+    proportion = successes / attempts
+    z_squared = z * z
+    denominator = 1.0 + z_squared / attempts
+    centre = (proportion + z_squared / (2.0 * attempts)) / denominator
+    half_width = (
+        z
+        * math.sqrt(
+            proportion * (1.0 - proportion) / attempts
+            + z_squared / (4.0 * attempts * attempts)
+        )
+        / denominator
+    )
+    return [round(100.0 * max(0.0, centre - half_width), 1),
+            round(100.0 * min(1.0, centre + half_width), 1)]
+
+
 def effective_batch_size(requested: int | None, attempts: int, all_tasks: bool) -> int:
     """Use episode-level batching for suite runs while preserving single-task defaults."""
     if requested is not None:
@@ -191,17 +212,21 @@ def read_duration(output_dir: Path) -> float:
         return 0.0
 
 
-def build_strategy_routes(base_dir: Path, tasks) -> tuple[dict[int, str], dict[int, dict]]:
-    """Choose a per-task strategy using only completed historical suite runs."""
+def build_strategy_routes(base_dir: Path, tasks, exclude_seed: int | None = None) -> tuple[dict[int, str], dict[int, dict]]:
+    """Choose a strategy from historical runs, deduplicated by suite, seed and task."""
     names = ("native", "balanced", "smooth")
     totals = {
         task_id: {name: {"successes": 0, "attempts": 0} for name in names}
         for task_id, _, _ in tasks
     }
-    for summary_file in base_dir.glob("*/suite_summary.json"):
+    duplicate_counts = {task_id: 0 for task_id, _, _ in tasks}
+    seen_records: set[tuple] = set()
+    for summary_file in sorted(base_dir.glob("*/suite_summary.json")):
         try:
             data = json.loads(summary_file.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
+            continue
+        if exclude_seed is not None and data.get("seed") == exclude_seed:
             continue
         for stage in data.get("stages", []):
             name = stage.get("name")
@@ -211,6 +236,13 @@ def build_strategy_routes(base_dir: Path, tasks) -> tuple[dict[int, str], dict[i
                 task_id = row.get("task_id")
                 if task_id not in totals:
                     continue
+                seed = data.get("seed")
+                source_identity = seed if seed is not None else str(summary_file.resolve())
+                record_key = (data.get("suite"), source_identity, name, task_id)
+                if record_key in seen_records:
+                    duplicate_counts[task_id] += 1
+                    continue
+                seen_records.add(record_key)
                 totals[task_id][name]["successes"] += int(row.get("successes", 0))
                 totals[task_id][name]["attempts"] += int(row.get("attempts", 0))
 
@@ -232,6 +264,8 @@ def build_strategy_routes(base_dir: Path, tasks) -> tuple[dict[int, str], dict[i
         evidence[task_id] = {
             "selected": selected, "scores": scores, "history": totals[task_id],
             "fallback": not observed,
+            "duplicate_records_ignored": duplicate_counts[task_id],
+            "excluded_evaluation_seed": exclude_seed,
         }
     return routes, evidence
 
@@ -255,7 +289,7 @@ def run_strategy_router(args, tasks, base: Path, destination: Path, run_seed: in
     """Evaluate with per-task routing and optionally retry failures using the other strategy."""
     import libero_pipeline
 
-    routes, evidence = build_strategy_routes(base, tasks)
+    routes, evidence = build_strategy_routes(base, tasks, exclude_seed=run_seed)
     batch_size = effective_batch_size(args.batch_size, args.attempts, True)
     groups = {name: [] for name in ("native", "balanced", "smooth")}
     for task in tasks:
@@ -302,12 +336,14 @@ def run_strategy_router(args, tasks, base: Path, destination: Path, run_seed: in
                 "task_id": task_id, "target": target, "instruction": instruction,
                 "successes": sum(values), "attempts": len(values),
                 "success_rate": success_rate(values),
+                "wilson_95_ci": wilson_interval(sum(values), len(values)),
             })
         duration = read_duration(stage_dir) if args.run else 0.0
         summary["stages"].append({
             "name": name, "output_dir": str(stage_dir), "tasks": rows,
             "successes": sum(all_values), "attempts": len(all_values),
             "success_rate": success_rate(all_values), "duration_seconds": duration,
+            "wilson_95_ci": wilson_interval(sum(all_values), len(all_values)),
             "seconds_per_episode": round(duration / len(all_values), 3) if all_values else 0.0,
         })
 
@@ -348,6 +384,7 @@ def run_strategy_router(args, tasks, base: Path, destination: Path, run_seed: in
                     "task_id": task_id, "target": target, "instruction": instruction,
                     "successes": sum(values), "attempts": len(values),
                     "success_rate": success_rate(values),
+                    "wilson_95_ci": wilson_interval(sum(values), len(values)),
                 })
             duration = read_duration(stage_dir)
             summary["stages"].append({
@@ -355,6 +392,7 @@ def run_strategy_router(args, tasks, base: Path, destination: Path, run_seed: in
                 "output_dir": str(stage_dir), "tasks": rows,
                 "successes": sum(all_values), "attempts": len(all_values),
                 "success_rate": success_rate(all_values), "duration_seconds": duration,
+                "wilson_95_ci": wilson_interval(sum(all_values), len(all_values)),
                 "seconds_per_episode": round(duration / len(all_values), 3) if all_values else 0.0,
             })
 
@@ -371,6 +409,7 @@ def run_strategy_router(args, tasks, base: Path, destination: Path, run_seed: in
             "successes": total_successes,
             "attempts": total_attempts,
             "success_rate": round(100.0 * total_successes / total_attempts, 2) if total_attempts else 0.0,
+            "wilson_95_ci": wilson_interval(total_successes, total_attempts),
             "duration_seconds": round(sum(stage["duration_seconds"] for stage in summary["stages"]), 3),
             "completed_tasks": completed_tasks, "task_count": len(tasks),
             "task_completion_rate": round(100.0 * completed_tasks / len(tasks), 2) if tasks else 0.0,
@@ -459,12 +498,14 @@ def run_all_tasks(args, tasks, base: Path, run_seed: int) -> int:
                 "task_id": task_id, "target": object_name, "instruction": instruction,
                 "successes": sum(values), "attempts": len(values),
                 "success_rate": success_rate(values),
+                "wilson_95_ci": wilson_interval(sum(values), len(values)),
             })
         duration = read_duration(stage_dir) if args.run else 0.0
         summary["stages"].append({
             "name": stage_name, "output_dir": str(stage_dir),
             "successes": sum(all_values), "attempts": len(all_values),
             "success_rate": success_rate(all_values), "duration_seconds": duration,
+            "wilson_95_ci": wilson_interval(sum(all_values), len(all_values)),
             "seconds_per_episode": round(duration / len(all_values), 3) if all_values else 0.0,
             "tasks": task_rows,
         })
@@ -477,6 +518,7 @@ def run_all_tasks(args, tasks, base: Path, run_seed: int) -> int:
         summary.update({
             "best_strategy": best["name"], "successes": best["successes"],
             "attempts": best["attempts"], "success_rate": best["success_rate"],
+            "wilson_95_ci": best["wilson_95_ci"],
         })
         destination.mkdir(parents=True, exist_ok=True)
         report_file = destination / "suite_summary.json"

@@ -76,6 +76,26 @@ python3 interactive_grasp.py --all-tasks --attempts 3 --strategy router --seed 4
 路由依据会写入新汇总的 `routing_decisions`，便于论文复现。不要使用形成路由规则的同一随机种子
 报告最终性能，否则会产生数据泄漏。
 
+历史汇总会按 `suite + seed + strategy + task_id` 自动去重；同一随机种子的重复运行不会被
+当作独立证据再次累计。被忽略的重复记录数写入
+`routing_decisions[*].duplicate_records_ignored`。策略、任务和总体成功率同时写入
+`wilson_95_ci`，其值为二项成功率的 Wilson 95% 置信区间（百分数）。
+路由器还会自动排除与当前评估相同的 seed，因此可以在同一组初始状态上分别运行固定策略
+和路由策略，而不会让固定策略的测试结果泄漏到路由决策中。
+
+正式的同 seed 三方对照可直接运行：
+
+```bash
+bash run_matched_seed44.sh
+```
+
+该脚本依次运行 Native、Smooth 和 Router，均使用 seed 44、全部 10 个 Object 任务和
+每任务 3 个回合。若还要追加 Hybrid recovery：
+
+```bash
+RUN_HYBRID=1 bash run_matched_seed44.sh
+```
+
 只随机选择 3 个任务（固定 seed 后可复现）：
 
 ```bash
