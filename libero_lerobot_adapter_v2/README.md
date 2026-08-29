@@ -65,6 +65,27 @@ Set `RUN_HYBRID=1` to add the separate recovery experiment. The router excludes
 the current evaluation seed from historical evidence to avoid evaluation
 leakage.
 
+### Completed matched-seed results
+
+The completed seed-44 comparison used the same ten tasks, three rollouts per
+task, batch size one, hard resets, and a 500-step episode horizon for all three
+strategies:
+
+| Strategy | Successes | Success rate | Wilson 95% CI | Total time |
+| --- | ---: | ---: | ---: | ---: |
+| Native | 23/30 | 76.67% | 59.1-88.2% | 4611.85 s |
+| Smooth | 24/30 | 80.00% | 62.7-90.5% | 1103.15 s |
+| Task-aware router | 25/30 | 83.33% | 66.4-92.7% | 3569.93 s |
+
+The router excluded seed 44 from its historical evidence and ignored repeated
+same-seed summaries before calculating its Laplace-smoothed task scores. The
+confidence intervals overlap, so the router result is reported as the highest
+observed point estimate rather than statistically significant superiority.
+
+Machine-readable aggregate and per-task results are stored under
+`results/seed44_matched/{native,smooth,router}/`. The report figure is archived
+as `paper_figures/vla-router-seed44.pdf`.
+
 ## Tests and figure generation
 
 ```bash
@@ -84,5 +105,6 @@ script reads the archived summary and produces the Figure 5 PDF/PNG under
 - `test_pipeline.py`: regression tests
 - `run_matched_seed44.sh`: matched-seed evaluation entry point
 - `paper_figures/make_pc_action_chunk_figure.py`: Figure 5 generation
+- `paper_figures/vla-router-seed44.pdf`: matched-seed result figure
 - `results/figure5_seed42/`: archived aggregate and per-task results
-
+- `results/seed44_matched/`: matched Native, Smooth, and Router results
