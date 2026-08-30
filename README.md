@@ -28,6 +28,34 @@ retired and kept only for historical provenance.
 
 Detailed per-task records are in [`evidence/latest/`](evidence/latest/).
 
+## YZ: Task-aware action execution on LIBERO Object
+
+YZ evaluated deployment-time execution strategies around the unchanged
+`HuggingFaceVLA/smolvla_libero` checkpoint. This work does **not** retrain or modify
+the VLA architecture. It compares:
+
+- **Native**: replan after one executed action.
+- **Smooth**: execute ten predicted actions before replanning.
+- **Task-aware router**: select Native or Smooth once at rollout start from
+  deduplicated historical task results. Records from the current evaluation seed
+  are excluded, and selection uses Laplace-smoothed success estimates.
+
+Matched-seed evaluation on LIBERO Object used seed 44, ten tasks, and three
+rollouts per task:
+
+| Strategy | Success | Mean time / rollout |
+|---|---:|---:|
+| Native | 23/30 (76.67%) | 153.73 s |
+| Smooth | 24/30 (80.00%) | 36.77 s |
+| Task-aware router | 25/30 (83.33%) | 119.00 s |
+
+The router had the highest point estimate and was 22.6% faster than Native, but
+the Wilson 95% confidence intervals overlap. These results therefore validate a
+leakage-controlled task-level routing workflow; they do not establish statistically
+significant superiority over either fixed strategy. Failure recovery and
+Grounding-DINO-Tiny RGB target verification are exploratory prototypes and are
+not included in the formal performance claim.
+
 ## Getting the code
 
 Clone the repository and switch to the benchmark branch (requires an SSH key
@@ -173,3 +201,4 @@ tests/                   Unit tests
 - `docs/PC_LOCAL_SMOLVLA_PAPER_ALIGNMENT.md` — PC-local protocol
 - `docs/OFFICIAL_LEROBOT_JETSON_REMOTE.md` — Jetson remote protocol
 - `README_ZH.md` — Chinese project description
+
