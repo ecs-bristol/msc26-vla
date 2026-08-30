@@ -1,0 +1,420 @@
+{
+  "timestamp": "2026-08-29T21:48:53",
+  "suite": "libero_object",
+  "task_count": 10,
+  "attempts_per_task": 3,
+  "batch_size": 1,
+  "hard_reset": true,
+  "max_parallel_tasks": 1,
+  "mode": "strategy_router",
+  "seed": 44,
+  "routing_decisions": {
+    "0": {
+      "selected": "smooth",
+      "scores": {
+        "native": 0.4,
+        "smooth": 0.8889
+      },
+      "history": {
+        "native": {
+          "successes": 1,
+          "attempts": 3
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 7,
+          "attempts": 7
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "1": {
+      "selected": "native",
+      "scores": {
+        "native": 0.5,
+        "smooth": 0.4
+      },
+      "history": {
+        "native": {
+          "successes": 3,
+          "attempts": 6
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 1,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "2": {
+      "selected": "native",
+      "scores": {
+        "native": 0.8889,
+        "smooth": 0.8
+      },
+      "history": {
+        "native": {
+          "successes": 7,
+          "attempts": 7
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 3,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "3": {
+      "selected": "native",
+      "scores": {
+        "native": 0.8,
+        "smooth": 0.6
+      },
+      "history": {
+        "native": {
+          "successes": 3,
+          "attempts": 3
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 2,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "4": {
+      "selected": "smooth",
+      "scores": {
+        "native": 0.4,
+        "smooth": 0.5556
+      },
+      "history": {
+        "native": {
+          "successes": 1,
+          "attempts": 3
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 4,
+          "attempts": 7
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "5": {
+      "selected": "native",
+      "scores": {
+        "native": 0.875,
+        "smooth": 0.8
+      },
+      "history": {
+        "native": {
+          "successes": 6,
+          "attempts": 6
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 3,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "6": {
+      "selected": "smooth",
+      "scores": {
+        "native": 0.6,
+        "smooth": 0.8
+      },
+      "history": {
+        "native": {
+          "successes": 2,
+          "attempts": 3
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 3,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "7": {
+      "selected": "native",
+      "scores": {
+        "native": 0.5,
+        "smooth": 0.4
+      },
+      "history": {
+        "native": {
+          "successes": 3,
+          "attempts": 6
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 1,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "8": {
+      "selected": "native",
+      "scores": {
+        "native": 0.875,
+        "smooth": 0.8
+      },
+      "history": {
+        "native": {
+          "successes": 6,
+          "attempts": 6
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 3,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    },
+    "9": {
+      "selected": "smooth",
+      "scores": {
+        "native": 0.6,
+        "smooth": 0.8
+      },
+      "history": {
+        "native": {
+          "successes": 2,
+          "attempts": 3
+        },
+        "balanced": {
+          "successes": 0,
+          "attempts": 0
+        },
+        "smooth": {
+          "successes": 3,
+          "attempts": 3
+        }
+      },
+      "fallback": false,
+      "duplicate_records_ignored": 2,
+      "excluded_evaluation_seed": 44
+    }
+  },
+  "stages": [
+    {
+      "name": "native",
+      "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260829_214853_all_tasks/1_native",
+      "tasks": [
+        {
+          "task_id": 1,
+          "target": "cream cheese",
+          "instruction": "pick up the cream cheese and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67,
+          "wilson_95_ci": [
+            20.8,
+            93.9
+          ]
+        },
+        {
+          "task_id": 2,
+          "target": "salad dressing",
+          "instruction": "pick up the salad dressing and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0,
+          "wilson_95_ci": [
+            43.8,
+            100.0
+          ]
+        },
+        {
+          "task_id": 3,
+          "target": "bbq sauce",
+          "instruction": "pick up the bbq sauce and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0,
+          "wilson_95_ci": [
+            43.8,
+            100.0
+          ]
+        },
+        {
+          "task_id": 5,
+          "target": "tomato sauce",
+          "instruction": "pick up the tomato sauce and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0,
+          "wilson_95_ci": [
+            43.8,
+            100.0
+          ]
+        },
+        {
+          "task_id": 7,
+          "target": "milk",
+          "instruction": "pick up the milk and place it in the basket",
+          "successes": 1,
+          "attempts": 3,
+          "success_rate": 33.33,
+          "wilson_95_ci": [
+            6.1,
+            79.2
+          ]
+        },
+        {
+          "task_id": 8,
+          "target": "chocolate pudding",
+          "instruction": "pick up the chocolate pudding and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0,
+          "wilson_95_ci": [
+            43.8,
+            100.0
+          ]
+        }
+      ],
+      "successes": 15,
+      "attempts": 18,
+      "success_rate": 83.33,
+      "duration_seconds": 3092.495,
+      "wilson_95_ci": [
+        60.8,
+        94.2
+      ],
+      "seconds_per_episode": 171.805
+    },
+    {
+      "name": "smooth",
+      "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260829_214853_all_tasks/2_smooth",
+      "tasks": [
+        {
+          "task_id": 0,
+          "target": "alphabet soup",
+          "instruction": "pick up the alphabet soup and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67,
+          "wilson_95_ci": [
+            20.8,
+            93.9
+          ]
+        },
+        {
+          "task_id": 4,
+          "target": "ketchup",
+          "instruction": "pick up the ketchup and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67,
+          "wilson_95_ci": [
+            20.8,
+            93.9
+          ]
+        },
+        {
+          "task_id": 6,
+          "target": "butter",
+          "instruction": "pick up the butter and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0,
+          "wilson_95_ci": [
+            43.8,
+            100.0
+          ]
+        },
+        {
+          "task_id": 9,
+          "target": "orange juice",
+          "instruction": "pick up the orange juice and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0,
+          "wilson_95_ci": [
+            43.8,
+            100.0
+          ]
+        }
+      ],
+      "successes": 10,
+      "attempts": 12,
+      "success_rate": 83.33,
+      "duration_seconds": 477.433,
+      "wilson_95_ci": [
+        55.2,
+        95.3
+      ],
+      "seconds_per_episode": 39.786
+    }
+  ],
+  "run_directory": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260829_214853_all_tasks",
+  "best_strategy": "task_aware_router",
+  "successes": 25,
+  "attempts": 30,
+  "success_rate": 83.33,
+  "wilson_95_ci": [
+    66.4,
+    92.7
+  ],
+  "duration_seconds": 3569.928,
+  "completed_tasks": 10,
+  "task_completion_rate": 100.0,
+  "recovery_attempted_tasks": 0,
+  "recovered_tasks": 0,
+  "recovery_success_rate": 0.0
+}

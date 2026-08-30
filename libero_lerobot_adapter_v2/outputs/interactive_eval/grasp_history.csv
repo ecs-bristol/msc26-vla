@@ -1,0 +1,4 @@
+﻿timestamp,target,task_id,recognition_method,mode,seed,best_strategy,successes,attempts,success_rate,run_directory
+2026-08-17T19:53:04,bbq sauce,3,grounding_dino_rgb,accurate,878448593,native,2,3,66.67,/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_195236_task3
+2026-08-17T20:26:35,milk,7,grounding_dino_rgb,accurate,719334190,smooth,1,3,33.33,/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260817_202623_task7
+2026-08-18T00:12:28,bbq sauce,3,grounding_dino_rgb,accurate,1438055102,native,3,3,100.0,/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260818_001215_task3

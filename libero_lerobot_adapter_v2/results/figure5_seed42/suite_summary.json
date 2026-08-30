@@ -1,0 +1,204 @@
+{
+  "timestamp": "2026-08-18T18:54:28",
+  "suite": "libero_object",
+  "task_count": 10,
+  "attempts_per_task": 3,
+  "batch_size": 1,
+  "hard_reset": true,
+  "max_parallel_tasks": 1,
+  "mode": "accurate",
+  "seed": 42,
+  "strategy_order": [
+    "native",
+    "smooth"
+  ],
+  "stages": [
+    {
+      "name": "native",
+      "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260818_185428_all_tasks/1_native",
+      "successes": 22,
+      "attempts": 30,
+      "success_rate": 73.33,
+      "duration_seconds": 5938.33,
+      "seconds_per_episode": 197.944,
+      "tasks": [
+        {
+          "task_id": 0,
+          "target": "alphabet soup",
+          "instruction": "pick up the alphabet soup and place it in the basket",
+          "successes": 1,
+          "attempts": 3,
+          "success_rate": 33.33
+        },
+        {
+          "task_id": 1,
+          "target": "cream cheese",
+          "instruction": "pick up the cream cheese and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67
+        },
+        {
+          "task_id": 2,
+          "target": "salad dressing",
+          "instruction": "pick up the salad dressing and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 3,
+          "target": "bbq sauce",
+          "instruction": "pick up the bbq sauce and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 4,
+          "target": "ketchup",
+          "instruction": "pick up the ketchup and place it in the basket",
+          "successes": 1,
+          "attempts": 3,
+          "success_rate": 33.33
+        },
+        {
+          "task_id": 5,
+          "target": "tomato sauce",
+          "instruction": "pick up the tomato sauce and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 6,
+          "target": "butter",
+          "instruction": "pick up the butter and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67
+        },
+        {
+          "task_id": 7,
+          "target": "milk",
+          "instruction": "pick up the milk and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67
+        },
+        {
+          "task_id": 8,
+          "target": "chocolate pudding",
+          "instruction": "pick up the chocolate pudding and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 9,
+          "target": "orange juice",
+          "instruction": "pick up the orange juice and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67
+        }
+      ]
+    },
+    {
+      "name": "smooth",
+      "output_dir": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260818_185428_all_tasks/2_smooth",
+      "successes": 24,
+      "attempts": 30,
+      "success_rate": 80.0,
+      "duration_seconds": 1111.575,
+      "seconds_per_episode": 37.053,
+      "tasks": [
+        {
+          "task_id": 0,
+          "target": "alphabet soup",
+          "instruction": "pick up the alphabet soup and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 1,
+          "target": "cream cheese",
+          "instruction": "pick up the cream cheese and place it in the basket",
+          "successes": 1,
+          "attempts": 3,
+          "success_rate": 33.33
+        },
+        {
+          "task_id": 2,
+          "target": "salad dressing",
+          "instruction": "pick up the salad dressing and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 3,
+          "target": "bbq sauce",
+          "instruction": "pick up the bbq sauce and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67
+        },
+        {
+          "task_id": 4,
+          "target": "ketchup",
+          "instruction": "pick up the ketchup and place it in the basket",
+          "successes": 2,
+          "attempts": 3,
+          "success_rate": 66.67
+        },
+        {
+          "task_id": 5,
+          "target": "tomato sauce",
+          "instruction": "pick up the tomato sauce and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 6,
+          "target": "butter",
+          "instruction": "pick up the butter and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 7,
+          "target": "milk",
+          "instruction": "pick up the milk and place it in the basket",
+          "successes": 1,
+          "attempts": 3,
+          "success_rate": 33.33
+        },
+        {
+          "task_id": 8,
+          "target": "chocolate pudding",
+          "instruction": "pick up the chocolate pudding and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        },
+        {
+          "task_id": 9,
+          "target": "orange juice",
+          "instruction": "pick up the orange juice and place it in the basket",
+          "successes": 3,
+          "attempts": 3,
+          "success_rate": 100.0
+        }
+      ]
+    }
+  ],
+  "run_directory": "/mnt/c/Users/13636/Documents/Codex/2026-08-15/sh/outputs/libero_lerobot_adapter_v2/outputs/interactive_eval/20260818_185428_all_tasks",
+  "best_strategy": "smooth",
+  "successes": 24,
+  "attempts": 30,
+  "success_rate": 80.0
+}

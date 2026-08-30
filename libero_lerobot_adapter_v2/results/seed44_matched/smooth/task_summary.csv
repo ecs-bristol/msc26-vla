@@ -1,0 +1,11 @@
+﻿strategy,task_id,target,successes,attempts,success_rate
+smooth,0,alphabet soup,2,3,66.67
+smooth,1,cream cheese,3,3,100.0
+smooth,2,salad dressing,3,3,100.0
+smooth,3,bbq sauce,3,3,100.0
+smooth,4,ketchup,2,3,66.67
+smooth,5,tomato sauce,1,3,33.33
+smooth,6,butter,3,3,100.0
+smooth,7,milk,1,3,33.33
+smooth,8,chocolate pudding,3,3,100.0
+smooth,9,orange juice,3,3,100.0
