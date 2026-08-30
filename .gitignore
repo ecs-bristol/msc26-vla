@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets — never commit API keys or tokens
+.env
+.env.*
+
+# Data and large artifacts (downloaded or generated)
+data/
+datasets/
+outputs/
+results/
+*.hdf5
+*.tar.gz
+*.mp4
+*.pkl
+*.pt
+*.safetensors
+*.onnx
+
+# Local experiment state
+.libero/
+.superpowers/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+tmp/
+tmp*/

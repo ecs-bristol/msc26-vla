@@ -1,0 +1,4 @@
+scope,implementation,mean_ms,p95_ms,peak_allocated_mb,success_pct,ep_s,inference_ms_mean
+text_model,eager,126.847,127.473,1252.5,,,
+text_model,sdpa,98.846,99.522,1252.4,,,
+end_to_end,sdpa,,,,72.0,36.4,859.1

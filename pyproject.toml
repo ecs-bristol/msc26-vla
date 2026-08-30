@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=75,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libero-edge-benchmark"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy>=2.0,<2.3",
+  "pydantic>=2.11,<3",
+  "PyYAML>=6.0,<7",
+  "Pillow>=11,<13",
+  "requests>=2.32,<3",
+  "psutil>=7,<8",
+  "h5py>=3.12,<4",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<7",
+  "pytest-timeout>=2.4,<3",
+  "nbformat>=5.10,<6",
+  "nbclient>=0.10,<0.11",
+]
+analysis = [
+  "pandas>=2.2,<3",
+  "matplotlib>=3.9,<4",
+  "seaborn>=0.13,<0.14",
+  "jupyterlab>=4.3,<5",
+  "ipykernel>=6.29,<7",
+  "nbformat>=5.10,<6",
+  "nbclient>=0.10,<0.11",
+]
+libero = [
+  "lerobot[libero]>=0.6.1,<0.7.0; sys_platform == 'linux'",
+  "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'",
+]
+smolvla = [
+  "lerobot[libero,smolvla]>=0.6.1,<0.7.0; sys_platform == 'linux'",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+  "libero: requires an installed LIBERO runtime and LIBERO_DATASET_ROOT",
+  "model: requires a downloaded model and suitable accelerator",
+]

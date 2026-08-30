@@ -1,0 +1,22 @@
+deployments:
+  - key: pc_default
+    mode: pc_local
+    endpoint: null
+  - key: jetson_default
+    mode: jetson_local
+    endpoint: http://127.0.0.1:8081
+  - key: jetson_quantized_default
+    mode: jetson_quantized
+    endpoint: http://127.0.0.1:8081
+  - key: jetson_remote_client_default
+    mode: jetson_remote_client
+    endpoint: http://127.0.0.1:8081
+  - key: jetson_remote_client_direct
+    mode: jetson_remote_client
+    endpoint: http://10.42.0.2:8081
+  - key: jetson_remote_client_environment
+    mode: jetson_remote_client
+    endpoint: ${JETSON_ENDPOINT}
+  - key: remote_server_default
+    mode: remote_server
+    endpoint: http://127.0.0.1:8081

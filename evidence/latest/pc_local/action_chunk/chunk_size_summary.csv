@@ -1,0 +1,5 @@
+chunk_size,n_action_steps,num_steps,episodes_per_task,success_pct,eval_ep_s,notes
+50,20,2,5,76.0,29.6,"from experiment C (cs50_na20)"
+20,20,2,5,78.0,28.5,"PC local, matched chunk=execute"
+10,10,2,5,74.0,31.0,"PC local, matched chunk=execute"
+1,1,2,5,80.0,43.5,"PC local, matched chunk=execute"

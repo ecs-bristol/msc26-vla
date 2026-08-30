@@ -1,0 +1,5 @@
+config,num_steps,n_action_steps,chunk_size,warmup,iters,mean_ms,median_ms,p95_ms,std_ms,min_ms,max_ms,stored_parameter_mb,peak_allocated_mb,timing_method,checkpoint,revision,device
+fp16,2,1,50,5,50,185.43,174.93,258.31,36.19,140.92,274.04,1217.9,1280.76,perf_counter_with_cuda_synchronize,HuggingFaceVLA/smolvla_libero,6721902bc4d61e50a3bfdb11dfb4cb626f05d102,cuda
+language_int8,2,1,50,5,50,164.09,163.06,177.15,6.72,149.85,180.89,929.4,992.86,perf_counter_with_cuda_synchronize,HuggingFaceVLA/smolvla_libero,6721902bc4d61e50a3bfdb11dfb4cb626f05d102,cuda
+backbone_int8,2,1,50,5,50,173.91,170.56,197.35,14.14,160.05,236.23,835.9,962.84,perf_counter_with_cuda_synchronize,HuggingFaceVLA/smolvla_libero,6721902bc4d61e50a3bfdb11dfb4cb626f05d102,cuda
+mixed,2,1,50,5,50,196.79,191.92,223.12,13.30,181.76,236.87,787.5,960.08,perf_counter_with_cuda_synchronize,HuggingFaceVLA/smolvla_libero,6721902bc4d61e50a3bfdb11dfb4cb626f05d102,cuda
