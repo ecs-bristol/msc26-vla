@@ -1,0 +1,55 @@
+{
+  "scope": "archived_pilot",
+  "images": 4,
+  "classes": [
+    "bbq sauce",
+    "milk"
+  ],
+  "iou_threshold": 0.5,
+  "tp": 0,
+  "fp": 3,
+  "fn": 4,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "false_acceptance_count": 3,
+  "false_rejection_count": 4,
+  "per_scene": [
+    {
+      "run": "20260817_195236_task3",
+      "target": "bbq sauce",
+      "tp": 0,
+      "fp": 1,
+      "fn": 1,
+      "target_predictions": 1,
+      "best_iou": 0.0
+    },
+    {
+      "run": "20260817_202623_task7",
+      "target": "milk",
+      "tp": 0,
+      "fp": 1,
+      "fn": 1,
+      "target_predictions": 1,
+      "best_iou": 0.0
+    },
+    {
+      "run": "20260818_001016_task7",
+      "target": "milk",
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "target_predictions": 0,
+      "best_iou": 0.0
+    },
+    {
+      "run": "20260818_001215_task3",
+      "target": "bbq sauce",
+      "tp": 0,
+      "fp": 1,
+      "fn": 1,
+      "target_predictions": 1,
+      "best_iou": 0.0
+    }
+  ]
+}
