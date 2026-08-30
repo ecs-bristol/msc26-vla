@@ -1,0 +1,10 @@
+{
+  "description": "Manually verified target boxes for the four archived RGB verification scenes. This is a pilot set, not a full LIBERO Object benchmark.",
+  "coordinate_format": "xyxy pixels in the saved 360x360 initial_scene.png",
+  "annotations": [
+    {"run": "20260817_195236_task3", "target": "bbq sauce", "box": [204.0, 183.0, 239.0, 234.0]},
+    {"run": "20260817_202623_task7", "target": "milk", "box": [257.0, 141.0, 284.0, 198.0]},
+    {"run": "20260818_001016_task7", "target": "milk", "box": [257.0, 141.0, 284.0, 198.0]},
+    {"run": "20260818_001215_task3", "target": "bbq sauce", "box": [204.0, 183.0, 239.0, 234.0]}
+  ]
+}
