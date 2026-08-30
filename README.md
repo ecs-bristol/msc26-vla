@@ -10,23 +10,31 @@ on the LIBERO Spatial benchmark under two deployments:
 The benchmark uses the **official `lerobot-eval`** CLI. The custom YAML runner in this repository is
 retired and kept only for historical provenance.
 
-## Results (1 episode per task, 280 steps, FP16)
+## Current results
 
-### PC-Local
+Formal configurations use five episodes per task (50 episodes per configuration).
 
-| Suite | Success | Failed tasks |
-|---|---|---|
-| libero_spatial | 8/10 (80%) | 2, 7 |
-| libero_object | 9/10 (90%) | 7 |
-| libero_goal | 8/10 (80%) | 3, 4 |
+### Software and quantisation candidates
 
-### PC simulation + Jetson remote inference
+- PC-local software candidate `(num_steps=2, n_action_steps=20, chunk_size=20)`:
+  78.0% success, 28.5 s per episode.
+- Jetson FP16 `(2,20,20)`: 72.0% success, 36.2 s per episode.
+- Jetson language INT8: 80.0% success, 33.3 s per episode.
+- Jetson backbone INT8: 82.0% success, 33.5 s per episode.
+- Jetson mixed 4/8-bit: 66.0% success, 38.9 s per episode.
 
-| Suite | Success | Failed tasks |
-|---|---|---|
-| libero_spatial | 9/10 (90%) | 7 |
+### Hardware acceleration
 
-Detailed per-task records are in [`evidence/latest/`](evidence/latest/).
+- TensorRT connector and vision encoder are validated as component-level engines.
+- CUDA Graphs reduce TensorRT engine enqueue overhead.
+- Full SmolVLA end-to-end TensorRT remains limited by Orin Nano memory and
+  Transformers dynamic-control-flow constraints.
+
+Detailed evidence:
+
+- [`evidence/latest/CURRENT_PROGRESS.md`](evidence/latest/CURRENT_PROGRESS.md)
+- [`evidence/latest/jetson_hardware/HARDWARE_OPTIMIZATION_SUMMARY.md`](evidence/latest/jetson_hardware/HARDWARE_OPTIMIZATION_SUMMARY.md)
+- [`evidence/revision_20260828/yh_supervisor_response/FINAL_HANDOFF.md`](evidence/revision_20260828/yh_supervisor_response/FINAL_HANDOFF.md)
 
 ## Getting the code
 
