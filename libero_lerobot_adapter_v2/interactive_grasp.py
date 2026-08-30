@@ -114,6 +114,18 @@ def fallback_strategy(name: str) -> str:
     return "smooth" if name == "native" else "native"
 
 
+def select_recovery_tasks(tasks, initial_outcomes: dict[int, list[bool]]):
+    """Select tasks with at least one observed failed rollout.
+
+    Empty or missing result lists indicate incomplete telemetry and must not be
+    silently converted into recovery triggers.
+    """
+    return [
+        task for task in tasks
+        if initial_outcomes.get(task[0]) and not all(initial_outcomes[task[0]])
+    ]
+
+
 def adaptive_strategies(base_dir: Path, target: str):
     """Rank strategies using Laplace-smoothed success rates from prior runs."""
     defaults = accuracy_strategies()
@@ -349,7 +361,7 @@ def run_strategy_router(args, tasks, base: Path, destination: Path, run_seed: in
 
     recovery_outcomes: dict[int, list[bool]] = {}
     if recovery and args.run:
-        failed_tasks = [task for task in tasks if not any(initial_outcomes.get(task[0], []))]
+        failed_tasks = select_recovery_tasks(tasks, initial_outcomes)
         recovery_groups = {"native": [], "smooth": []}
         for task in failed_tasks:
             fallback = fallback_strategy(routes[task[0]])
