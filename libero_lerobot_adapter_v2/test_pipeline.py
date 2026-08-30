@@ -9,10 +9,11 @@ from interactive_grasp import (
     accuracy_strategies, adaptive_strategies, append_history, build_candidates, infer_object,
     build_strategy_routes, effective_batch_size, fallback_strategy, named_strategy, normalize,
     read_duration, read_task_successes,
-    select_target, select_tasks_by_ids, success_rate, wilson_interval,
+    select_recovery_tasks, select_target, select_tasks_by_ids, success_rate, wilson_interval,
 )
 from inspect_libero_dataset import validate_sample
 from visual_detector import box_iou, non_max_suppression, normalize_label, target_detected, target_prompts
+from evaluate_rgb_verification import match_target
 
 
 class FakeTensor:
@@ -87,6 +88,13 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("4", named_strategy("balanced")[1])
         self.assertEqual(fallback_strategy("native"), "smooth")
         self.assertEqual(fallback_strategy("smooth"), "native")
+
+    def test_recovery_selects_partial_and_complete_failures_only(self):
+        tasks = [(0, "a", "a"), (1, "b", "b"), (2, "c", "c"), (3, "d", "d")]
+        outcomes = {0: [True, True, True], 1: [True, False, True], 2: [False, False, False]}
+        self.assertEqual(
+            [task[0] for task in select_recovery_tasks(tasks, outcomes)], [1, 2]
+        )
 
     def test_success_rate_and_history(self):
         self.assertEqual(success_rate([True, True, False]), 66.67)
@@ -212,6 +220,17 @@ class PipelineTests(unittest.TestCase):
         prompts = target_prompts("milk")
         self.assertIn("milk carton", prompts)
         self.assertEqual(target_prompts("unknown object")[0], "unknown object")
+
+    def test_rgb_target_metric_matching(self):
+        detections = [
+            {"label": "milk", "score": 0.9, "box": [10, 10, 30, 30]},
+            {"label": "milk", "score": 0.7, "box": [50, 50, 70, 70]},
+            {"label": "butter", "score": 0.8, "box": [10, 10, 30, 30]},
+        ]
+        result = match_target(detections, "milk", [10, 10, 30, 30])
+        self.assertEqual((result["tp"], result["fp"], result["fn"]), (1, 1, 0))
+        missed = match_target(detections, "orange juice", [10, 10, 30, 30])
+        self.assertEqual((missed["tp"], missed["fp"], missed["fn"]), (0, 0, 1))
 
     def test_adaptive_strategy_prefers_historical_winner(self):
         with tempfile.TemporaryDirectory() as temp:
