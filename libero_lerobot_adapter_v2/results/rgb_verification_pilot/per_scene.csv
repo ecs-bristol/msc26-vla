@@ -1,0 +1,5 @@
+﻿run,target,tp,fp,fn,target_predictions,best_iou
+20260817_195236_task3,bbq sauce,0,1,1,1,0.0
+20260817_202623_task7,milk,0,1,1,1,0.0
+20260818_001016_task7,milk,0,0,1,0,0.0
+20260818_001215_task3,bbq sauce,0,1,1,1,0.0
