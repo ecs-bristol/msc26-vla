@@ -1,0 +1,13 @@
+﻿strategy,task_id,target,successes,attempts,success_rate
+native,2,salad dressing,3,3,100.0
+native,3,bbq sauce,3,3,100.0
+native,4,ketchup,3,3,100.0
+native,5,tomato sauce,3,3,100.0
+native,8,chocolate pudding,3,3,100.0
+smooth,0,alphabet soup,2,3,66.67
+smooth,1,cream cheese,3,3,100.0
+smooth,6,butter,2,3,66.67
+smooth,7,milk,3,3,100.0
+smooth,9,orange juice,3,3,100.0
+recovery_native,0,alphabet soup,0,1,0.0
+recovery_native,6,butter,1,1,100.0
