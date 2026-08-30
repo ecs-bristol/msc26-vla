@@ -108,3 +108,14 @@ script reads the archived summary and produces the Figure 5 PDF/PNG under
 - `paper_figures/vla-router-seed44.pdf`: matched-seed result figure
 - `results/figure5_seed42/`: archived aggregate and per-task results
 - `results/seed44_matched/`: matched Native, Smooth, and Router results
+
+
+## Seed-45 recovery and RGB verification evidence
+
+The exploratory seed-45 hybrid run first achieved 28/30 successes with task-aware routing. Alphabet soup and butter each contained one failed smooth rollout and triggered one native fallback attempt. Butter recovered and alphabet soup did not, giving 1/2 recovery attempts, 29/32 successes when initial and fallback attempts are pooled, and 530.32 s of additional recovery time. Because the fallback attempts used disjoint initial conditions and both tasks had already succeeded in 2/3 initial rollouts, this is trigger-coverage evidence rather than a causal recovery claim. Machine-readable results are in results/seed45_recovery/.
+
+The archived RGB pilot uses four independently annotated target boxes from two classes and IoU >= 0.50 matching. It produced TP=0, FP=3 and FN=4, so precision, recall and F1 were all zero. This deliberately negative audit supports excluding the detector from formal policy execution and does not estimate benchmark-wide accuracy. Reproduce it with:
+
+    python3 evaluate_rgb_verification.py
+
+Annotations and metrics are stored in rgb_annotations_pilot.json and results/rgb_verification_pilot/.
