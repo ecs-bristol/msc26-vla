@@ -1,0 +1,86 @@
+default_experiment: offline_vlm_smoke
+
+experiments:
+  offline_vlm_smoke:
+    description: "Fast smoke test before running larger benchmark batches."
+    runner: vlm_text_action
+    task_file: data/tasks.csv
+    image_dir: data/sample_images
+    output_dir: results/pre_jetson
+    model_keys:
+      - qwen2_vl_2b
+    task_ids:
+      - desk_cup_pick
+      - blue_can_pick
+    repeats: 1
+    warmup: 0
+    max_new_tokens: 80
+    local_files_only: true
+
+  offline_vlm_compare:
+    description: "Compare all lightweight VLM text-action baselines on the fixed task table."
+    runner: vlm_text_action
+    task_file: data/tasks.csv
+    image_dir: data/sample_images
+    output_dir: results/pre_jetson
+    model_keys:
+      - smolvlm2_500m
+      - qwen2_vl_2b
+      - paligemma2_3b
+    task_ids: all
+    repeats: 3
+    warmup: 1
+    max_new_tokens: 80
+    local_files_only: false
+
+  jetson_readiness_static:
+    description: "Small, repeatable task set for later laptop-vs-Jetson comparison."
+    runner: vlm_text_action
+    task_file: data/tasks.csv
+    image_dir: data/sample_images
+    output_dir: results/pre_jetson
+    model_keys:
+      - smolvlm2_500m
+      - qwen2_vl_2b
+    task_ids: all
+    repeats: 5
+    warmup: 1
+    max_new_tokens: 64
+    local_files_only: false
+
+  jetson_readiness_interface_smoke:
+    description: "Fast unified adapter smoke test that does not require model downloads or Jetson hardware."
+    runner: unified_adapter_runner
+    task_file: data/tasks.csv
+    image_dir: data/sample_images
+    output_dir: results/unified
+    device_profile: windows_pc_pre_jetson
+    models:
+      - model_key: local_rule_baseline
+        deployment_mode: pc_local
+      - model_key: mock_remote_policy
+        deployment_mode: jetson_remote_client
+    task_ids:
+      - desk_cup_pick
+      - blue_can_pick
+    repeats: 1
+    warmup: 0
+    max_new_tokens: 64
+    local_files_only: true
+
+  unified_vlm_pc_smoke:
+    description: "Unified runner smoke test for one local VLM when model weights already exist locally."
+    runner: unified_adapter_runner
+    task_file: data/tasks.csv
+    image_dir: data/sample_images
+    output_dir: results/unified
+    device_profile: windows_pc_pre_jetson
+    models:
+      - model_key: qwen2_vl_2b
+        deployment_mode: pc_local
+    task_ids:
+      - desk_cup_pick
+    repeats: 1
+    warmup: 0
+    max_new_tokens: 80
+    local_files_only: true

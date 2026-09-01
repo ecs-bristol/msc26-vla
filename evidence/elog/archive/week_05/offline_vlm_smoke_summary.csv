@@ -1,0 +1,3 @@
+model_key,vla_model,task_id,trials,auto_score_pass_rate,action_valid_rate,latency_mean_sec,latency_min_sec,latency_max_sec
+qwen2_vl_2b,qwen2_vl_2b,blue_can_pick,1,0.0,1.0,4.863317500101402,4.863317500101402,4.863317500101402
+qwen2_vl_2b,qwen2_vl_2b,desk_cup_pick,1,0.0,1.0,9.704477099934593,9.704477099934593,9.704477099934593

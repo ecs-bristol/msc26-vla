@@ -1,0 +1,14 @@
+week,focus,technical_deliverable,research_deliverable,decision_gate
+1,Scope and task set,Stable tasks.csv plus sample images,Final research question and literature map,Tasks are concrete and repeatable
+2,Offline benchmark,Qwen/SmolVLM benchmark logs,Initial baseline comparison table,At least two models produce parseable actions
+3,OpenVLA feasibility,OpenVLA probe or documented OOM/dependency failure,OpenVLA feasibility note,Decide local stress test vs remote server
+4,Simulation baseline,Scripted robosuite closed-loop trials,Task success and failure taxonomy draft,Simulator can produce repeatable trial logs
+5,VLM closed loop,Qwen/VLM action-token closed-loop runs,Comparison against scripted baseline,VLM outputs useful actions in at least some tasks
+6,OpenVLA visual or remote policy,OpenVLA server/client integration logs,Continuous action analysis,Decide whether OpenVLA is benchmark or extension
+7,Jetson setup,Jetson env check and first local/remote inference,Jetson hardware profile table,Jetson pipeline can run at least one policy path
+8,Jetson benchmark,Local vs remote Jetson result logs,Latency/memory/power comparison,Choose final configurations for ablation
+9,Optimisation,Precision/input-size/power-mode ablations,Trade-off plots and interpretation,Optimisation shows measurable effect
+10,Failure and safety analysis,Annotated failed trials and optional safety filter,Failure taxonomy and safety discussion,Enough evidence for discussion chapter
+11,Report figures,Final tables and plots,Results and discussion draft,All core claims have supporting data
+12,Final polish,Reproducibility package and cleaned outputs,Final report and presentation,Project is demoable and defensible
+

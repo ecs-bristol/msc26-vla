@@ -1,0 +1,19 @@
+{
+  "run_id": "20260704_175115",
+  "config": "D:\\Bristol_IOT_with_AI\\Capstone Project\\Final_Project\\Robosuite_MuJoCo_Sim\\configs\\scene_config.json",
+  "endpoint": "http://127.0.0.1:8201/infer",
+  "vla_model": "qwen2_vl_2b",
+  "controller_model": "VLMTargetAdapter+CartesianPickPolicy",
+  "targets": [
+    "blue_can",
+    "red_block"
+  ],
+  "include_types": "box,cylinder",
+  "exclude_types": "",
+  "trials_per_target": 5,
+  "max_steps": 500,
+  "success_lift_threshold": 0.06,
+  "save_frame_sequence": true,
+  "frame_stride": 20,
+  "allow_instruction_fallback": false
+}

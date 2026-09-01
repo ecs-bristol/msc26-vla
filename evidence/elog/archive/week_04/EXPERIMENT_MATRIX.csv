@@ -1,0 +1,12 @@
+experiment_id,stage,platform,model_or_policy,mode,input_source,precision_or_quantization,primary_metric,secondary_metrics,min_trials,success_definition,output_location
+A1,offline,laptop,Qwen2-VL-2B,text-action,static_images,FP16,action_validity,"latency_sec,peak_gpu_memory_gb,target_correct",10,model identifies target and outputs valid action,Local_VLA_Benchmark_Framework/results/offline_vlm
+A2,offline,laptop,SmolVLM2-500M,text-action,static_images,FP16,latency_sec,"action_validity,peak_gpu_memory_gb",10,model outputs valid action under schema,Local_VLA_Benchmark_Framework/results/offline_vlm
+B1,offline,laptop,OpenVLA-7B,action-vector,static_images,4-bit NF4,load_and_infer_success,"latency_sec,peak_gpu_memory_gb,oom_error",5,model loads and returns action vector,Local_VLA_Benchmark_Framework/results/openvla_probe
+C1,simulation,laptop,scripted_policy,closed-loop,robosuite_camera,none,task_success,"steps_to_success,sim_step_latency",10,object lifted or moved to target zone,Robosuite_MuJoCo_Sim/outputs/scripted_baseline
+C2,simulation,laptop,Qwen2-VL-2B,text-action closed-loop,robosuite_camera,FP16,task_success,"model_latency,invalid_action_count,failure_type",10,task completes without unsafe action,Robosuite_MuJoCo_Sim/outputs/qwen_closed_loop
+C3,simulation,laptop+server,OpenVLA-7B,visual closed-loop,robosuite_camera,4-bit or remote,task_success,"model_latency,action_stability,failure_type",10,task completes or produces usable action sequence,Robosuite_MuJoCo_Sim/outputs/openvla_visual
+D1,jetson,Jetson Orin Nano Super,lightweight_vlm,text-action,static_images,FP16 or INT8,inference_latency,"ram_usage,gpu_usage,power_mode",10,model runs without OOM and outputs valid action,Jetson_Results/local_inference
+D2,jetson,Jetson Orin Nano Super,remote_OpenVLA,client-server,camera_or_static_images,remote,round_trip_latency,"network_latency,jetson_cpu_ram,action_validity",10,remote policy returns valid action,Jetson_Results/remote_inference
+E1,optimisation,Jetson Orin Nano Super,best_local_model,ablation,static_images,"FP16,INT8,4-bit",latency_memory_tradeoff,"action_validity,output_drift",10,optimised model improves latency or memory without severe action degradation,Jetson_Results/optimisation
+E2,optimisation,Jetson Orin Nano Super,best_policy,ablation,static_images,"image_224,image_336,image_448",latency_accuracy_tradeoff,"target_correct,action_validity",10,smaller input improves latency with acceptable action quality,Jetson_Results/optimisation
+

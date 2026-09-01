@@ -1,0 +1,5 @@
+model_key,adapter,deployment_mode,task_id,trials,success_rate,action_valid_rate,auto_score_pass_rate,oom_count,load_failure_count,latency_mean_ms,latency_p95_ms,end_to_end_mean_ms,peak_memory_max_mb,recommendation
+local_rule_baseline,scripted_adapter,pc_local,blue_can_pick,1,1.0,1.0,1.0,0,0,0.04600035026669502,0.04600035026669502,,,candidate_for_jetson_test
+local_rule_baseline,scripted_adapter,pc_local,desk_cup_pick,1,1.0,1.0,1.0,0,0,0.7618996314704418,0.7618996314704418,,,candidate_for_jetson_test
+mock_remote_policy,mock_adapter,jetson_remote_client,blue_can_pick,1,1.0,1.0,1.0,0,0,0.0442001037299633,0.0442001037299633,,,candidate_for_jetson_test
+mock_remote_policy,mock_adapter,jetson_remote_client,desk_cup_pick,1,1.0,1.0,1.0,0,0,0.04369998350739479,0.04369998350739479,,,candidate_for_jetson_test

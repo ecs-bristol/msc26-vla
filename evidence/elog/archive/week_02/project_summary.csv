@@ -1,0 +1,39 @@
+﻿Project Summary,,,,,Word counts,,,,
+Unit code / level,EEMEM0017 / 7,,Group checklist,,,,,,
+Group,G3031,,Project working title and overall aim (> 5wds) completed,To do,,,,,
+Supervisor,Zhiqiang Que,,Objectives (>10 wds) for all students,To do,,,,,
+,,,Description of work (>10 wds) for all students,To do,,,,,
+,,,Planning questions answered Yes or No,Done,,,,,
+,,,Planning descriptions (>5 wds) provided where answer is Yes,To do,,,,,
+,,,Form complete is Yes,To do,,,,,
+"Instructions to students (TL:DR - fill in the green boxes until all the checklist items go green)
+
+In the first boxes, give the title and overall aims of the project. 
+
+In the next set of boxes, each member of the group should list the objectives of their individual contributions and provide a brief description of the work and methods they will use to achieve these.
+
+In the final set of boxes, work together to identify any key resources that the group will need to carry out the project.
+
+When the group is happy with the whole spreadsheet (including the Risk register, Gantt chart, and Ethics checklist sheets), select Yes in the pull-down menu for the Form complete box. This will indicate to us that the data is ready to be copied. The whole spreadsheet can remain live throuhgout the project, so that you can keep the risk register and Gantt chart updated, track expenditure, and make adjustments to the project summary page if required.",,,,,,,,,
+Project working title,Benchmarking and Optimising Vision-Language-Action Model Deployment on Jetson Orin Nano Super,,,,0,,,,
+Overall project aim,"To investigate the feasibility, performance bottlenecks, and optimisation strategies for deploying open-source vision-language-action models on a resource-constrained Jetson Orin Nano Super embedded GPU platform, using offline robot observations first and a host-simulator action feedback loop as an optional extension.",,,,0,,,,
+Student,Objective(s),,Brief description of work and methods,,,,ObjMinWds,MethMinWds,Student exists
+JIAQI HAN (2775193),,,,,0,0,FALSE,FALSE,TRUE
+YUHANG HUANG (2711629),"Lead Jetson Orin Nano Super deployment, model installation, inference benchmarking, and optimisation experiments for selected VLA models.",,"Set up JetPack and PyTorch environments, deploy SmolVLA, Octo and OpenVLA-style models where feasible, record latency, memory, GPU/CPU utilisation, and compare precision or resolution settings.",,0,0,FALSE,FALSE,TRUE
+QIANHUI MA (2790522),,,,,0,0,FALSE,FALSE,TRUE
+SEAN MUWANDI (2832055),,,,,9,0,FALSE,FALSE,TRUE
+XINRUI SHEN (2712073),"Evaluate model outputs, analyse deployment bottlenecks, document risks, and produce project reporting materials and final comparison.",,"Define evaluation metrics, collect and clean experiment results, compare local and remote inference, summarise failure modes, and write project documentation and presentation materials.",,0,0,FALSE,FALSE,TRUE
+YUEHENG ZHANG (2825425),"Develop benchmark datasets, host-side simulation or replay pipeline, and network interface for sending observations and receiving predicted actions.",,"Prepare image-instruction samples from robot datasets or simulator outputs, implement HTTP or gRPC client-server tests, log action validity and closed-loop timing when simulation is available.",,0,0,FALSE,FALSE,TRUE
+MADHAVI MURUGESAN (2831458),,,,,0,0,FALSE,FALSE,TRUE
+,,,,,0,0,TRUE,TRUE,FALSE
+,,,,,0,0,TRUE,TRUE,FALSE
+,,,,,0,0,TRUE,TRUE,FALSE
+Planning,Yes / No,Brief description of key requirements / items,,,,,,,
+Laboratory space required,Yes,"A small desk or laboratory area is required for Jetson setup, power supply, networking, camera testing, and optional simulator or hardware experiments.",,,0,,FALSE,,
+Risk assessments required,Yes,Risk assessment is required for safe use of electrical equipment and any optional camera or robot hardware testing.,,,0,,FALSE,,
+Software required,Yes,"JetPack, CUDA/PyTorch for Jetson, VLA repositories such as SmolVLA, Octo and OpenVLA, Python benchmarking scripts, tegrastats or jtop, and optional HTTP/gRPC or simulator tools.",,,0,,FALSE,,
+Items to be bought,Yes,"Jetson Orin Nano Super Developer Kit if not already available, suitable power supply and storage, and optional stereo/depth camera or networking accessories.",,,0,,FALSE,,
+Items to be made by technical services,No,,,,0,,TRUE,,
+Separate ethics approval required (see Ethics checklist sheet),No,"No human participants or personal data will be collected; the project will use public robot datasets, simulated observations, or non-identifiable test images.",,,0,,FALSE,,
+Form complete (Yes/No),No,,,,,,,,
+,,,,,,,,,

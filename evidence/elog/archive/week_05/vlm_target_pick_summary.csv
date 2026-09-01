@@ -1,0 +1,4 @@
+vla_model,controller_model,requested_target,trials,success_count,task_success_rate,target_match_rate,mean_steps,mean_elapsed_sec,mean_vlm_latency_sec,failure_types
+qwen2_vl_2b,VLMTargetAdapter+CartesianPickPolicy,blue_can,5,5,1.0,1.0,77.0,3.7154267199803144,2.0358819800894707,none
+qwen2_vl_2b,VLMTargetAdapter+CartesianPickPolicy,red_block,5,5,1.0,1.0,76.0,2.6074102799873797,1.0812158800195903,none
+qwen2_vl_2b,VLMTargetAdapter+CartesianPickPolicy,ALL,10,10,1.0,1.0,76.5,3.161418499983847,1.5585489300545305,none

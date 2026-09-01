@@ -1,0 +1,15 @@
+week,category,description,repository_path,timing_status
+1,planning,Related work and baseline notes,evidence/elog/archive/week_01/OpenVLA_Jetson_Related_Work_and_Baselines.md,archived_at_project_close
+1,planning,Initial project summary,evidence/elog/archive/week_01/Jetson_VLA_Deployment_Benchmark_Project_Summary_ZH.md,archived_at_project_close
+2,planning,Project plan and Gantt evidence,evidence/elog/archive/week_02/,archived_at_project_close
+3,benchmark,Initial benchmark records and evidence index,evidence/elog/archive/week_03/,archived_at_project_close
+4,method,Experiment matrix and result schema,evidence/elog/archive/week_04/,archived_at_project_close
+5,simulation,Pre-Jetson smoke and robosuite pick results,evidence/elog/archive/week_05/,archived_at_project_close
+6,interface,Unified-interface results and code snapshot,evidence/elog/archive/week_06/,archived_at_project_close
+7,orchestration,Console design and implementation snapshot,evidence/elog/archive/week_07/,archived_at_project_close
+8,reproducibility,Versioned YAML and CLI workflow,evidence/elog/archive/week_08/,archived_at_project_close
+9,platform,LIBERO scaffold and immutable configuration,configs/ and docs/superpowers/specs/,native_repository_history
+10,deployment,Remote Jetson policy route,evidence/latest/jetson_remote/ and docs/OFFICIAL_LEROBOT_JETSON_REMOTE.md,native_repository_history
+11,software_optimisation,Num-steps selection,evidence/latest/pc_local/num_steps/,formal_evidence
+12,software_optimisation,Quantisation and action chunking,evidence/latest/pc_local/int4/ and evidence/latest/pc_local/action_chunk/,formal_evidence
+13,final_evaluation,Closed-loop and hardware component results,evidence/latest/jetson_remote_multi/ and evidence/latest/jetson_hardware/,formal_evidence

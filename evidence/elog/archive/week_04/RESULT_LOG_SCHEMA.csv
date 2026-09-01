@@ -1,0 +1,33 @@
+field,type,required,description,example
+experiment_id,string,yes,Unique experiment identifier,C2
+trial_id,string,yes,Unique trial identifier,C2_0007
+timestamp,string,yes,ISO-like timestamp,2026-07-05T14:30:00
+platform,string,yes,Hardware or runtime platform,laptop_rtx5060
+model_id,string,yes,Model or policy name,Qwen/Qwen2-VL-2B-Instruct
+mode,string,yes,offline text-action action-vector closed-loop remote,text-action
+precision,string,no,FP32 FP16 INT8 4-bit or remote,FP16
+input_source,string,yes,static image robosuite camera Jetson camera,robosuite_camera
+image_path,string,no,Path to saved input image,outputs/qwen_frame_0001.jpg
+instruction,string,yes,Language task instruction,Pick up the blue can.
+expected_target,string,no,Ground-truth target,blue can
+expected_action,string,no,Expected action class,grasp
+raw_output,string,no,Raw model text or JSON output,move_forward then grasp
+parsed_action,string,no,Parsed action token or action vector summary,grasp
+action_valid,bool,yes,Whether output matches action schema,True
+target_correct,bool,no,Whether target was identified correctly,True
+task_success,bool,no,Whether trial succeeded,False
+failure_type,string,no,load_error dependency_error oom timeout invalid_action target_mismatch remote_unavailable low_confidence runtime_error none,invalid_action
+latency_sec,float,no,Single model inference latency,1.82
+p95_latency_sec,float,no,p95 latency for repeated calls,2.40
+model_load_sec,float,no,Model loading time,38.5
+peak_gpu_memory_gb,float,no,Peak GPU/VRAM usage,5.7
+ram_usage_gb,float,no,System RAM usage,7.2
+gpu_util_percent,float,no,GPU utilisation,83
+cpu_util_percent,float,no,CPU utilisation,47
+power_mode,string,no,Jetson power profile,MAXN
+temperature_c,float,no,Jetson or GPU temperature,61.0
+network_latency_sec,float,no,Client-server network overhead,0.08
+sim_step_latency_sec,float,no,Simulator step latency,0.015
+closed_loop_hz,float,no,Effective control-loop frequency,2.3
+steps_to_completion,int,no,Number of environment/control steps,42
+notes,string,no,Human-readable trial note,Target detected but gripper approached too far left
