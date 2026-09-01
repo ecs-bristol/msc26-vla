@@ -1,6 +1,8 @@
-# VLA E-Logbook Evidence Index
+# VLA E-Logbook Evidence Appendix
 
-This index maps the VLA-direction weekly e-logbook entries to repository evidence.
+This folder is the GitHub evidence appendix for the VLA-direction part of the EEMEM0017 weekly e-logbook. It is not the project README or a standalone technical report.
+
+Use this index when following a `GitHub evidence` link from the e-logbook: each Week heading mirrors the logbook's chronological Week 1–13 structure and points to the supporting plans, code snapshots, run records and result artefacts for that entry.
 
 ## Provenance note
 
